@@ -94,8 +94,8 @@ otError SocketInterface::SendFrame(const uint8_t* aFrame, uint16_t aLength) {
 otError SocketInterface::WaitForFrame(uint64_t aTimeoutUs) {
     otError error = OT_ERROR_NONE;
     struct timeval timeout;
-    timeout.tv_sec = static_cast<time_t>(aTimeoutUs / US_PER_S);
-    timeout.tv_usec = static_cast<suseconds_t>(aTimeoutUs % US_PER_S);
+    timeout.tv_sec = static_cast<time_t>(aTimeoutUs / OT_US_PER_S);
+    timeout.tv_usec = static_cast<suseconds_t>(aTimeoutUs % OT_US_PER_S);
 
     fd_set readFds;
     fd_set errorFds;
@@ -133,8 +133,8 @@ otError SocketInterface::WaitForHardwareResetCompletion(uint32_t aTimeoutMs) {
 
     while (mIsHardwareResetting && retries++ < kMaxRetriesForSocketCloseCheck) {
         struct timeval timeout;
-        timeout.tv_sec = static_cast<time_t>(aTimeoutMs / MS_PER_S);
-        timeout.tv_usec = static_cast<suseconds_t>((aTimeoutMs % MS_PER_S) * MS_PER_S);
+        timeout.tv_sec = static_cast<time_t>(aTimeoutMs / OT_MS_PER_S);
+        timeout.tv_usec = static_cast<suseconds_t>((aTimeoutMs % OT_MS_PER_S) * OT_MS_PER_S);
 
         fd_set readFds;
 
@@ -314,8 +314,8 @@ void SocketInterface::WaitForSocketFileCreated(const char* aPath) {
         fd_set fds;
         FD_ZERO(&fds);
         FD_SET(inotifyFd, &fds);
-        struct timeval timeout = {kMaxSelectTimeMs / MS_PER_S,
-                                  (kMaxSelectTimeMs % MS_PER_S) * MS_PER_S};
+        struct timeval timeout = {kMaxSelectTimeMs / OT_MS_PER_S,
+                                  (kMaxSelectTimeMs % OT_MS_PER_S) * OT_MS_PER_S};
 
         int rval = select(inotifyFd + 1, &fds, nullptr, nullptr, &timeout);
         VerifyOrDie(rval >= 0, OT_EXIT_ERROR_ERRNO);

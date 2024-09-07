@@ -1053,59 +1053,62 @@ TEST_P(VibratorAidl, ComposePwleSegmentDurationBoundary) {
 }
 
 TEST_P(VibratorAidl, PwleV2FrequencyToOutputAccelerationMapHasValidFrequencyRange) {
+    if (!(capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2)) {
+        GTEST_SKIP() << "PWLE V2 not supported, skipping test";
+        return;
+    }
+
     std::vector<PwleV2OutputMapEntry> frequencyToOutputAccelerationMap;
     ndk::ScopedAStatus status =
             vibrator->getPwleV2FrequencyToOutputAccelerationMap(&frequencyToOutputAccelerationMap);
-    if (capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2) {
-        EXPECT_OK(std::move(status));
-        ASSERT_FALSE(frequencyToOutputAccelerationMap.empty());
-        auto sharpnessRange =
-                pwle_v2_utils::getPwleV2SharpnessRange(vibrator, frequencyToOutputAccelerationMap);
-        // Validate the curve provides a usable sharpness range, which is a range of frequencies
-        // that are supported by the device.
-        ASSERT_TRUE(sharpnessRange.first >= 0);
-        // Validate that the sharpness range is a valid interval, not a single point.
-        ASSERT_TRUE(sharpnessRange.first < sharpnessRange.second);
-    } else {
-        EXPECT_UNKNOWN_OR_UNSUPPORTED(std::move(status));
-    }
+    EXPECT_OK(std::move(status));
+    ASSERT_FALSE(frequencyToOutputAccelerationMap.empty());
+    auto sharpnessRange =
+            pwle_v2_utils::getPwleV2SharpnessRange(vibrator, frequencyToOutputAccelerationMap);
+    // Validate the curve provides a usable sharpness range, which is a range of frequencies
+    // that are supported by the device.
+    ASSERT_TRUE(sharpnessRange.first >= 0);
+    // Validate that the sharpness range is a valid interval, not a single point.
+    ASSERT_TRUE(sharpnessRange.first < sharpnessRange.second);
 }
 
 TEST_P(VibratorAidl, GetPwleV2PrimitiveDurationMaxMillis) {
+    if (!(capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2)) {
+        GTEST_SKIP() << "PWLE V2 not supported, skipping test";
+        return;
+    }
+
     int32_t durationMs;
     ndk::ScopedAStatus status = vibrator->getPwleV2PrimitiveDurationMaxMillis(&durationMs);
-    if (capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2) {
-        EXPECT_OK(std::move(status));
-        ASSERT_GT(durationMs, 0);  // Ensure greater than zero
-        ASSERT_GE(durationMs,
-                  pwle_v2_utils::COMPOSE_PWLE_V2_MIN_REQUIRED_PRIMITIVE_MAX_DURATION_MS);
-    } else {
-        EXPECT_UNKNOWN_OR_UNSUPPORTED(std::move(status));
-    }
+    EXPECT_OK(std::move(status));
+    ASSERT_GT(durationMs, 0);  // Ensure greater than zero
+    ASSERT_GE(durationMs, pwle_v2_utils::COMPOSE_PWLE_V2_MIN_REQUIRED_PRIMITIVE_MAX_DURATION_MS);
 }
 
 TEST_P(VibratorAidl, GetPwleV2CompositionSizeMax) {
+    if (!(capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2)) {
+        GTEST_SKIP() << "PWLE V2 not supported, skipping test";
+        return;
+    }
+
     int32_t maxSize;
     ndk::ScopedAStatus status = vibrator->getPwleV2CompositionSizeMax(&maxSize);
-    if (capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2) {
-        EXPECT_OK(std::move(status));
-        ASSERT_GT(maxSize, 0);  // Ensure greater than zero
-        ASSERT_GE(maxSize, pwle_v2_utils::COMPOSE_PWLE_V2_MIN_REQUIRED_SIZE);
-    } else {
-        EXPECT_UNKNOWN_OR_UNSUPPORTED(std::move(status));
-    }
+    EXPECT_OK(std::move(status));
+    ASSERT_GT(maxSize, 0);  // Ensure greater than zero
+    ASSERT_GE(maxSize, pwle_v2_utils::COMPOSE_PWLE_V2_MIN_REQUIRED_SIZE);
 }
 
 TEST_P(VibratorAidl, GetPwleV2PrimitiveDurationMinMillis) {
+    if (!(capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2)) {
+        GTEST_SKIP() << "PWLE V2 not supported, skipping test";
+        return;
+    }
+
     int32_t durationMs;
     ndk::ScopedAStatus status = vibrator->getPwleV2PrimitiveDurationMinMillis(&durationMs);
-    if (capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2) {
-        EXPECT_OK(std::move(status));
-        ASSERT_GT(durationMs, 0);  // Ensure greater than zero
-        ASSERT_LE(durationMs, pwle_v2_utils::COMPOSE_PWLE_V2_MAX_ALLOWED_PRIMITIVE_MIN_DURATION_MS);
-    } else {
-        EXPECT_UNKNOWN_OR_UNSUPPORTED(std::move(status));
-    }
+    EXPECT_OK(std::move(status));
+    ASSERT_GT(durationMs, 0);  // Ensure greater than zero
+    ASSERT_LE(durationMs, pwle_v2_utils::COMPOSE_PWLE_V2_MAX_ALLOWED_PRIMITIVE_MIN_DURATION_MS);
 }
 
 TEST_P(VibratorAidl, ComposeValidPwleV2Effect) {
@@ -1125,8 +1128,10 @@ TEST_P(VibratorAidl, ComposePwleV2Unsupported) {
     }
     if (capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2) return;
 
-    EXPECT_UNKNOWN_OR_UNSUPPORTED(
-            vibrator->composePwleV2(pwle_v2_utils::composeValidPwleV2Effect(vibrator), nullptr));
+    std::vector<PwleV2Primitive> pwleEffect{
+            PwleV2Primitive(/*amplitude=*/1.0f, /*frequencyHz=*/100.0f, /*timeMillis=*/50)};
+
+    EXPECT_UNKNOWN_OR_UNSUPPORTED(vibrator->composePwleV2(pwleEffect, nullptr));
 }
 
 TEST_P(VibratorAidl, ComposeValidPwleV2EffectWithCallback) {

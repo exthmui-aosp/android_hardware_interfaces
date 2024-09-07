@@ -34,7 +34,6 @@
 package android.hardware.graphics.composer3;
 @VintfStability
 parcelable Lut {
-  long layer;
   @nullable ParcelFileDescriptor pfd;
   android.hardware.graphics.composer3.LutProperties lutProperties;
 }

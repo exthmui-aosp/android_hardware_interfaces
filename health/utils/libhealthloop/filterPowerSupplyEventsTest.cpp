@@ -192,16 +192,21 @@ TEST_P(filterPseTest, filterPse) {
     bpf_object__close(obj);
 }
 
+static constexpr char input0[] = "a";
+static constexpr char input1[] = "abc\0SUBSYSTEM=block\0";
+static constexpr char input2[] = "\0SUBSYSTEM=block";
+static constexpr char input3[] = "\0SUBSYSTEM=power_supply";
+static constexpr char input4[] = "\0SUBSYSTEM=power_supply\0";
+static constexpr char input5[] =
+        "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+        "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+        "012345678901234567890123456789012345678901234567890123456789\0SUBSYSTEM=block\0";
+
 INSTANTIATE_TEST_SUITE_P(
         filterPse, filterPseTest,
-        testing::Values(test_data{false, "a"},
-                        test_data{true, std::string_view("abc\0SUBSYSTEM=block\0", 20)},
-                        test_data{true, std::string_view("\0SUBSYSTEM=block", 16)},
-                        test_data{true, std::string_view("\0SUBSYSTEM=power_supply", 23)},
-                        test_data{false, std::string_view("\0SUBSYSTEM=power_supply\0", 24)},
-                        test_data{
-                                false,
-                                "012345678901234567890123456789012345678901234567890123456789012345"
-                                "678901234567890123456789012345678901234567890123456789012345678901"
-                                "234567890123456789012345678901234567890123456789012345678901234567"
-                                "890123456789012345678901234567890123456789\0SUBSYSTEM=block\0"}));
+        testing::Values(test_data{false, std::string_view(input0, sizeof(input0) - 1)},
+                        test_data{true, std::string_view(input1, sizeof(input1) - 1)},
+                        test_data{true, std::string_view(input2, sizeof(input2) - 1)},
+                        test_data{true, std::string_view(input3, sizeof(input3) - 1)},
+                        test_data{false, std::string_view(input4, sizeof(input4) - 1)},
+                        test_data{false, std::string_view(input5, sizeof(input5) - 1)}));

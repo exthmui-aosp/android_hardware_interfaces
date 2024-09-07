@@ -120,6 +120,11 @@ static float getPwleV2FrequencyMinHz(const std::shared_ptr<IVibrator>& vibrator)
     EXPECT_OK(
             vibrator->getPwleV2FrequencyToOutputAccelerationMap(&frequencyToOutputAccelerationMap));
     EXPECT_TRUE(!frequencyToOutputAccelerationMap.empty());
+    // We can't use ASSERT_TRUE() above because this is a non-void function,
+    // but we need to return to assure we don't crash from a null dereference.
+    if (frequencyToOutputAccelerationMap.empty()) {
+        return std::numeric_limits<float>::quiet_NaN();
+    }
 
     auto entry = std::min_element(
             frequencyToOutputAccelerationMap.begin(), frequencyToOutputAccelerationMap.end(),
@@ -133,6 +138,11 @@ static float getPwleV2FrequencyMaxHz(const std::shared_ptr<IVibrator>& vibrator)
     EXPECT_OK(
             vibrator->getPwleV2FrequencyToOutputAccelerationMap(&frequencyToOutputAccelerationMap));
     EXPECT_TRUE(!frequencyToOutputAccelerationMap.empty());
+    // We can't use ASSERT_TRUE() above because this is a non-void function,
+    // but we need to return to assure we don't crash from a null dereference.
+    if (frequencyToOutputAccelerationMap.empty()) {
+        return std::numeric_limits<float>::quiet_NaN();
+    }
 
     auto entry = std::max_element(
             frequencyToOutputAccelerationMap.begin(), frequencyToOutputAccelerationMap.end(),

@@ -28,11 +28,6 @@ import android.hardware.graphics.composer3.LutProperties;
 @VintfStability
 parcelable Lut {
     /**
-     * The layer which this commands refer to.
-     */
-    long layer;
-
-    /**
      * A handle to a memory region.
      * If the file descriptor is not set, this means that the HWC doesn't specify a Lut.
      *

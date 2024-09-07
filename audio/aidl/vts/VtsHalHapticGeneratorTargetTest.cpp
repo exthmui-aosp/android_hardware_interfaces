@@ -78,6 +78,8 @@ const std::vector<float> kResonantFrequencyValues = {MIN_FLOAT, 100, MAX_FLOAT};
 const std::vector<float> kQFactorValues = {MIN_FLOAT, 100, MAX_FLOAT};
 const std::vector<float> kMaxAmplitude = {MIN_FLOAT, 100, MAX_FLOAT};
 
+constexpr int HAPTIC_SCALE_FACTORS_EFFECT_MIN_VERSION = 3;
+
 class HapticGeneratorParamTest : public ::testing::TestWithParam<HapticGeneratorParamTestParam>,
                                  public EffectHelper {
   public:
@@ -95,6 +97,7 @@ class HapticGeneratorParamTest : public ::testing::TestWithParam<HapticGenerator
     void SetUp() override {
         ASSERT_NE(nullptr, mFactory);
         ASSERT_NO_FATAL_FAILURE(create(mFactory, mEffect, mDescriptor));
+        EXPECT_STATUS(EX_NONE, mEffect->getInterfaceVersion(&mEffectInterfaceVersion));
 
         Parameter::Common common = createParamCommon(
                 0 /* session */, 1 /* ioHandle */, 44100 /* iSampleRate */, 44100 /* oSampleRate */,
@@ -113,6 +116,7 @@ class HapticGeneratorParamTest : public ::testing::TestWithParam<HapticGenerator
     std::shared_ptr<IFactory> mFactory;
     std::shared_ptr<IEffect> mEffect;
     Descriptor mDescriptor;
+    int mEffectInterfaceVersion;
     int mParamHapticScaleId = 0;
     HapticGenerator::VibratorScale mParamVibratorScale = HapticGenerator::VibratorScale::MUTE;
     float mParamScaleFactor = HapticGenerator::HapticScale::UNDEFINED_SCALE_FACTOR;
@@ -148,11 +152,15 @@ class HapticGeneratorParamTest : public ::testing::TestWithParam<HapticGenerator
     void addHapticScaleParam(int id, HapticGenerator::VibratorScale scale, float scaleFactor,
                              float adaptiveScaleFactor) {
         HapticGenerator setHg;
-        std::vector<HapticGenerator::HapticScale> hapticScales = {
-                {.id = id,
-                 .scale = scale,
-                 .scaleFactor = scaleFactor,
-                 .adaptiveScaleFactor = adaptiveScaleFactor}};
+        std::vector<HapticGenerator::HapticScale> hapticScales;
+        if (mEffectInterfaceVersion >= HAPTIC_SCALE_FACTORS_EFFECT_MIN_VERSION) {
+            hapticScales = {{.id = id,
+                             .scale = scale,
+                             .scaleFactor = scaleFactor,
+                             .adaptiveScaleFactor = adaptiveScaleFactor}};
+        } else {
+            hapticScales = {{.id = id, .scale = scale}};
+        }
         setHg.set<HapticGenerator::hapticScales>(hapticScales);
         mTags.push_back({HapticGenerator::hapticScales, setHg});
     }

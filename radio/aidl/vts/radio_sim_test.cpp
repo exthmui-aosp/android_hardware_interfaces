@@ -531,7 +531,7 @@ TEST_P(RadioSimTest, setAllowedCarriers) {
         EXPECT_EQ(RadioError::NONE, radioRsp_sim->rspInfo.error);
 
         if (aidl_version <= 2) {
-            EXPECT_EQ(1, radioRsp_sim->carrierRestrictionsResp.allowedCarriers.size());
+            ASSERT_EQ(1, radioRsp_sim->carrierRestrictionsResp.allowedCarriers.size());
             EXPECT_EQ(0, radioRsp_sim->carrierRestrictionsResp.excludedCarriers.size());
 
             ASSERT_TRUE(std::string("123") ==
@@ -543,7 +543,7 @@ TEST_P(RadioSimTest, setAllowedCarriers) {
             ASSERT_TRUE(radioRsp_sim->carrierRestrictionsResp.allowedCarriersPrioritized);
             EXPECT_EQ(SimLockMultiSimPolicy::NO_MULTISIM_POLICY, radioRsp_sim->multiSimPolicyResp);
         } else {
-            EXPECT_EQ(1, radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList.size());
+            ASSERT_EQ(1, radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList.size());
             EXPECT_EQ(0, radioRsp_sim->carrierRestrictionsResp.excludedCarrierInfoList.size());
             ASSERT_TRUE(std::string("321") ==
                         radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList[0].mcc);

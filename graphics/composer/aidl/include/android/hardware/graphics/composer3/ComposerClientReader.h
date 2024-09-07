@@ -186,7 +186,7 @@ class ComposerClientReader {
     }
 
     // Get the lut(s) requested by hardware composer.
-    std::vector<Lut> takeDisplayLuts(int64_t display) {
+    std::vector<DisplayLuts::LayerLut> takeDisplayLuts(int64_t display) {
         LOG_ALWAYS_FATAL_IF(mDisplay && display != *mDisplay);
         auto found = mReturnData.find(display);
 
@@ -196,7 +196,7 @@ class ComposerClientReader {
         }
 
         ReturnData& data = found->second;
-        return std::move(data.luts);
+        return std::move(data.layerLuts);
     }
 
   private:
@@ -247,10 +247,11 @@ class ComposerClientReader {
     void parseSetDisplayLuts(DisplayLuts&& displayLuts) {
         LOG_ALWAYS_FATAL_IF(mDisplay && displayLuts.display != *mDisplay);
         auto& data = mReturnData[displayLuts.display];
-        for (auto& lut : displayLuts.luts) {
-            if (lut.pfd.get() >= 0) {
-                data.luts.push_back({lut.layer, ndk::ScopedFileDescriptor(lut.pfd.release()),
-                                     lut.lutProperties});
+        for (auto& layerLut : displayLuts.layerLuts) {
+            if (layerLut.lut.pfd.get() >= 0) {
+                data.layerLuts.push_back(
+                        {layerLut.layer, Lut{ndk::ScopedFileDescriptor(layerLut.lut.pfd.release()),
+                                             layerLut.lut.lutProperties}});
             }
         }
     }
@@ -266,7 +267,7 @@ class ComposerClientReader {
                 .clientTargetProperty = {common::PixelFormat::RGBA_8888, Dataspace::UNKNOWN},
                 .brightness = 1.f,
         };
-        std::vector<Lut> luts;
+        std::vector<DisplayLuts::LayerLut> layerLuts;
     };
 
     std::vector<CommandError> mErrors;

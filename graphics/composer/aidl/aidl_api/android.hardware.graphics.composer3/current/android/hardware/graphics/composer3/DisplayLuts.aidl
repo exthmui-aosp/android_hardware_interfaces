@@ -35,5 +35,9 @@ package android.hardware.graphics.composer3;
 @VintfStability
 parcelable DisplayLuts {
   long display;
-  android.hardware.graphics.composer3.Lut[] luts;
+  android.hardware.graphics.composer3.DisplayLuts.LayerLut[] layerLuts;
+  parcelable LayerLut {
+    long layer;
+    android.hardware.graphics.composer3.Lut lut;
+  }
 }

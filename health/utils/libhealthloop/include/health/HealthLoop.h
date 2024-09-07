@@ -93,6 +93,7 @@ class HealthLoop {
     void WakeAlarmInit();
     void WakeAlarmEvent(uint32_t);
     void UeventInit();
+    bool RecvUevents();
     void UeventEvent(uint32_t);
     void WakeAlarmSetInterval(int interval);
     void PeriodicChores();
