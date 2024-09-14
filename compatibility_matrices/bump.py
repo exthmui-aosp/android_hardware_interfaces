@@ -111,6 +111,25 @@ class Bump(object):
             "kernel_configs", "-a", " ".join(next_kernel_configs), android_bp
         ])
 
+        # update the SYSTEM_MATRIX_DEPS variable and the phony module's
+        # product_variables entry.
+        lines = []
+        with open(android_bp) as f:
+            for line in f:
+              if f"    \"{self.device_module_name}\",\n" in line:
+                  lines.append(f"    \"{self.current_module_name}\",\n")
+
+              if f"                \"{self.current_module_name}\",\n" in line:
+                  lines.append(f"                \"{self.next_module_name}\",\n")
+              else:
+                  lines.append(line)
+
+        with open(android_bp, "w") as f:
+            f.write("".join(lines))
+
+
+    # This Android.mk file may be deprecated soon and the functionality is
+    # replaced by the soong phony module system_compatibility_matrix.xml.
     def edit_android_mk(self):
         android_mk = self.interfaces_dir / "compatibility_matrices/Android.mk"
         lines = []

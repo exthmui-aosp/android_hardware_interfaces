@@ -9,6 +9,7 @@ package {
 
 aidl_interface {
     name: "android.hardware.drm.common",
+    host_supported: true,
     vendor_available: true,
     srcs: ["android/hardware/drm/*.aidl"],
     stability: "vintf",
@@ -21,6 +22,9 @@ aidl_interface {
         },
         ndk: {
             min_sdk_version: "34",
+        },
+        rust: {
+            enabled: true,
         },
     },
     double_loadable: true,

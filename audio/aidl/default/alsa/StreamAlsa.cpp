@@ -75,6 +75,10 @@ StreamAlsa::~StreamAlsa() {
     }
     decltype(mAlsaDeviceProxies) alsaDeviceProxies;
     for (const auto& device : getDeviceProfiles()) {
+        if ((device.direction == PCM_OUT && mIsInput) ||
+            (device.direction == PCM_IN && !mIsInput)) {
+            continue;
+        }
         alsa::DeviceProxy proxy;
         if (device.isExternal) {
             // Always ask alsa configure as required since the configuration should be supported
@@ -91,6 +95,9 @@ StreamAlsa::~StreamAlsa() {
             return ::android::NO_INIT;
         }
         alsaDeviceProxies.push_back(std::move(proxy));
+    }
+    if (alsaDeviceProxies.empty()) {
+        return ::android::NO_INIT;
     }
     mAlsaDeviceProxies = std::move(alsaDeviceProxies);
     return ::android::OK;

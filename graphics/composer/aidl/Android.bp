@@ -37,6 +37,7 @@ aidl_interface {
     imports: [
         "android.hardware.graphics.common-V5",
         "android.hardware.common-V2",
+        "android.hardware.drm.common-V1",
     ],
     backend: {
         cpp: {

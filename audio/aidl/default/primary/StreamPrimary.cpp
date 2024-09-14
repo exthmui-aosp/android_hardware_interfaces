@@ -15,7 +15,11 @@
  */
 
 #define LOG_TAG "AHAL_StreamPrimary"
+
+#include <cstdio>
+
 #include <android-base/logging.h>
+#include <android-base/parseint.h>
 #include <android-base/properties.h>
 #include <audio_utils/clock.h>
 #include <error/Result.h>
@@ -28,6 +32,7 @@
 using aidl::android::hardware::audio::common::SinkMetadata;
 using aidl::android::hardware::audio::common::SourceMetadata;
 using aidl::android::media::audio::common::AudioDevice;
+using aidl::android::media::audio::common::AudioDeviceAddress;
 using aidl::android::media::audio::common::AudioDeviceDescription;
 using aidl::android::media::audio::common::AudioDeviceType;
 using aidl::android::media::audio::common::AudioOffloadInfo;
@@ -36,9 +41,15 @@ using android::base::GetBoolProperty;
 
 namespace aidl::android::hardware::audio::core {
 
-StreamPrimary::StreamPrimary(StreamContext* context, const Metadata& metadata)
+const static constexpr std::pair<int, int> kDefaultCardAndDeviceId = {
+        primary::PrimaryMixer::kAlsaCard, primary::PrimaryMixer::kAlsaDevice};
+
+StreamPrimary::StreamPrimary(
+        StreamContext* context, const Metadata& metadata,
+        const std::vector<::aidl::android::media::audio::common::AudioDevice>& devices)
     : StreamAlsa(context, metadata, 3 /*readWriteRetries*/),
-      mIsAsynchronous(!!getContext().getAsyncCallback()) {
+      mIsAsynchronous(!!getContext().getAsyncCallback()),
+      mCardAndDeviceId(getCardAndDeviceId(devices)) {
     context->startStreamDataProcessor();
 }
 
@@ -92,17 +103,27 @@ StreamPrimary::StreamPrimary(StreamContext* context, const Metadata& metadata)
 }
 
 std::vector<alsa::DeviceProfile> StreamPrimary::getDeviceProfiles() {
-    static const std::vector<alsa::DeviceProfile> kBuiltInSource{
-            alsa::DeviceProfile{.card = primary::PrimaryMixer::kAlsaCard,
-                                .device = primary::PrimaryMixer::kAlsaDevice,
-                                .direction = PCM_IN,
+    return {alsa::DeviceProfile{.card = mCardAndDeviceId.first,
+                                .device = mCardAndDeviceId.second,
+                                .direction = mIsInput ? PCM_IN : PCM_OUT,
                                 .isExternal = false}};
-    static const std::vector<alsa::DeviceProfile> kBuiltInSink{
-            alsa::DeviceProfile{.card = primary::PrimaryMixer::kAlsaCard,
-                                .device = primary::PrimaryMixer::kAlsaDevice,
-                                .direction = PCM_OUT,
-                                .isExternal = false}};
-    return mIsInput ? kBuiltInSource : kBuiltInSink;
+}
+
+std::pair<int, int> StreamPrimary::getCardAndDeviceId(const std::vector<AudioDevice>& devices) {
+    if (devices.empty() || devices[0].address.getTag() != AudioDeviceAddress::id) {
+        return kDefaultCardAndDeviceId;
+    }
+    std::string deviceAddress = devices[0].address.get<AudioDeviceAddress::id>();
+    std::pair<int, int> cardAndDeviceId;
+    if (const size_t suffixPos = deviceAddress.rfind("CARD_");
+        suffixPos == std::string::npos ||
+        sscanf(deviceAddress.c_str() + suffixPos, "CARD_%d_DEV_%d", &cardAndDeviceId.first,
+               &cardAndDeviceId.second) != 2) {
+        return kDefaultCardAndDeviceId;
+    }
+    LOG(DEBUG) << __func__ << ": parsed with card id " << cardAndDeviceId.first << ", device id "
+               << cardAndDeviceId.second;
+    return cardAndDeviceId;
 }
 
 StreamInPrimary::StreamInPrimary(StreamContext&& context, const SinkMetadata& sinkMetadata,
@@ -144,7 +165,7 @@ std::unique_ptr<StreamCommonInterfaceEx> StreamInPrimary::createNewStream(
                 new InnerStreamWrapper<StreamStub>(context, metadata));
     }
     return std::unique_ptr<StreamCommonInterfaceEx>(
-            new InnerStreamWrapper<StreamPrimary>(context, metadata));
+            new InnerStreamWrapper<StreamPrimary>(context, metadata, devices));
 }
 
 ndk::ScopedAStatus StreamInPrimary::getHwGain(std::vector<float>* _aidl_return) {
@@ -215,7 +236,7 @@ std::unique_ptr<StreamCommonInterfaceEx> StreamOutPrimary::createNewStream(
                 new InnerStreamWrapper<StreamStub>(context, metadata));
     }
     return std::unique_ptr<StreamCommonInterfaceEx>(
-            new InnerStreamWrapper<StreamPrimary>(context, metadata));
+            new InnerStreamWrapper<StreamPrimary>(context, metadata, devices));
 }
 
 ndk::ScopedAStatus StreamOutPrimary::getHwVolume(std::vector<float>* _aidl_return) {

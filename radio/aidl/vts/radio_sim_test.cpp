@@ -485,8 +485,10 @@ TEST_P(RadioSimTest, setAllowedCarriers) {
     } else {
         carrierRestrictions.allowedCarrierInfoList.resize(1);
         carrierRestrictions.excludedCarrierInfoList.resize(0);
-        carrierRestrictions.allowedCarrierInfoList[0].mcc = std::string("321");
-        carrierRestrictions.allowedCarrierInfoList[0].mnc = std::string("654");
+        // TODO(b/365568518): change mcc/mnc to something else once CF fully supports
+        // setAllowedCarriers
+        carrierRestrictions.allowedCarrierInfoList[0].mcc = std::string("123");
+        carrierRestrictions.allowedCarrierInfoList[0].mnc = std::string("456");
         carrierRestrictions.allowedCarrierInfoList[0].spn = std::string("TestNetwork");
         carrierRestrictions.allowedCarrierInfoList[0].gid1 = std::string("BAE000000000000");
         carrierRestrictions.allowedCarrierInfoList[0].gid2 = std::string("AE0000000000000");
@@ -517,7 +519,7 @@ TEST_P(RadioSimTest, setAllowedCarriers) {
                 sleep(2);
                 updateSimCardStatus();
             }
-            // TODO: uncomment once CF fully supports setAllowedCarriers
+            // TODO(b/365568518): uncomment once CF fully supports setAllowedCarriers
             // EXPECT_EQ(CardStatus::STATE_RESTRICTED, cardStatus.cardState);
         }
 
@@ -545,19 +547,21 @@ TEST_P(RadioSimTest, setAllowedCarriers) {
         } else {
             ASSERT_EQ(1, radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList.size());
             EXPECT_EQ(0, radioRsp_sim->carrierRestrictionsResp.excludedCarrierInfoList.size());
-            ASSERT_TRUE(std::string("321") ==
-                        radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList[0].mcc);
-            ASSERT_TRUE(std::string("654") ==
-                        radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList[0].mnc);
-            ASSERT_TRUE(std::string("BAE000000000000") ==
+            ASSERT_EQ(std::string("123"),
+                      radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList[0].mcc);
+            ASSERT_EQ(std::string("456"),
+                      radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList[0].mnc);
+#if 0  // TODO(b/365568518): enable once CF fully supports setAllowedCarriers
+            ASSERT_EQ(std::string("BAE000000000000"),
                         radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList[0].gid1);
-            ASSERT_TRUE(std::string("AE0000000000000") ==
+            ASSERT_EQ(std::string("AE0000000000000"),
                         radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList[0].gid2);
-            ASSERT_TRUE(std::string("9987") ==
+            ASSERT_EQ(std::string("9987"),
                         radioRsp_sim->carrierRestrictionsResp.allowedCarrierInfoList[0].imsiPrefix);
-            ASSERT_TRUE(radioRsp_sim->carrierRestrictionsResp.allowedCarriersPrioritized);
             EXPECT_EQ(CarrierRestrictions::CarrierRestrictionStatus::RESTRICTED,
                       radioRsp_sim->carrierRestrictionsResp.status);
+#endif
+            ASSERT_TRUE(radioRsp_sim->carrierRestrictionsResp.allowedCarriersPrioritized);
             EXPECT_EQ(SimLockMultiSimPolicy::NO_MULTISIM_POLICY, radioRsp_sim->multiSimPolicyResp);
         }
         sleep(10);

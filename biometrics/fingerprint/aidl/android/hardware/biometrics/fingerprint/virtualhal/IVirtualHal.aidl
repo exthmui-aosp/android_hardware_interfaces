@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package android.hardware.biometrics.fingerprint;
+package android.hardware.biometrics.fingerprint.virtualhal;
 
 import android.hardware.biometrics.common.SensorStrength;
-import android.hardware.biometrics.fingerprint.AcquiredInfoAndVendorCode;
 import android.hardware.biometrics.fingerprint.FingerprintSensorType;
-import android.hardware.biometrics.fingerprint.NextEnrollment;
+import android.hardware.biometrics.fingerprint.IFingerprint;
 import android.hardware.biometrics.fingerprint.SensorLocation;
+import android.hardware.biometrics.fingerprint.virtualhal.AcquiredInfoAndVendorCode;
+import android.hardware.biometrics.fingerprint.virtualhal.NextEnrollment;
 
 /**
  * @hide
  */
-@VintfStability
-oneway interface IVirtualHal {
+interface IVirtualHal {
     /**
      * The operation failed due to invalid input parameters, the error messages should
      * gives more details
@@ -315,4 +315,5 @@ oneway interface IVirtualHal {
     void setDetectInteraction(in boolean v);
     void setDisplayTouch(in boolean v);
     void setControlIllumination(in boolean v);
+    IFingerprint getFingerprintHal();
 }

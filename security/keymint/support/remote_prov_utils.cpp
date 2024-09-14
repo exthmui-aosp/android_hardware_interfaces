@@ -26,7 +26,6 @@
 #include <android-base/macros.h>
 #include <android-base/properties.h>
 #include <cppbor.h>
-#include <hwtrust/hwtrust.h>
 #include <json/json.h>
 #include <keymaster/km_openssl/ec_key.h>
 #include <keymaster/km_openssl/ecdsa_operation.h>
@@ -325,7 +324,8 @@ bytevec getProdEekChain(int32_t supportedEekCurve) {
 }
 
 ErrMsgOr<std::vector<BccEntryData>> validateBcc(const cppbor::Array* bcc,
-                                                hwtrust::DiceChain::Kind kind, bool allowAnyMode) {
+                                                hwtrust::DiceChain::Kind kind, bool allowAnyMode,
+                                                bool allowDegenerate) {
     auto encodedBcc = bcc->encode();
 
     // Use ro.build.type instead of ro.debuggable because ro.debuggable=1 for VTS testing
@@ -336,6 +336,11 @@ ErrMsgOr<std::vector<BccEntryData>> validateBcc(const cppbor::Array* bcc,
 
     auto chain = hwtrust::DiceChain::Verify(encodedBcc, kind, allowAnyMode);
     if (!chain.ok()) return chain.error().message();
+
+    if (!allowDegenerate && !chain->IsProper()) {
+        return "DICE chain is degenerate";
+    }
+
     auto keys = chain->CosePublicKeys();
     if (!keys.ok()) return keys.error().message();
     std::vector<BccEntryData> result;
@@ -701,7 +706,8 @@ ErrMsgOr<std::vector<BccEntryData>> verifyProtectedData(
     }
 
     // BCC is [ pubkey, + BccEntry]
-    auto bccContents = validateBcc(bcc->asArray(), hwtrust::DiceChain::Kind::kVsr13, allowAnyMode);
+    auto bccContents = validateBcc(bcc->asArray(), hwtrust::DiceChain::Kind::kVsr13, allowAnyMode,
+                                   /*allowDegenerate=*/true);
     if (!bccContents) {
         return bccContents.message() + "\n" + prettyPrint(bcc.get());
     }
@@ -997,7 +1003,8 @@ ErrMsgOr<hwtrust::DiceChain::Kind> getDiceChainKind() {
 
 ErrMsgOr<bytevec> parseAndValidateAuthenticatedRequest(const std::vector<uint8_t>& request,
                                                        const std::vector<uint8_t>& challenge,
-                                                       bool allowAnyMode = false) {
+                                                       bool allowAnyMode = false,
+                                                       bool allowDegenerate = true) {
     auto [parsedRequest, _, csrErrMsg] = cppbor::parse(request);
     if (!parsedRequest) {
         return csrErrMsg;
@@ -1035,19 +1042,20 @@ ErrMsgOr<bytevec> parseAndValidateAuthenticatedRequest(const std::vector<uint8_t
         return diceChainKind.message();
     }
 
-    auto diceContents = validateBcc(diceCertChain, *diceChainKind, allowAnyMode);
+    auto diceContents = validateBcc(diceCertChain, *diceChainKind, allowAnyMode, allowDegenerate);
     if (!diceContents) {
         return diceContents.message() + "\n" + prettyPrint(diceCertChain);
     }
 
-    auto& udsPub = diceContents->back().pubKey;
+    auto udsPub = diceCertChain->get(0)->asMap()->encode();
+    auto& kmDiceKey = diceContents->back().pubKey;
 
     auto error = validateUdsCerts(*udsCerts, udsPub);
     if (!error.empty()) {
         return error;
     }
 
-    auto signedPayload = verifyAndParseCoseSign1(signedData, udsPub, {} /* aad */);
+    auto signedPayload = verifyAndParseCoseSign1(signedData, kmDiceKey, {} /* aad */);
     if (!signedPayload) {
         return signedPayload.message();
     }
@@ -1064,7 +1072,8 @@ ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyCsr(const cppbor::Array& keysToSi
                                                    const std::vector<uint8_t>& csr,
                                                    IRemotelyProvisionedComponent* provisionable,
                                                    const std::vector<uint8_t>& challenge,
-                                                   bool isFactory, bool allowAnyMode = false) {
+                                                   bool isFactory, bool allowAnyMode = false,
+                                                   bool allowDegenerate = true) {
     RpcHardwareInfo info;
     provisionable->getHardwareInfo(&info);
     if (info.versionNumber != 3) {
@@ -1072,7 +1081,8 @@ ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyCsr(const cppbor::Array& keysToSi
                ") does not match expected version (3).";
     }
 
-    auto csrPayload = parseAndValidateAuthenticatedRequest(csr, challenge, allowAnyMode);
+    auto csrPayload =
+            parseAndValidateAuthenticatedRequest(csr, challenge, allowAnyMode, allowDegenerate);
     if (!csrPayload) {
         return csrPayload.message();
     }
@@ -1082,8 +1092,10 @@ ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyCsr(const cppbor::Array& keysToSi
 
 ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyFactoryCsr(
         const cppbor::Array& keysToSign, const std::vector<uint8_t>& csr,
-        IRemotelyProvisionedComponent* provisionable, const std::vector<uint8_t>& challenge) {
-    return verifyCsr(keysToSign, csr, provisionable, challenge, /*isFactory=*/true);
+        IRemotelyProvisionedComponent* provisionable, const std::vector<uint8_t>& challenge,
+        bool allowDegenerate) {
+    return verifyCsr(keysToSign, csr, provisionable, challenge, /*isFactory=*/true,
+                     /*allowAnyMode=*/false, allowDegenerate);
 }
 
 ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyProductionCsr(

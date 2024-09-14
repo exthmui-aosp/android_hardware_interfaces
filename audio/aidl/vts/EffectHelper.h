@@ -454,6 +454,17 @@ class EffectHelper {
         mOutputSamples = common.output.frameCount * mOutputFrameSize / sizeof(float);
     }
 
+    void generateInput(std::vector<float>& input, float inputFrequency, float samplingFrequency,
+                       size_t inputSize = 0) {
+        if (inputSize == 0 || inputSize > input.size()) {
+            inputSize = input.size();
+        }
+
+        for (size_t i = 0; i < inputSize; i++) {
+            input[i] = sin(2 * M_PI * inputFrequency * i / samplingFrequency);
+        }
+    }
+
     bool mIsSpatializer;
     Descriptor mDescriptor;
     size_t mInputFrameSize, mOutputFrameSize;

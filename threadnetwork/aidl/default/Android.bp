@@ -14,6 +14,8 @@ cc_binary {
     vendor: true,
     relative_install_path: "hw",
 
+    defaults: ["android.hardware.threadnetwork-service.defaults"],
+
     shared_libs: [
         "libbinder_ndk",
         "liblog",
@@ -41,6 +43,17 @@ cc_binary {
         "thread_chip.cpp",
         "utils.cpp",
     ],
+}
+
+cc_defaults {
+    name: "android.hardware.threadnetwork-service.defaults",
+    product_variables: {
+        debuggable: {
+            cppflags: [
+                "-DDEV_BUILD",
+            ],
+        },
+    },
 }
 
 cc_fuzz {

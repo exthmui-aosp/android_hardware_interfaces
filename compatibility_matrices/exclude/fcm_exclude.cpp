@@ -149,6 +149,7 @@ bool ShouldCheckMissingAidlHalsInFcm(const std::string& packageAndVersion) {
             "android.hardware.radio@",
             "android.hardware.uwb.fira_android@",
             "android.hardware.wifi.common@",
+            "android.hardware.biometrics.fingerprint.virtualhal@",
 
             // Test packages are exempted.
             "android.hardware.tests.",

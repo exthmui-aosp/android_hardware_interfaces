@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package android.hardware.biometrics.fingerprint;
+package android.hardware.biometrics.fingerprint.virtualhal;
 
-import android.hardware.biometrics.fingerprint.AcquiredInfo;
+import android.hardware.biometrics.fingerprint.virtualhal.AcquiredInfoAndVendorCode;
 
 /**
  * @hide
  */
-@VintfStability
-union AcquiredInfoAndVendorCode {
+parcelable EnrollmentProgressStep {
     /**
-     * Acquired info as specified in AcqauiredInfo.aidl
+     * The duration of the enrollment step in milli-seconds
      */
-    AcquiredInfo acquiredInfo = AcquiredInfo.UNKNOWN;
+    int durationMs;
 
     /**
-     * Vendor specific code
+     * The sequence of acquired info and vendor code to be issued by HAL during the step.
+     * The codes are evenly spreaded over the duration
      */
-    int vendorCode;
+    AcquiredInfoAndVendorCode[] acquiredInfoAndVendorCodes;
 }

@@ -2975,15 +2975,15 @@ class StreamLogicDefaultDriver : public StreamLogicDriver {
 
     // The five methods below is intended to be called after the worker
     // thread has joined, thus no extra synchronization is needed.
-    bool hasObservablePositionIncrease() const { return mObservablePositionIncrease; }
-    bool hasObservableRetrogradePosition() const { return mRetrogradeObservablePosition; }
+    bool hasObservablePositionIncrease() const { return mObservable.hasPositionIncrease; }
+    bool hasObservableRetrogradePosition() const { return mObservable.hasRetrogradePosition; }
     bool hasHardwarePositionIncrease() const {
         // For non-MMap, always return true to pass the validation.
-        return mIsMmap ? mHardwarePositionIncrease : true;
+        return mIsMmap ? mHardware.hasPositionIncrease : true;
     }
     bool hasHardwareRetrogradePosition() const {
         // For non-MMap, always return false to pass the validation.
-        return mIsMmap ? mRetrogradeHardwarePosition : false;
+        return mIsMmap ? mHardware.hasRetrogradePosition : false;
     }
     std::string getUnexpectedStateTransition() const { return mUnexpectedTransition; }
 
@@ -3011,25 +3011,9 @@ class StreamLogicDefaultDriver : public StreamLogicDriver {
     }
     bool interceptRawReply(const StreamDescriptor::Reply&) override { return false; }
     bool processValidReply(const StreamDescriptor::Reply& reply) override {
-        if (reply.observable.frames != StreamDescriptor::Position::UNKNOWN) {
-            if (mPreviousObservableFrames.has_value()) {
-                if (reply.observable.frames > mPreviousObservableFrames.value()) {
-                    mObservablePositionIncrease = true;
-                } else if (reply.observable.frames < mPreviousObservableFrames.value()) {
-                    mRetrogradeObservablePosition = true;
-                }
-            }
-            mPreviousObservableFrames = reply.observable.frames;
-        }
+        mObservable.update(reply.observable.frames);
         if (mIsMmap) {
-            if (mPreviousHardwareFrames.has_value()) {
-                if (reply.hardware.frames > mPreviousHardwareFrames.value()) {
-                    mHardwarePositionIncrease = true;
-                } else if (reply.hardware.frames < mPreviousHardwareFrames.value()) {
-                    mRetrogradeHardwarePosition = true;
-                }
-            }
-            mPreviousHardwareFrames = reply.hardware.frames;
+            mHardware.update(reply.hardware.frames);
         }
 
         auto expected = mCommands->getExpectedStates();
@@ -3054,16 +3038,30 @@ class StreamLogicDefaultDriver : public StreamLogicDriver {
     }
 
   protected:
+    struct FramesCounter {
+        std::optional<int64_t> previous;
+        bool hasPositionIncrease = false;
+        bool hasRetrogradePosition = false;
+
+        void update(int64_t position) {
+            if (position == StreamDescriptor::Position::UNKNOWN) return;
+            if (previous.has_value()) {
+                if (position > previous.value()) {
+                    hasPositionIncrease = true;
+                } else if (position < previous.value()) {
+                    hasRetrogradePosition = true;
+                }
+            }
+            previous = position;
+        }
+    };
+
     std::shared_ptr<StateSequence> mCommands;
     const size_t mFrameSizeBytes;
     const bool mIsMmap;
     std::optional<StreamDescriptor::State> mPreviousState;
-    std::optional<int64_t> mPreviousObservableFrames;
-    bool mObservablePositionIncrease = false;
-    bool mRetrogradeObservablePosition = false;
-    std::optional<int64_t> mPreviousHardwareFrames;
-    bool mHardwarePositionIncrease = false;
-    bool mRetrogradeHardwarePosition = false;
+    FramesCounter mObservable;
+    FramesCounter mHardware;
     std::string mUnexpectedTransition;
 };
 
@@ -3074,8 +3072,8 @@ std::shared_ptr<StateSequence> makeBurstCommands(bool isSync);
 static bool skipStreamIoTestForMixPortConfig(const AudioPortConfig& portConfig) {
     return (portConfig.flags.value().getTag() == AudioIoFlags::input &&
             isAnyBitPositionFlagSet(portConfig.flags.value().template get<AudioIoFlags::input>(),
-                                    {AudioInputFlags::VOIP_TX, AudioInputFlags::HW_HOTWORD,
-                                     AudioInputFlags::HOTWORD_TAP})) ||
+                                    {AudioInputFlags::MMAP_NOIRQ, AudioInputFlags::VOIP_TX,
+                                     AudioInputFlags::HW_HOTWORD, AudioInputFlags::HOTWORD_TAP})) ||
            (portConfig.flags.value().getTag() == AudioIoFlags::output &&
             isAnyBitPositionFlagSet(
                     portConfig.flags.value().template get<AudioIoFlags::output>(),
@@ -3133,11 +3131,8 @@ class StreamFixtureWithWorker {
         EXPECT_FALSE(mWorker->hasError()) << mWorker->getError();
         EXPECT_EQ("", mWorkerDriver->getUnexpectedStateTransition());
         if (validatePosition) {
-            if (IOTraits<Stream>::is_input &&
-                !mStream->getStreamContext()->isMmapped() /*TODO(b/274456992) remove*/) {
-                EXPECT_TRUE(mWorkerDriver->hasObservablePositionIncrease());
-                EXPECT_TRUE(mWorkerDriver->hasHardwarePositionIncrease());
-            }
+            EXPECT_TRUE(mWorkerDriver->hasObservablePositionIncrease());
+            EXPECT_TRUE(mWorkerDriver->hasHardwarePositionIncrease());
             EXPECT_FALSE(mWorkerDriver->hasObservableRetrogradePosition());
             EXPECT_FALSE(mWorkerDriver->hasHardwareRetrogradePosition());
         }
@@ -4099,8 +4094,7 @@ class AudioStreamIo : public AudioCoreModuleBase,
         EXPECT_FALSE(worker.hasError()) << worker.getError();
         EXPECT_EQ("", driver.getUnexpectedStateTransition());
         if (ValidatePosition(stream.getDevice())) {
-            if (validatePositionIncrease &&
-                !stream.getStreamContext()->isMmapped() /*TODO(b/274456992) remove*/) {
+            if (validatePositionIncrease) {
                 EXPECT_TRUE(driver.hasObservablePositionIncrease());
                 EXPECT_TRUE(driver.hasHardwarePositionIncrease());
             }
@@ -4134,8 +4128,7 @@ class AudioStreamIo : public AudioCoreModuleBase,
         EXPECT_FALSE(worker.hasError()) << worker.getError();
         EXPECT_EQ("", driver.getUnexpectedStateTransition());
         if (ValidatePosition(stream.getDevice())) {
-            if (validatePositionIncrease &&
-                !stream.getStreamContext()->isMmapped() /*TODO(b/274456992) remove*/) {
+            if (validatePositionIncrease) {
                 EXPECT_TRUE(driver.hasObservablePositionIncrease());
                 EXPECT_TRUE(driver.hasHardwarePositionIncrease());
             }
