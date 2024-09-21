@@ -1050,6 +1050,10 @@ VhalResult<void> FakeVehicleHardware::maybeSetSpecialValue(const VehiclePropValu
     VhalResult<void> isAdasPropertyAvailableResult;
     VhalResult<bool> isCruiseControlTypeStandardResult;
     switch (propId) {
+        case toInt(VehicleProperty::DISPLAY_BRIGHTNESS):
+        case toInt(VehicleProperty::PER_DISPLAY_BRIGHTNESS):
+            ALOGD("DISPLAY_BRIGHTNESS: %s", value.toString().c_str());
+            return {};
         case toInt(VehicleProperty::AP_POWER_STATE_REPORT):
             *isSpecialValue = true;
             return setApPowerStateReport(value);

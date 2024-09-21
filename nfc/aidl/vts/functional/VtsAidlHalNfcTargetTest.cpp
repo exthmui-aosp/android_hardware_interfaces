@@ -423,6 +423,11 @@ TEST_P(NfcAidl, CheckGetConfigValues) {
         EXPECT_GE((uint8_t)configValue.defaultIsoDepRoute, MIN_OFFHOST_ROUTE_ID);
         EXPECT_LE((uint8_t)configValue.defaultIsoDepRoute, MAX_OFFHOST_ROUTE_ID);
     }
+    for (auto simPipeId : configValue.offHostSimPipeIds) {
+        LOG(INFO) << StringPrintf("offHostSimPipeId= %x", simPipeId);
+        EXPECT_GE(simPipeId, MIN_OFFHOST_ROUTE_ID);
+        EXPECT_LE(simPipeId, MAX_OFFHOST_ROUTE_ID);
+    }
 }
 
 /*

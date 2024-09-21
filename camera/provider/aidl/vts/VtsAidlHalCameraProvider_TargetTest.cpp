@@ -165,26 +165,21 @@ TEST_P(CameraAidlTest, getResourceCost) {
 
 // Validate the integrity of manual flash strength control metadata
 TEST_P(CameraAidlTest, validateManualFlashStrengthControlKeys) {
-    if (flags::camera_manual_flash_strength_control()) {
-        std::vector<std::string> cameraDeviceNames = getCameraDeviceNames(mProvider);
-        for (const auto& name : cameraDeviceNames) {
-            ALOGI("validateManualFlashStrengthControlKeys: Testing camera device %s", name.c_str());
-            CameraMetadata meta;
-            std::shared_ptr<ICameraDevice> cameraDevice;
-            openEmptyDeviceSession(name, mProvider, &mSession /*out*/, &meta /*out*/,
-                    &cameraDevice /*out*/);
-            ndk::ScopedAStatus ret = cameraDevice->getCameraCharacteristics(&meta);
-            ASSERT_TRUE(ret.isOk());
-            const camera_metadata_t* staticMeta =
-                    reinterpret_cast<const camera_metadata_t*>(meta.metadata.data());
-            verifyManualFlashStrengthControlCharacteristics(staticMeta);
-            ret = mSession->close();
-            mSession = nullptr;
-            ASSERT_TRUE(ret.isOk());
-        }
-    } else {
-        ALOGI("validateManualFlashStrengthControlKeys: Test skipped.\n");
-        GTEST_SKIP();
+    std::vector<std::string> cameraDeviceNames = getCameraDeviceNames(mProvider);
+    for (const auto& name : cameraDeviceNames) {
+        ALOGI("validateManualFlashStrengthControlKeys: Testing camera device %s", name.c_str());
+        CameraMetadata meta;
+        std::shared_ptr<ICameraDevice> cameraDevice;
+        openEmptyDeviceSession(name, mProvider, &mSession /*out*/, &meta /*out*/,
+                &cameraDevice /*out*/);
+        ndk::ScopedAStatus ret = cameraDevice->getCameraCharacteristics(&meta);
+        ASSERT_TRUE(ret.isOk());
+        const camera_metadata_t* staticMeta =
+                reinterpret_cast<const camera_metadata_t*>(meta.metadata.data());
+        verifyManualFlashStrengthControlCharacteristics(staticMeta);
+        ret = mSession->close();
+        mSession = nullptr;
+        ASSERT_TRUE(ret.isOk());
     }
 }
 

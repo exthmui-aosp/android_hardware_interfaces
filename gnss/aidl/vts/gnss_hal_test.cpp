@@ -474,6 +474,10 @@ void GnssHalTest::collectMeasurementIntervals(const sp<GnssMeasurementCallbackAi
         GnssData lastGnssData;
         ASSERT_TRUE(callback->gnss_data_cbq_.retrieve(lastGnssData, timeoutSeconds));
         EXPECT_EQ(callback->gnss_data_cbq_.calledCount(), i + 1);
+        if (i <= 2 && lastGnssData.measurements.size() == 0) {
+            // Allow 3 seconds tolerance for empty measurement
+            continue;
+        }
         ASSERT_TRUE(lastGnssData.measurements.size() > 0);
 
         // Validity check GnssData fields
@@ -519,6 +523,10 @@ void GnssHalTest::checkGnssDataFields(const sp<GnssMeasurementCallbackAidl>& cal
         GnssData lastGnssData;
         ASSERT_TRUE(callback->gnss_data_cbq_.retrieve(lastGnssData, timeoutSeconds));
         EXPECT_EQ(callback->gnss_data_cbq_.calledCount(), i + 1);
+        if (i <= 2 && lastGnssData.measurements.size() == 0) {
+            // Allow 3 seconds tolerance to report empty measurement
+            continue;
+        }
         ASSERT_TRUE(lastGnssData.measurements.size() > 0);
 
         // Validity check GnssData fields

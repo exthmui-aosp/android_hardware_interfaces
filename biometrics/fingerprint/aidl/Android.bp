@@ -31,6 +31,9 @@ aidl_interface {
                 "//apex_available:anyapex",
             ],
         },
+        rust: {
+            enabled: true,
+        },
     },
     versions_with_info: [
         {

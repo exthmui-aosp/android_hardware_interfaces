@@ -670,7 +670,7 @@
     </hal>
     <hal format="aidl">
         <name>android.hardware.wifi.supplicant</name>
-        <version>2-3</version>
+        <version>3-4</version>
         <interface>
             <name>ISupplicant</name>
             <instance>default</instance>

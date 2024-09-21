@@ -115,6 +115,10 @@ rust_protobuf {
     host_supported: true,
     vendor_available: true,
     product_available: true,
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
     exported_include_dirs: ["."],
     proto_flags: [
         "-I external/protobuf/src",

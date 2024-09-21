@@ -149,22 +149,6 @@ class DownmixEffectHelper : public EffectHelper {
         mOutputBuffer.resize(mOutputBufferSize);
     }
 
-    // Generate mInputBuffer values between -kMaxDownmixSample to kMaxDownmixSample
-    void generateInputBuffer(size_t position, bool isStrip) {
-        size_t increment;
-        if (isStrip)
-            // Fill input at all the channels
-            increment = 1;
-        else
-            // Fill input at only one channel
-            increment = mInputChannelCount;
-
-        for (size_t i = position; i < mInputBuffer.size(); i += increment) {
-            mInputBuffer[i] =
-                    ((static_cast<float>(std::rand()) / RAND_MAX) * 2 - 1) * kMaxDownmixSample;
-        }
-    }
-
     bool isLayoutValid(int32_t inputLayout) {
         if (inputLayout & kMaxChannelMask) {
             return false;
@@ -365,7 +349,8 @@ TEST_P(DownmixFoldDataTest, DownmixProcessData) {
 
     for (int32_t channel : supportedChannels) {
         size_t position = std::distance(supportedChannels.begin(), supportedChannels.find(channel));
-        generateInputBuffer(position, false /*isStripe*/);
+        generateInputBuffer(mInputBuffer, position, false /*isStripe*/,
+                            mInputChannelCount /*channelCount*/, kMaxDownmixSample);
         ASSERT_NO_FATAL_FAILURE(
                 processAndWriteToOutput(mInputBuffer, mOutputBuffer, mEffect, &mOpenEffectReturn));
         validateOutput(channel, position);
@@ -417,7 +402,8 @@ TEST_P(DownmixStripDataTest, DownmixProcessData) {
     ASSERT_NO_FATAL_FAILURE(setParameters(Downmix::Type::STRIP));
 
     // Generate input buffer, call process and compare outputs
-    generateInputBuffer(0 /*position*/, true /*isStripe*/);
+    generateInputBuffer(mInputBuffer, 0 /*position*/, true /*isStripe*/,
+                        mInputChannelCount /*channelCount*/, kMaxDownmixSample);
     ASSERT_NO_FATAL_FAILURE(
             processAndWriteToOutput(mInputBuffer, mOutputBuffer, mEffect, &mOpenEffectReturn));
     validateOutput();

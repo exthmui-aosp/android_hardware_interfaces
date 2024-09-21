@@ -988,7 +988,16 @@ TEST_P(BluetoothAidlTest, CallInitializeTwice) {
   ASSERT_EQ(status, std::future_status::ready);
 }
 
+// @VsrTest = 5.3.14-001
+// @VsrTest = 5.3.14-002
+// @VsrTest = 5.3.14-004
 TEST_P(BluetoothAidlTest, Vsr_Bluetooth5Requirements) {
+  int api_level = get_vsr_api_level();
+  if (api_level < __ANDROID_API_U__) {
+    GTEST_SKIP() << "API level is lower than 34";
+    return;
+  }
+
   std::vector<uint8_t> version_event;
   send_and_wait_for_cmd_complete(ReadLocalVersionInformationBuilder::Create(),
                                  version_event);
@@ -998,10 +1007,12 @@ TEST_P(BluetoothAidlTest, Vsr_Bluetooth5Requirements) {
   ASSERT_TRUE(version_view.IsValid());
   ASSERT_EQ(::bluetooth::hci::ErrorCode::SUCCESS, version_view.GetStatus());
   auto version = version_view.GetLocalVersionInformation();
+
   if (version.hci_version_ < ::bluetooth::hci::HciVersion::V_5_0) {
-    // This test does not apply to controllers below 5.0
+    GTEST_SKIP() << "Bluetooth version is lower than 5.0";
     return;
-  };
+  }
+
   // When HCI version is 5.0, LMP version must also be at least 5.0
   ASSERT_GE(static_cast<int>(version.lmp_version_),
             static_cast<int>(version.hci_version_));
@@ -1014,6 +1025,16 @@ TEST_P(BluetoothAidlTest, Vsr_Bluetooth5Requirements) {
           std::make_shared<std::vector<uint8_t>>(le_features_event)))));
   ASSERT_TRUE(le_features_view.IsValid());
   ASSERT_EQ(::bluetooth::hci::ErrorCode::SUCCESS, le_features_view.GetStatus());
+
+  // CHIPSETs that set ro.board.api_level to 34 and report 5.0 or higher for
+  // the Bluetooth version through the IBluetoothHci HAL:
+  //
+  // [VSR-5.3.14-001] Must return TRUE for
+  //   - LE 2M PHY
+  //   - LE Coded PHY
+  //   - LE Advertising Extension
+  //   - LE Periodic Advertising
+  //   - LE Link Layer Privacy
   auto le_features = le_features_view.GetLeFeatures();
   ASSERT_TRUE(le_features & static_cast<uint64_t>(LLFeaturesBits::LL_PRIVACY));
   ASSERT_TRUE(le_features & static_cast<uint64_t>(LLFeaturesBits::LE_2M_PHY));
@@ -1021,6 +1042,8 @@ TEST_P(BluetoothAidlTest, Vsr_Bluetooth5Requirements) {
               static_cast<uint64_t>(LLFeaturesBits::LE_CODED_PHY));
   ASSERT_TRUE(le_features &
               static_cast<uint64_t>(LLFeaturesBits::LE_EXTENDED_ADVERTISING));
+  ASSERT_TRUE(le_features &
+              static_cast<uint64_t>(LLFeaturesBits::LE_PERIODIC_ADVERTISING));
 
   std::vector<uint8_t> num_adv_set_event;
   send_and_wait_for_cmd_complete(
@@ -1034,6 +1057,10 @@ TEST_P(BluetoothAidlTest, Vsr_Bluetooth5Requirements) {
   ASSERT_EQ(::bluetooth::hci::ErrorCode::SUCCESS, num_adv_set_view.GetStatus());
   auto num_adv_set = num_adv_set_view.GetNumberSupportedAdvertisingSets();
 
+  // CHIPSETs that set ro.board.api_level to 34 and report 5.0 or higher for
+  // the Bluetooth version through the IBluetoothHci HAL:
+  //
+  // [VSR-5.3.14-002] MUST support at least 10 advertising sets.
   if (isTv() && get_vsr_api_level() == __ANDROID_API_U__) {
     ASSERT_GE(num_adv_set, kMinLeAdvSetForBt5ForTv);
   } else {
@@ -1050,6 +1077,11 @@ TEST_P(BluetoothAidlTest, Vsr_Bluetooth5Requirements) {
   ASSERT_EQ(::bluetooth::hci::ErrorCode::SUCCESS,
             num_resolving_list_view.GetStatus());
   auto num_resolving_list = num_resolving_list_view.GetResolvingListSize();
+
+  // CHIPSETs that set ro.board.api_level to 34 and report 5.0 or higher for
+  // the Bluetooth version through the IBluetoothHci HAL:
+  //
+  // [VSR-5.3.14-004] MUST support a resolving list size of at least 8 entries.
   ASSERT_GE(num_resolving_list, kMinLeResolvingListForBt5);
 }
 

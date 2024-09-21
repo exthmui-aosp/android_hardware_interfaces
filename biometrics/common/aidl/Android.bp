@@ -28,6 +28,9 @@ aidl_interface {
                 "//apex_available:platform",
             ],
         },
+        rust: {
+            enabled: true,
+        },
     },
     versions_with_info: [
         {

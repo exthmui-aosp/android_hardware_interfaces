@@ -419,6 +419,10 @@ TEST_P(GnssHalTest, TestGnssMeasurementExtensionAndSatellitePvt) {
         ASSERT_TRUE(callback->gnss_data_cbq_.retrieve(lastMeasurement,
                                                       kFirstGnssMeasurementTimeoutSeconds));
         EXPECT_EQ(callback->gnss_data_cbq_.calledCount(), i + 1);
+        if (i <= 2 && lastMeasurement.measurements.size() == 0) {
+            // Allow 3 seconds tolerance for empty measurement
+            continue;
+        }
         ASSERT_TRUE(lastMeasurement.measurements.size() > 0);
 
         // Validity check GnssData fields
@@ -479,6 +483,10 @@ TEST_P(GnssHalTest, TestCorrelationVector) {
         ASSERT_TRUE(callback->gnss_data_cbq_.retrieve(lastMeasurement,
                                                       kFirstGnssMeasurementTimeoutSeconds));
         EXPECT_EQ(callback->gnss_data_cbq_.calledCount(), i + 1);
+        if (i <= 2 && lastMeasurement.measurements.size() == 0) {
+            // Allow 3 seconds tolerance for empty measurement
+            continue;
+        }
         ASSERT_TRUE(lastMeasurement.measurements.size() > 0);
 
         // Validity check GnssData fields
@@ -1335,7 +1343,10 @@ TEST_P(GnssHalTest, TestGnssAgcInGnssMeasurement) {
         ASSERT_TRUE(callback->gnss_data_cbq_.retrieve(lastMeasurement,
                                                       kFirstGnssMeasurementTimeoutSeconds));
         EXPECT_EQ(callback->gnss_data_cbq_.calledCount(), i + 1);
-        ASSERT_TRUE(lastMeasurement.measurements.size() > 0);
+        if (i > 2) {
+            // Allow 3 seconds tolerance for empty measurement
+            ASSERT_TRUE(lastMeasurement.measurements.size() > 0);
+        }
 
         // Validity check GnssData fields
         checkGnssMeasurementClockFields(lastMeasurement);
@@ -1790,6 +1801,10 @@ TEST_P(GnssHalTest, TestAccumulatedDeltaRange) {
         GnssData lastGnssData;
         ASSERT_TRUE(callback->gnss_data_cbq_.retrieve(lastGnssData, 10));
         EXPECT_EQ(callback->gnss_data_cbq_.calledCount(), i + 1);
+        if (i <= 2 && lastGnssData.measurements.size() == 0) {
+            // Allow 3 seconds tolerance to report empty measurement
+            continue;
+        }
         ASSERT_TRUE(lastGnssData.measurements.size() > 0);
 
         // Validity check GnssData fields

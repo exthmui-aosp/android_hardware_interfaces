@@ -83,6 +83,8 @@ static inline std::string getPrefix(Descriptor& descriptor) {
     return prefix;
 }
 
+static constexpr float kMaxAudioSampleValue = 1;
+
 class EffectHelper {
   public:
     void create(std::shared_ptr<IFactory> factory, std::shared_ptr<IEffect>& effect,
@@ -410,6 +412,19 @@ class EffectHelper {
         for (size_t i = 0; i < testFrequencies.size(); i++) {
             binOffsets[i] = std::round(testFrequencies[i] / kBinWidth);
             testFrequencies[i] = std::round(binOffsets[i] * kBinWidth);
+        }
+    }
+
+    // Fill inputBuffer with random values between -maxAudioSampleValue to maxAudioSampleValue
+    void generateInputBuffer(std::vector<float>& inputBuffer, size_t startPosition, bool isStrip,
+                             size_t channelCount,
+                             float maxAudioSampleValue = kMaxAudioSampleValue) {
+        size_t increment = isStrip ? 1 /*Fill input at all the channels*/
+                                   : channelCount /*Fill input at only one channel*/;
+
+        for (size_t i = startPosition; i < inputBuffer.size(); i += increment) {
+            inputBuffer[i] =
+                    ((static_cast<float>(std::rand()) / RAND_MAX) * 2 - 1) * maxAudioSampleValue;
         }
     }
 
