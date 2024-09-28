@@ -22,6 +22,8 @@
 #include <aidl/android/media/audio/common/AudioFormatType.h>
 #include <aidl/android/media/audio/common/PcmType.h>
 #include <android-base/logging.h>
+#include <audio_utils/primitives.h>
+#include <cutils/compiler.h>
 
 #include "Utils.h"
 #include "core-impl/utils.h"
@@ -341,6 +343,70 @@ AudioFormatDescription c2aidl_pcm_format_AudioFormatDescription(enum pcm_format 
 
 pcm_format aidl2c_AudioFormatDescription_pcm_format(const AudioFormatDescription& aidl) {
     return findValueOrDefault(getAudioFormatDescriptorToPcmFormatMap(), aidl, PCM_FORMAT_INVALID);
+}
+
+void applyGain(void* buffer, float gain, size_t bytesToTransfer, enum pcm_format pcmFormat,
+               int channelCount) {
+    if (channelCount != 1 && channelCount != 2) {
+        LOG(WARNING) << __func__ << ": unsupported channel count " << channelCount;
+        return;
+    }
+    if (!getPcmFormatToAudioFormatDescMap().contains(pcmFormat)) {
+        LOG(WARNING) << __func__ << ": unsupported pcm format " << pcmFormat;
+        return;
+    }
+    const float unityGainFloat = 1.0f;
+    if (std::abs(gain - unityGainFloat) < 1e-6) {
+        return;
+    }
+    int numFrames;
+    switch (pcmFormat) {
+        case PCM_FORMAT_S16_LE: {
+            const uint16_t unityGainQ4_12 = u4_12_from_float(unityGainFloat);
+            const uint16_t vl = u4_12_from_float(gain);
+            const uint32_t vrl = (vl << 16) | vl;
+            if (channelCount == 2) {
+                numFrames = bytesToTransfer / sizeof(uint32_t);
+                uint32_t* intBuffer = (uint32_t*)buffer;
+                if (CC_UNLIKELY(vl > unityGainQ4_12)) {
+                    // volume is boosted, so we might need to clamp even though
+                    // we process only one track.
+                    do {
+                        int32_t l = mulRL(1, *intBuffer, vrl) >> 12;
+                        int32_t r = mulRL(0, *intBuffer, vrl) >> 12;
+                        l = clamp16(l);
+                        r = clamp16(r);
+                        *intBuffer++ = (r << 16) | (l & 0xFFFF);
+                    } while (--numFrames);
+                } else {
+                    do {
+                        int32_t l = mulRL(1, *intBuffer, vrl) >> 12;
+                        int32_t r = mulRL(0, *intBuffer, vrl) >> 12;
+                        *intBuffer++ = (r << 16) | (l & 0xFFFF);
+                    } while (--numFrames);
+                }
+            } else {
+                numFrames = bytesToTransfer / sizeof(uint16_t);
+                int16_t* intBuffer = (int16_t*)buffer;
+                if (CC_UNLIKELY(vl > unityGainQ4_12)) {
+                    // volume is boosted, so we might need to clamp even though
+                    // we process only one track.
+                    do {
+                        int32_t mono = mulRL(1, *intBuffer, vrl) >> 12;
+                        *intBuffer++ = clamp16(mono);
+                    } while (--numFrames);
+                } else {
+                    do {
+                        int32_t mono = mulRL(1, *intBuffer, vrl) >> 12;
+                        *intBuffer++ = static_cast<int16_t>(mono & 0xFFFF);
+                    } while (--numFrames);
+                }
+            }
+        } break;
+        default:
+            // TODO(336370745): Implement gain for other supported formats
+            break;
+    }
 }
 
 }  // namespace aidl::android::hardware::audio::core::alsa

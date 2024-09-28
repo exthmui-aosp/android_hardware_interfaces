@@ -98,6 +98,7 @@ interface IWifiChip {
     SET_AFC_CHANNEL_ALLOWANCE = (1 << 7) /* 128 */,
     T2LM_NEGOTIATION = (1 << 8) /* 256 */,
     SET_VOIP_MODE = (1 << 9) /* 512 */,
+    MLO_SAP = (1 << 10) /* 1024 */,
   }
   @VintfStability
   parcelable ChipConcurrencyCombinationLimit {

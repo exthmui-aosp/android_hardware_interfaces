@@ -260,4 +260,12 @@ ndk::ScopedAStatus StreamSwitcher::bluetoothParametersUpdated() {
     return mStream->bluetoothParametersUpdated();
 }
 
+ndk::ScopedAStatus StreamSwitcher::setGain(float gain) {
+    if (mStream == nullptr) {
+        LOG(ERROR) << __func__ << ": stream was closed";
+        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
+    }
+    return mStream->setGain(gain);
+}
+
 }  // namespace aidl::android::hardware::audio::core

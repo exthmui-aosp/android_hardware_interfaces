@@ -20,6 +20,7 @@
 #include <FakeUserHal.h>
 #include <PropertyUtils.h>
 
+#include <aidl/android/hardware/automotive/vehicle/VehicleApPowerStateConfigFlag.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleApPowerStateShutdownParam.h>
 #include <android/hardware/automotive/vehicle/TestVendorProperty.h>
 
@@ -73,6 +74,7 @@ using ::aidl::android::hardware::automotive::vehicle::SetValueRequest;
 using ::aidl::android::hardware::automotive::vehicle::SetValueResult;
 using ::aidl::android::hardware::automotive::vehicle::StatusCode;
 using ::aidl::android::hardware::automotive::vehicle::SubscribeOptions;
+using ::aidl::android::hardware::automotive::vehicle::VehicleApPowerStateConfigFlag;
 using ::aidl::android::hardware::automotive::vehicle::VehicleApPowerStateReport;
 using ::aidl::android::hardware::automotive::vehicle::VehicleApPowerStateReq;
 using ::aidl::android::hardware::automotive::vehicle::VehicleApPowerStateShutdownParam;
@@ -3860,6 +3862,25 @@ TEST_F(FakeVehicleHardwareTest, testSetHvacTemperatureValueSuggestion) {
 
         EXPECT_EQ(events[0], tc.expectedValuesToGet[0]);
         clearChangedProperties();
+    }
+}
+
+TEST_F(FakeVehicleHardwareTest, testOverrideApPowerStateReqConfig) {
+    auto hardware = std::make_unique<FakeVehicleHardware>(
+            android::base::GetExecutableDirectory(),
+            /*overrideConfigDir=*/"",
+            /*forceOverride=*/false,
+            toInt(VehicleApPowerStateConfigFlag::ENABLE_DEEP_SLEEP_FLAG) |
+                    toInt(VehicleApPowerStateConfigFlag::ENABLE_HIBERNATION_FLAG));
+
+    std::vector<VehiclePropConfig> configs = hardware->getAllPropertyConfigs();
+
+    for (const auto& config : configs) {
+        if (config.prop != toInt(VehicleProperty::AP_POWER_STATE_REQ)) {
+            continue;
+        }
+        ASSERT_EQ(config.configArray[0], 0x5);
+        break;
     }
 }
 

@@ -2,6 +2,6 @@
     <hal format="aidl">
         <name>android.hardware.biometrics.face</name>
         <version>4</version>
-        <fqname>IFace/virtual</fqname>
+        <fqname>IFace/default</fqname>
     </hal>
 </manifest>

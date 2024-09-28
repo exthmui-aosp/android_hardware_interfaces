@@ -130,6 +130,7 @@ class StreamSwitcher : virtual public StreamCommonInterface {
             const std::vector<::aidl::android::media::audio::common::AudioDevice>& devices)
             override;
     ndk::ScopedAStatus bluetoothParametersUpdated() override;
+    ndk::ScopedAStatus setGain(float gain) override;
 
   protected:
     // Since switching a stream requires closing down the current stream, StreamSwitcher

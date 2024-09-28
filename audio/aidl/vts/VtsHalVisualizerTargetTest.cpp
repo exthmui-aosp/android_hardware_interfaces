@@ -191,6 +191,7 @@ TEST_P(VisualizerParamTest, SetAndGetLatency) {
 }
 
 TEST_P(VisualizerParamTest, testCaptureSampleBufferSizeAndOutput) {
+    SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
     ASSERT_NO_FATAL_FAILURE(addCaptureSizeParam(mCaptureSize));
     ASSERT_NO_FATAL_FAILURE(addScalingModeParam(mScalingMode));
     ASSERT_NO_FATAL_FAILURE(addMeasurementModeParam(mMeasurementMode));

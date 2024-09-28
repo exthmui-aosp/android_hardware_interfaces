@@ -87,6 +87,10 @@ interface IWifiChip {
          * Chip supports voip mode setting.
          */
         SET_VOIP_MODE = 1 << 9,
+        /**
+         * Chip supports Wi-Fi 7 MLO SoftAp.
+         */
+        MLO_SAP = 1 << 10,
     }
 
     /**

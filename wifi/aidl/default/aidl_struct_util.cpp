@@ -61,6 +61,8 @@ IWifiChip::FeatureSetMask convertLegacyChipFeatureToAidl(uint64_t feature) {
             return IWifiChip::FeatureSetMask::SET_AFC_CHANNEL_ALLOWANCE;
         case WIFI_FEATURE_SET_VOIP_MODE:
             return IWifiChip::FeatureSetMask::SET_VOIP_MODE;
+        case WIFI_FEATURE_MLO_SAP:
+            return IWifiChip::FeatureSetMask::MLO_SAP;
     };
     CHECK(false) << "Unknown legacy feature: " << feature;
     return {};

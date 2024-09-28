@@ -263,6 +263,9 @@ class Module : public BnModule {
             ::aidl::android::media::audio::common::AudioPortConfig* out_suggested, bool* applied);
     ndk::ScopedAStatus updateStreamsConnectedState(const AudioPatch& oldPatch,
                                                    const AudioPatch& newPatch);
+    bool setAudioPortConfigGain(
+            const ::aidl::android::media::audio::common::AudioPort& port,
+            const ::aidl::android::media::audio::common::AudioGainConfig& gainRequested);
 };
 
 std::ostream& operator<<(std::ostream& os, Module::Type t);
