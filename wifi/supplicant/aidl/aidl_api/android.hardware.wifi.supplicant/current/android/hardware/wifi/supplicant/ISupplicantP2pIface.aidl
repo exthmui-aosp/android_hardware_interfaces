@@ -123,4 +123,7 @@ interface ISupplicantP2pIface {
   void configureExtListenWithParams(in android.hardware.wifi.supplicant.P2pExtListenInfo extListenInfo);
   void addGroupWithConfigurationParams(in android.hardware.wifi.supplicant.P2pAddGroupConfigurationParams groupConfigurationParams);
   void createGroupOwner(in android.hardware.wifi.supplicant.P2pCreateGroupOwnerInfo groupOwnerInfo);
+  long getFeatureSet();
+  const long P2P_FEATURE_V2 = (1 << 0) /* 1 */;
+  const long P2P_FEATURE_PCC_MODE_WPA3_COMPATIBILITY = (1 << 1) /* 2 */;
 }

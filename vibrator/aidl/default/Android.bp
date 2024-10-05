@@ -19,6 +19,7 @@ cc_library_static {
     ],
     export_include_dirs: ["include"],
     srcs: [
+        "VibrationSession.cpp",
         "Vibrator.cpp",
         "VibratorManager.cpp",
     ],

@@ -133,6 +133,9 @@ class StreamContext {
     ReplyMQ* getReplyMQ() const { return mReplyMQ.get(); }
     int getTransientStateDelayMs() const { return mDebugParameters.transientStateDelayMs; }
     int getSampleRate() const { return mSampleRate; }
+    bool isInput() const {
+        return mFlags.getTag() == ::aidl::android::media::audio::common::AudioIoFlags::input;
+    }
     bool isValid() const;
     // 'reset' is called on a Binder thread when closing the stream. Does not use
     // locking because it only cleans MQ pointers which were also set on the Binder thread.

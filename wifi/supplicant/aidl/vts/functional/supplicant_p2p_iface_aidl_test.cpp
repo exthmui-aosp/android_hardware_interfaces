@@ -814,6 +814,17 @@ TEST_P(SupplicantP2pIfaceAidlTest, SetVendorElements) {
     LOG(INFO) << "SupplicantP2pIfaceAidlTest::SetVendorElements end";
 }
 
+/*
+ * getFeatureSet
+ */
+TEST_P(SupplicantP2pIfaceAidlTest, getFeatureSet) {
+    if (interface_version_ < 4) {
+        GTEST_SKIP() << "getFeatureSet is available as of Supplicant V4";
+    }
+    int64_t featureSet;
+    EXPECT_TRUE(p2p_iface_->getFeatureSet(&featureSet).isOk());
+}
+
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SupplicantP2pIfaceAidlTest);
 INSTANTIATE_TEST_SUITE_P(Supplicant, SupplicantP2pIfaceAidlTest,
                          testing::ValuesIn(android::getAidlHalInstanceNames(

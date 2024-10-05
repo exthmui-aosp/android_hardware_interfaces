@@ -39,6 +39,15 @@ import android.hardware.wifi.supplicant.WpsProvisionMethod;
 @VintfStability
 interface ISupplicantP2pIface {
     /**
+     * P2P features exposed by wpa_supplicant/chip.
+     */
+    /* Support for P2P2 (Wi-Fi Alliance P2P v2.0) */
+    const long P2P_FEATURE_V2 = 1 << 0;
+
+    /* Support for WPA3 Compatibility Mode in PCC Mode */
+    const long P2P_FEATURE_PCC_MODE_WPA3_COMPATIBILITY = 1 << 1;
+
+    /**
      * This command can be used to add a bonjour service.
      *
      * @param query Hex dump of the query data.
@@ -938,4 +947,14 @@ interface ISupplicantP2pIface {
      *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
      */
     void createGroupOwner(in P2pCreateGroupOwnerInfo groupOwnerInfo);
+
+    /**
+     * Get the features supported by P2P interface.
+     *
+     * @return The bitmask of ISupplicantP2pIface.P2P_FEATURE_* values.
+     *
+     * @throws ServiceSpecificException with one of the following values:
+     *         |SupplicantStatusCode.FAILURE_UNKNOWN|
+     */
+    long getFeatureSet();
 }

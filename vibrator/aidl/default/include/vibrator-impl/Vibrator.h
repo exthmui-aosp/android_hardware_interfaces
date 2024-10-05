@@ -25,6 +25,7 @@ namespace hardware {
 namespace vibrator {
 
 class Vibrator : public BnVibrator {
+  public:
     ndk::ScopedAStatus getCapabilities(int32_t* _aidl_return) override;
     ndk::ScopedAStatus off() override;
     ndk::ScopedAStatus on(int32_t timeoutMs,
@@ -66,10 +67,16 @@ class Vibrator : public BnVibrator {
     ndk::ScopedAStatus composePwleV2(const std::vector<PwleV2Primitive>& composite,
                                      const std::shared_ptr<IVibratorCallback>& callback) override;
 
+    void setGlobalVibrationCallback(const std::shared_ptr<IVibratorCallback>& callback);
+
   private:
     mutable std::mutex mMutex;
-    int32_t mVersion GUARDED_BY(mMutex) = 0;  // current Hal version
+    bool mIsVibrating GUARDED_BY(mMutex) = false;
     int32_t mCapabilities GUARDED_BY(mMutex) = 0;
+    std::shared_ptr<IVibratorCallback> mVibrationCallback GUARDED_BY(mMutex) = nullptr;
+    std::shared_ptr<IVibratorCallback> mGlobalVibrationCallback GUARDED_BY(mMutex) = nullptr;
+
+    void dispatchVibrate(int32_t timeoutMs, const std::shared_ptr<IVibratorCallback>& callback);
 };
 
 }  // namespace vibrator

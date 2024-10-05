@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-#pragma once
+package android.hardware.vibrator;
 
-#include "alsa/Mixer.h"
-
-namespace aidl::android::hardware::audio::core::primary {
-
-class PrimaryMixer : public alsa::Mixer {
-  public:
-    static constexpr int kInvalidAlsaCard = -1;
-    static constexpr int kInvalidAlsaDevice = -1;
-    static constexpr int kAlsaCard = 0;
-    static constexpr int kAlsaDevice = 0;
-
-    static PrimaryMixer& getInstance();
-
-  private:
-    PrimaryMixer() : alsa::Mixer(kAlsaCard) {}
-};
-
-}  // namespace aidl::android::hardware::audio::core::primary
+@VintfStability
+parcelable VibrationSessionConfig {
+    /**
+     * Vendor extension point for starting a vibration session.
+     */
+    ParcelableHolder vendorExtension;
+}

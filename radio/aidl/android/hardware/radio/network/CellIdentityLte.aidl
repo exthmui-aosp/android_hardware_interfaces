@@ -33,7 +33,7 @@ parcelable CellIdentityLte {
      */
     String mnc;
     /**
-     * 28-bit Cell Identity described in TS TS 27.007, INT_MAX if unknown
+     * 28-bit Cell Identity described in TS 27.007, INT_MAX if unknown
      */
     int ci;
     /**
@@ -53,7 +53,7 @@ parcelable CellIdentityLte {
      */
     OperatorInfo operatorNames;
     /**
-     * Cell bandwidth, in kHz.
+     * Cell bandwidth, in kHz. Must be valid as described in TS 36.101 5.6.
      */
     int bandwidth;
     /**
