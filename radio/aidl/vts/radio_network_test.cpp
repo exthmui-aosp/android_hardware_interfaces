@@ -609,6 +609,11 @@ TEST_P(RadioNetworkTest, setSignalStrengthReportingCriteria_Cdma2000) {
         }
     }
 
+    if (!deviceSupportsFeature(FEATURE_TELEPHONY_CDMA)) {
+        GTEST_SKIP() << "Skipping setSignalStrengthReportingCriteria_Cdma2000 "
+                        "due to undefined FEATURE_TELEPHONY_CDMA";
+    }
+
     serial = GetRandomSerialNumber();
 
     SignalThresholdInfo signalThresholdInfo;
@@ -824,9 +829,12 @@ TEST_P(RadioNetworkTest, setSignalStrengthReportingCriteria_multiRansPerRequest)
     signalThresholdInfoNgran.isEnabled = true;
     signalThresholdInfoNgran.ran = AccessNetwork::NGRAN;
 
-    const static std::vector<SignalThresholdInfo> candidateSignalThresholdInfos = {
+    std::vector<SignalThresholdInfo> candidateSignalThresholdInfos = {
             signalThresholdInfoGeran, signalThresholdInfoUtran, signalThresholdInfoEutran,
-            signalThresholdInfoCdma2000, signalThresholdInfoNgran};
+            signalThresholdInfoNgran};
+    if (deviceSupportsFeature(FEATURE_TELEPHONY_CDMA)) {
+        candidateSignalThresholdInfos.push_back(signalThresholdInfoCdma2000);
+    }
 
     std::vector<SignalThresholdInfo> supportedSignalThresholdInfos;
     for (size_t i = 0; i < candidateSignalThresholdInfos.size(); i++) {

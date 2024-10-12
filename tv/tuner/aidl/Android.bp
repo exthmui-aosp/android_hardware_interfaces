@@ -39,7 +39,6 @@ aidl_interface {
                 "android.hardware.common.fmq-V1",
             ],
         },
-
     ],
 
 }

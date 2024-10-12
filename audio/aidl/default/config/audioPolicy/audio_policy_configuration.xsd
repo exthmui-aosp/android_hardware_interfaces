@@ -389,6 +389,7 @@
             <xs:enumeration value="AUDIO_FORMAT_APTX"/>
             <xs:enumeration value="AUDIO_FORMAT_APTX_HD"/>
             <xs:enumeration value="AUDIO_FORMAT_AC4"/>
+            <xs:enumeration value="AUDIO_FORMAT_AC4_L4"/>
             <xs:enumeration value="AUDIO_FORMAT_LDAC"/>
             <xs:enumeration value="AUDIO_FORMAT_MAT"/>
             <xs:enumeration value="AUDIO_FORMAT_MAT_1_0"/>

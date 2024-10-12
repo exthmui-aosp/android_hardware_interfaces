@@ -382,6 +382,9 @@ class ExternalCameraDeviceSession : public BnCameraDeviceSession, public OutputT
     std::string mExifMake;
     std::string mExifModel;
     /* End of members not changed after initialize() */
+
+    // The max tolerant lag between the dequeued v4l2 buffer and current capture request.
+    uint64_t mMaxLagNs;
 };
 
 }  // namespace implementation

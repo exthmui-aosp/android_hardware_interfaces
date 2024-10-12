@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,39 +14,27 @@
  * limitations under the License.
  */
 
-package android.hardware.wifi.hostapd;
+package android.hardware.wifi;
 
+import android.hardware.wifi.IfaceConcurrencyType;
 import android.hardware.wifi.common.OuiKeyedData;
-import android.hardware.wifi.hostapd.ChannelParams;
-import android.hardware.wifi.hostapd.HwModeParams;
 
 /**
- * Parameters to use for setting up the dual access point interfaces.
+ * Parameters to use for setting up the access point interfaces.
  */
 @VintfStability
-parcelable IfaceParams {
+parcelable ApIfaceParams {
     /**
-     * Name of the interface
+     * IfaceConcurrencyType to be created. Takes one of
+     * |IfaceConcurrencyType.AP| or |IfaceConcurrencyType.AP_BRIDGED|
      */
-    String name;
+    IfaceConcurrencyType ifaceType;
     /**
-     * Additional hardware mode params for the interface
+     * Whether the current iface will be operated on Multi-links on the one MLD device (MLO).
      */
-    HwModeParams hwModeParams;
-    /**
-     * The list of the channel params for the dual interfaces.
-     */
-    ChannelParams[] channelParams;
+    boolean usesMlo;
     /**
      * Optional vendor-specific configuration parameters.
      */
     @nullable OuiKeyedData[] vendorData;
-    /**
-     * The list of the instance identities.
-     */
-    @nullable String[] instanceIdentities;
-    /**
-     * Whether the current iface is using multi-link operation.
-     */
-    boolean usesMlo;
 }

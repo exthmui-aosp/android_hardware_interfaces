@@ -25,10 +25,12 @@
 #include <media/nbaio/MonoPipe.h>
 #include <media/nbaio/MonoPipeReader.h>
 
+#include <Utils.h>
 #include <aidl/android/media/audio/common/AudioChannelLayout.h>
 #include <aidl/android/media/audio/common/AudioDeviceAddress.h>
 #include <aidl/android/media/audio/common/AudioFormatDescription.h>
 
+using aidl::android::hardware::audio::common::getFrameSizeInBytes;
 using aidl::android::media::audio::common::AudioChannelLayout;
 using aidl::android::media::audio::common::AudioFormatDescription;
 using aidl::android::media::audio::common::AudioFormatType;
@@ -56,8 +58,8 @@ struct AudioConfig {
     AudioChannelLayout channelLayout =
             AudioChannelLayout::make<AudioChannelLayout::Tag::layoutMask>(
                     AudioChannelLayout::LAYOUT_STEREO);
-    size_t frameSize;
-    size_t frameCount;
+    size_t frameSize = getFrameSizeInBytes(format, channelLayout);
+    size_t frameCount = 0;
 };
 
 class SubmixRoute {

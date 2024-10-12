@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
+/**
+ ** This class is deprecated because its use causes threading issues
+ ** with the FMQ due to change of threads reading and writing into FMQ.
+ **
+ ** DO NOT USE. These files will be removed.
+ **/
+
 #pragma once
 
-#include "Stream.h"
+#include "core-impl/Stream.h"
 
-namespace aidl::android::hardware::audio::core {
+namespace aidl::android::hardware::audio::core::deprecated {
 
 // 'StreamSwitcher' is an implementation of 'StreamCommonInterface' which allows
 // dynamically switching the underlying stream implementation based on currently
@@ -192,4 +199,4 @@ class StreamSwitcher : virtual public StreamCommonInterface {
     bool mBluetoothParametersUpdated = false;
 };
 
-}  // namespace aidl::android::hardware::audio::core
+}  // namespace aidl::android::hardware::audio::core::deprecated

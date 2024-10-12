@@ -26,6 +26,7 @@ package {
 cc_library_static {
     name: "libnl++",
     defaults: ["android.hardware.automotive.can@defaults"],
+    host_supported: true,
     vendor_available: true,
     srcs: [
         "protocols/common/Empty.cpp",

@@ -191,6 +191,7 @@ package android.audio.policy.configuration {
     enum_constant public static final android.audio.policy.configuration.AudioFormat AUDIO_FORMAT_AAC_XHE;
     enum_constant public static final android.audio.policy.configuration.AudioFormat AUDIO_FORMAT_AC3;
     enum_constant public static final android.audio.policy.configuration.AudioFormat AUDIO_FORMAT_AC4;
+    enum_constant public static final android.audio.policy.configuration.AudioFormat AUDIO_FORMAT_AC4_L4;
     enum_constant public static final android.audio.policy.configuration.AudioFormat AUDIO_FORMAT_ALAC;
     enum_constant public static final android.audio.policy.configuration.AudioFormat AUDIO_FORMAT_AMR_NB;
     enum_constant public static final android.audio.policy.configuration.AudioFormat AUDIO_FORMAT_AMR_WB;

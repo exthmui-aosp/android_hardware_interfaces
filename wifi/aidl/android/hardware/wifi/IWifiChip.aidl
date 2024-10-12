@@ -17,6 +17,7 @@
 package android.hardware.wifi;
 
 import android.hardware.wifi.AfcChannelAllowance;
+import android.hardware.wifi.ApIfaceParams;
 import android.hardware.wifi.IWifiApIface;
 import android.hardware.wifi.IWifiChipEventCallback;
 import android.hardware.wifi.IWifiNanIface;
@@ -433,6 +434,9 @@ interface IWifiChip {
      * reached the maximum allowed (specified in |ChipIfaceCombination|) number
      * of ifaces of the AP type.
      *
+     * @deprecated This method is deprecated from AIDL v3, newer HALs should use
+     * createApOrBridgedApIfaceWithParams.
+     *
      * @return AIDL interface object representing the iface if
      *         successful, null otherwise.
      * @throws ServiceSpecificException with one of the following values:
@@ -449,6 +453,9 @@ interface IWifiChip {
      * may fail (code: |WifiStatusCode.ERROR_NOT_AVAILABLE|) if we've already
      * reached the maximum allowed (specified in |ChipIfaceCombination|) number
      * of ifaces of the AP type.
+     *
+     * @deprecated This method is deprecated from AIDL v3, newer HALs should use
+     * createApOrBridgedApIfaceWithParams.
      *
      * @return AIDL interface object representing the iface if
      *         successful, null otherwise.
@@ -1177,6 +1184,9 @@ interface IWifiChip {
      * reached the maximum allowed (specified in |ChipIfaceCombination|) number
      * of ifaces of the AP or AP_BRIDGED type.
      *
+     * @deprecated This method is deprecated from AIDL v3, newer HALs should use
+     * createApOrBridgedApIfaceWithParams.
+     *
      * @param  iface IfaceConcurrencyType to be created. Takes one of
                |IfaceConcurrencyType.AP| or |IfaceConcurrencyType.AP_BRIDGED|
      * @param  vendorData Vendor-provided configuration data as a list of |OuiKeyedData|.
@@ -1210,4 +1220,22 @@ interface IWifiChip {
      *         |WifiStatusCode.ERROR_UNKNOWN|
      */
     void setVoipMode(in VoipMode mode);
+
+    /**
+     * Create an AP or bridged AP iface on the chip based on ApIfaceParamss.
+     *
+     * Depending on the mode the chip is configured in, the interface creation
+     * may fail (code: |WifiStatusCode.ERROR_NOT_AVAILABLE|) if we've already
+     * reached the maximum allowed (specified in |ChipIfaceCombination|) number
+     * of ifaces of the AP type.
+     *
+     * @return AIDL interface object representing the iface if
+     *         successful, null otherwise.
+     * @throws ServiceSpecificException with one of the following values:
+     *         |WifiStatusCode.ERROR_WIFI_CHIP_INVALID|,
+     *         |WifiStatusCode.ERROR_NOT_SUPPORTED|,
+     *         |WifiStatusCode.ERROR_NOT_AVAILABLE|
+     */
+    @PropagateAllowBlocking
+    IWifiApIface createApOrBridgedApIfaceWithParams(in ApIfaceParams params);
 }
