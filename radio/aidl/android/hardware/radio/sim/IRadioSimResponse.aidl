@@ -378,6 +378,7 @@ oneway interface IRadioSimResponse {
      *   RadioError:INVALID_MODEM_STATE
      *   RadioError:SIM_ERR
      *   RadioError:INVALID_ARGUMENTS
+     *   RadioError:REQUEST_NOT_SUPPORTED
      */
     void requestIccSimAuthenticationResponse(in RadioResponseInfo info, in IccIoResult result);
 

@@ -16,6 +16,23 @@ package {
     default_applicable_licenses: ["hardware_interfaces_license"],
 }
 
+aidl_interface_defaults {
+    name: "android.hardware.graphics.allocator-latest",
+    imports: [
+        "android.hardware.graphics.allocator-V2",
+    ],
+}
+
+rust_defaults {
+    name: "android.hardware.graphics.allocator-latest-rust",
+    rustlibs: [
+        "android.hardware.graphics.allocator-V2-rust",
+    ],
+    defaults: [
+        "android.hardware.graphics.common-latest-rust",
+    ],
+}
+
 cc_defaults {
     name: "android.hardware.graphics.allocator-ndk_static",
     target: {
@@ -44,6 +61,20 @@ cc_defaults {
     ],
 }
 
+aidl_interface_defaults {
+    name: "android.hardware.graphics.common-latest",
+    imports: [
+        "android.hardware.graphics.common-V5",
+    ],
+}
+
+rust_defaults {
+    name: "android.hardware.graphics.common-latest-rust",
+    rustlibs: [
+        "android.hardware.graphics.common-V5-rust",
+    ],
+}
+
 cc_defaults {
     name: "android.hardware.graphics.common-ndk_static",
     target: {
@@ -64,6 +95,13 @@ cc_defaults {
             ],
         },
     },
+}
+
+aidl_interface_defaults {
+    name: "android.hardware.graphics.composer3-latest",
+    imports: [
+        "android.hardware.graphics.composer3-V4",
+    ],
 }
 
 cc_defaults {

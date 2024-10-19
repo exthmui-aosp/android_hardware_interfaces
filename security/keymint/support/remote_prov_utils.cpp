@@ -52,6 +52,14 @@ using EVP_PKEY_CTX_Ptr = bssl::UniquePtr<EVP_PKEY_CTX>;
 using X509_Ptr = bssl::UniquePtr<X509>;
 using CRYPTO_BUFFER_Ptr = bssl::UniquePtr<CRYPTO_BUFFER>;
 
+std::string device_suffix(const std::string& name) {
+    size_t pos = name.find('/');
+    if (pos == std::string::npos) {
+        return name;
+    }
+    return name.substr(pos + 1);
+}
+
 ErrMsgOr<bytevec> ecKeyGetPrivateKey(const EC_KEY* ecKey) {
     // Extract private key.
     const BIGNUM* bignum = EC_KEY_get0_private_key(ecKey);
@@ -325,7 +333,8 @@ bytevec getProdEekChain(int32_t supportedEekCurve) {
 
 ErrMsgOr<std::vector<BccEntryData>> validateBcc(const cppbor::Array* bcc,
                                                 hwtrust::DiceChain::Kind kind, bool allowAnyMode,
-                                                bool allowDegenerate) {
+                                                bool allowDegenerate,
+                                                const std::string& instanceName) {
     auto encodedBcc = bcc->encode();
 
     // Use ro.build.type instead of ro.debuggable because ro.debuggable=1 for VTS testing
@@ -334,7 +343,8 @@ ErrMsgOr<std::vector<BccEntryData>> validateBcc(const cppbor::Array* bcc,
         allowAnyMode = true;
     }
 
-    auto chain = hwtrust::DiceChain::Verify(encodedBcc, kind, allowAnyMode);
+    auto chain =
+            hwtrust::DiceChain::Verify(encodedBcc, kind, allowAnyMode, device_suffix(instanceName));
     if (!chain.ok()) return chain.error().message();
 
     if (!allowDegenerate && !chain->IsProper()) {
@@ -649,8 +659,8 @@ ErrMsgOr<std::vector<BccEntryData>> verifyProtectedData(
         const DeviceInfo& deviceInfo, const cppbor::Array& keysToSign,
         const std::vector<uint8_t>& keysToSignMac, const ProtectedData& protectedData,
         const EekChain& eekChain, const std::vector<uint8_t>& eekId, int32_t supportedEekCurve,
-        IRemotelyProvisionedComponent* provisionable, const std::vector<uint8_t>& challenge,
-        bool isFactory, bool allowAnyMode = false) {
+        IRemotelyProvisionedComponent* provisionable, const std::string& instanceName,
+        const std::vector<uint8_t>& challenge, bool isFactory, bool allowAnyMode = false) {
     auto [parsedProtectedData, _, protDataErrMsg] = cppbor::parse(protectedData.protectedData);
     if (!parsedProtectedData) {
         return protDataErrMsg;
@@ -707,7 +717,7 @@ ErrMsgOr<std::vector<BccEntryData>> verifyProtectedData(
 
     // BCC is [ pubkey, + BccEntry]
     auto bccContents = validateBcc(bcc->asArray(), hwtrust::DiceChain::Kind::kVsr13, allowAnyMode,
-                                   /*allowDegenerate=*/true);
+                                   /*allowDegenerate=*/true, instanceName);
     if (!bccContents) {
         return bccContents.message() + "\n" + prettyPrint(bcc.get());
     }
@@ -750,9 +760,10 @@ ErrMsgOr<std::vector<BccEntryData>> verifyFactoryProtectedData(
         const DeviceInfo& deviceInfo, const cppbor::Array& keysToSign,
         const std::vector<uint8_t>& keysToSignMac, const ProtectedData& protectedData,
         const EekChain& eekChain, const std::vector<uint8_t>& eekId, int32_t supportedEekCurve,
-        IRemotelyProvisionedComponent* provisionable, const std::vector<uint8_t>& challenge) {
+        IRemotelyProvisionedComponent* provisionable, const std::string& instanceName,
+        const std::vector<uint8_t>& challenge) {
     return verifyProtectedData(deviceInfo, keysToSign, keysToSignMac, protectedData, eekChain,
-                               eekId, supportedEekCurve, provisionable, challenge,
+                               eekId, supportedEekCurve, provisionable, instanceName, challenge,
                                /*isFactory=*/true);
 }
 
@@ -760,10 +771,10 @@ ErrMsgOr<std::vector<BccEntryData>> verifyProductionProtectedData(
         const DeviceInfo& deviceInfo, const cppbor::Array& keysToSign,
         const std::vector<uint8_t>& keysToSignMac, const ProtectedData& protectedData,
         const EekChain& eekChain, const std::vector<uint8_t>& eekId, int32_t supportedEekCurve,
-        IRemotelyProvisionedComponent* provisionable, const std::vector<uint8_t>& challenge,
-        bool allowAnyMode) {
+        IRemotelyProvisionedComponent* provisionable, const std::string& instanceName,
+        const std::vector<uint8_t>& challenge, bool allowAnyMode) {
     return verifyProtectedData(deviceInfo, keysToSign, keysToSignMac, protectedData, eekChain,
-                               eekId, supportedEekCurve, provisionable, challenge,
+                               eekId, supportedEekCurve, provisionable, instanceName, challenge,
                                /*isFactory=*/false, allowAnyMode);
 }
 
@@ -1003,6 +1014,7 @@ ErrMsgOr<hwtrust::DiceChain::Kind> getDiceChainKind() {
 
 ErrMsgOr<bytevec> parseAndValidateAuthenticatedRequest(const std::vector<uint8_t>& request,
                                                        const std::vector<uint8_t>& challenge,
+                                                       const std::string& instanceName,
                                                        bool allowAnyMode = false,
                                                        bool allowDegenerate = true) {
     auto [parsedRequest, _, csrErrMsg] = cppbor::parse(request);
@@ -1042,7 +1054,8 @@ ErrMsgOr<bytevec> parseAndValidateAuthenticatedRequest(const std::vector<uint8_t
         return diceChainKind.message();
     }
 
-    auto diceContents = validateBcc(diceCertChain, *diceChainKind, allowAnyMode, allowDegenerate);
+    auto diceContents =
+            validateBcc(diceCertChain, *diceChainKind, allowAnyMode, allowDegenerate, instanceName);
     if (!diceContents) {
         return diceContents.message() + "\n" + prettyPrint(diceCertChain);
     }
@@ -1071,6 +1084,7 @@ ErrMsgOr<bytevec> parseAndValidateAuthenticatedRequest(const std::vector<uint8_t
 ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyCsr(const cppbor::Array& keysToSign,
                                                    const std::vector<uint8_t>& csr,
                                                    IRemotelyProvisionedComponent* provisionable,
+                                                   const std::string& instanceName,
                                                    const std::vector<uint8_t>& challenge,
                                                    bool isFactory, bool allowAnyMode = false,
                                                    bool allowDegenerate = true) {
@@ -1081,8 +1095,8 @@ ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyCsr(const cppbor::Array& keysToSi
                ") does not match expected version (3).";
     }
 
-    auto csrPayload =
-            parseAndValidateAuthenticatedRequest(csr, challenge, allowAnyMode, allowDegenerate);
+    auto csrPayload = parseAndValidateAuthenticatedRequest(csr, challenge, instanceName,
+                                                           allowAnyMode, allowDegenerate);
     if (!csrPayload) {
         return csrPayload.message();
     }
@@ -1092,20 +1106,22 @@ ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyCsr(const cppbor::Array& keysToSi
 
 ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyFactoryCsr(
         const cppbor::Array& keysToSign, const std::vector<uint8_t>& csr,
-        IRemotelyProvisionedComponent* provisionable, const std::vector<uint8_t>& challenge,
-        bool allowDegenerate) {
-    return verifyCsr(keysToSign, csr, provisionable, challenge, /*isFactory=*/true,
+        IRemotelyProvisionedComponent* provisionable, const std::string& instanceName,
+        const std::vector<uint8_t>& challenge, bool allowDegenerate) {
+    return verifyCsr(keysToSign, csr, provisionable, instanceName, challenge, /*isFactory=*/true,
                      /*allowAnyMode=*/false, allowDegenerate);
 }
 
 ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyProductionCsr(
         const cppbor::Array& keysToSign, const std::vector<uint8_t>& csr,
-        IRemotelyProvisionedComponent* provisionable, const std::vector<uint8_t>& challenge,
-        bool allowAnyMode) {
-    return verifyCsr(keysToSign, csr, provisionable, challenge, /*isFactory=*/false, allowAnyMode);
+        IRemotelyProvisionedComponent* provisionable, const std::string& instanceName,
+        const std::vector<uint8_t>& challenge, bool allowAnyMode) {
+    return verifyCsr(keysToSign, csr, provisionable, instanceName, challenge, /*isFactory=*/false,
+                     allowAnyMode);
 }
 
-ErrMsgOr<bool> isCsrWithProperDiceChain(const std::vector<uint8_t>& csr) {
+ErrMsgOr<bool> isCsrWithProperDiceChain(const std::vector<uint8_t>& csr,
+                                        const std::string& instanceName) {
     auto [parsedRequest, _, csrErrMsg] = cppbor::parse(csr);
     if (!parsedRequest) {
         return csrErrMsg;
@@ -1136,8 +1152,8 @@ ErrMsgOr<bool> isCsrWithProperDiceChain(const std::vector<uint8_t>& csr) {
     }
 
     auto encodedDiceChain = diceCertChain->encode();
-    auto chain =
-            hwtrust::DiceChain::Verify(encodedDiceChain, *diceChainKind, /*allowAnyMode=*/false);
+    auto chain = hwtrust::DiceChain::Verify(encodedDiceChain, *diceChainKind,
+                                            /*allowAnyMode=*/false, device_suffix(instanceName));
     if (!chain.ok()) return chain.error().message();
     return chain->IsProper();
 }

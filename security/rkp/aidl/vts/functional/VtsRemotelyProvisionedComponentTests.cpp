@@ -55,10 +55,7 @@ constexpr int32_t VERSION_WITH_SUPPORTED_NUM_KEYS_IN_CSR = 3;
 
 constexpr uint8_t MIN_CHALLENGE_SIZE = 0;
 constexpr uint8_t MAX_CHALLENGE_SIZE = 64;
-const string DEFAULT_INSTANCE_NAME =
-        "android.hardware.security.keymint.IRemotelyProvisionedComponent/default";
-const string RKP_VM_INSTANCE_NAME =
-        "android.hardware.security.keymint.IRemotelyProvisionedComponent/avf";
+
 const string KEYMINT_STRONGBOX_INSTANCE_NAME =
         "android.hardware.security.keymint.IKeyMintDevice/strongbox";
 
@@ -188,7 +185,7 @@ class VtsRemotelyProvisionedComponentTests : public testing::TestWithParam<std::
         }
         ASSERT_NE(provisionable_, nullptr);
         auto status = provisionable_->getHardwareInfo(&rpcHardwareInfo);
-        isRkpVmInstance_ = GetParam() == RKP_VM_INSTANCE_NAME;
+        isRkpVmInstance_ = GetParam() == RKPVM_INSTANCE_NAME;
         if (isRkpVmInstance_) {
             if (status.getExceptionCode() == EX_UNSUPPORTED_OPERATION) {
                 GTEST_SKIP() << "The RKP VM is not supported on this system.";
@@ -227,7 +224,7 @@ TEST(NonParameterizedTests, eachRpcHasAUniqueId) {
 
         RpcHardwareInfo hwInfo;
         auto status = rpc->getHardwareInfo(&hwInfo);
-        if (hal == RKP_VM_INSTANCE_NAME && status.getExceptionCode() == EX_UNSUPPORTED_OPERATION) {
+        if (hal == RKPVM_INSTANCE_NAME && status.getExceptionCode() == EX_UNSUPPORTED_OPERATION) {
             GTEST_SKIP() << "The RKP VM is not supported on this system.";
         }
         ASSERT_TRUE(status.isOk());
@@ -268,7 +265,7 @@ TEST(NonParameterizedTests, requireDiceOnDefaultInstanceIfStrongboxPresent) {
     auto status = rpc->generateCertificateRequestV2({} /* keysToSign */, challenge, &csr);
     EXPECT_TRUE(status.isOk()) << status.getDescription();
 
-    auto result = isCsrWithProperDiceChain(csr);
+    auto result = isCsrWithProperDiceChain(csr, DEFAULT_INSTANCE_NAME);
     ASSERT_TRUE(result) << result.message();
     ASSERT_TRUE(*result);
 }
@@ -494,7 +491,7 @@ TEST_P(CertificateRequestTest, EmptyRequest_testMode) {
 
         auto result = verifyProductionProtectedData(
                 deviceInfo, cppbor::Array(), keysToSignMac, protectedData, testEekChain_, eekId_,
-                rpcHardwareInfo.supportedEekCurve, provisionable_.get(), challenge_);
+                rpcHardwareInfo.supportedEekCurve, provisionable_.get(), GetParam(), challenge_);
         ASSERT_TRUE(result) << result.message();
     }
 }
@@ -517,9 +514,10 @@ TEST_P(CertificateRequestTest, NewKeyPerCallInTestMode) {
             &protectedData, &keysToSignMac);
     ASSERT_TRUE(status.isOk()) << status.getDescription();
 
-    auto firstBcc = verifyProductionProtectedData(
-            deviceInfo, /*keysToSign=*/cppbor::Array(), keysToSignMac, protectedData, testEekChain_,
-            eekId_, rpcHardwareInfo.supportedEekCurve, provisionable_.get(), challenge_);
+    auto firstBcc = verifyProductionProtectedData(deviceInfo, /*keysToSign=*/cppbor::Array(),
+                                                  keysToSignMac, protectedData, testEekChain_,
+                                                  eekId_, rpcHardwareInfo.supportedEekCurve,
+                                                  provisionable_.get(), GetParam(), challenge_);
     ASSERT_TRUE(firstBcc) << firstBcc.message();
 
     status = provisionable_->generateCertificateRequest(
@@ -527,9 +525,10 @@ TEST_P(CertificateRequestTest, NewKeyPerCallInTestMode) {
             &protectedData, &keysToSignMac);
     ASSERT_TRUE(status.isOk()) << status.getDescription();
 
-    auto secondBcc = verifyProductionProtectedData(
-            deviceInfo, /*keysToSign=*/cppbor::Array(), keysToSignMac, protectedData, testEekChain_,
-            eekId_, rpcHardwareInfo.supportedEekCurve, provisionable_.get(), challenge_);
+    auto secondBcc = verifyProductionProtectedData(deviceInfo, /*keysToSign=*/cppbor::Array(),
+                                                   keysToSignMac, protectedData, testEekChain_,
+                                                   eekId_, rpcHardwareInfo.supportedEekCurve,
+                                                   provisionable_.get(), GetParam(), challenge_);
     ASSERT_TRUE(secondBcc) << secondBcc.message();
 
     // Verify that none of the keys in the first BCC are repeated in the second one.
@@ -579,7 +578,7 @@ TEST_P(CertificateRequestTest, NonEmptyRequest_testMode) {
 
         auto result = verifyProductionProtectedData(
                 deviceInfo, cborKeysToSign_, keysToSignMac, protectedData, testEekChain_, eekId_,
-                rpcHardwareInfo.supportedEekCurve, provisionable_.get(), challenge_);
+                rpcHardwareInfo.supportedEekCurve, provisionable_.get(), GetParam(), challenge_);
         ASSERT_TRUE(result) << result.message();
     }
 }
@@ -767,8 +766,8 @@ TEST_P(CertificateRequestV2Test, EmptyRequest) {
                 provisionable_->generateCertificateRequestV2({} /* keysToSign */, challenge, &csr);
         ASSERT_TRUE(status.isOk()) << status.getDescription();
 
-        auto result = verifyProductionCsr(cppbor::Array(), csr, provisionable_.get(), challenge,
-                                          isRkpVmInstance_);
+        auto result = verifyProductionCsr(cppbor::Array(), csr, provisionable_.get(), GetParam(),
+                                          challenge, isRkpVmInstance_);
         ASSERT_TRUE(result) << result.message();
     }
 }
@@ -789,8 +788,8 @@ TEST_P(CertificateRequestV2Test, NonEmptyRequest) {
         auto status = provisionable_->generateCertificateRequestV2(keysToSign_, challenge, &csr);
         ASSERT_TRUE(status.isOk()) << status.getDescription();
 
-        auto result = verifyProductionCsr(cborKeysToSign_, csr, provisionable_.get(), challenge,
-                                          isRkpVmInstance_);
+        auto result = verifyProductionCsr(cborKeysToSign_, csr, provisionable_.get(), GetParam(),
+                                          challenge, isRkpVmInstance_);
         ASSERT_TRUE(result) << result.message();
     }
 }
@@ -820,15 +819,15 @@ TEST_P(CertificateRequestV2Test, NonEmptyRequestReproducible) {
     auto status = provisionable_->generateCertificateRequestV2(keysToSign_, challenge_, &csr);
     ASSERT_TRUE(status.isOk()) << status.getDescription();
 
-    auto firstCsr = verifyProductionCsr(cborKeysToSign_, csr, provisionable_.get(), challenge_,
-                                        isRkpVmInstance_);
+    auto firstCsr = verifyProductionCsr(cborKeysToSign_, csr, provisionable_.get(), GetParam(),
+                                        challenge_, isRkpVmInstance_);
     ASSERT_TRUE(firstCsr) << firstCsr.message();
 
     status = provisionable_->generateCertificateRequestV2(keysToSign_, challenge_, &csr);
     ASSERT_TRUE(status.isOk()) << status.getDescription();
 
-    auto secondCsr = verifyProductionCsr(cborKeysToSign_, csr, provisionable_.get(), challenge_,
-                                         isRkpVmInstance_);
+    auto secondCsr = verifyProductionCsr(cborKeysToSign_, csr, provisionable_.get(), GetParam(),
+                                         challenge_, isRkpVmInstance_);
     ASSERT_TRUE(secondCsr) << secondCsr.message();
 
     ASSERT_EQ(**firstCsr, **secondCsr);
@@ -846,8 +845,8 @@ TEST_P(CertificateRequestV2Test, NonEmptyRequestMultipleKeys) {
     auto status = provisionable_->generateCertificateRequestV2(keysToSign_, challenge_, &csr);
     ASSERT_TRUE(status.isOk()) << status.getDescription();
 
-    auto result = verifyProductionCsr(cborKeysToSign_, csr, provisionable_.get(), challenge_,
-                                      isRkpVmInstance_);
+    auto result = verifyProductionCsr(cborKeysToSign_, csr, provisionable_.get(), GetParam(),
+                                      challenge_, isRkpVmInstance_);
     ASSERT_TRUE(result) << result.message();
 }
 
@@ -977,7 +976,8 @@ TEST_P(CertificateRequestV2Test, DeviceInfo) {
             provisionable_->generateCertificateRequestV2({} /* keysToSign */, challenge_, &csr);
     ASSERT_TRUE(irpcStatus.isOk()) << irpcStatus.getDescription();
 
-    auto result = verifyProductionCsr(cppbor::Array(), csr, provisionable_.get(), challenge_);
+    auto result =
+            verifyProductionCsr(cppbor::Array(), csr, provisionable_.get(), GetParam(), challenge_);
     ASSERT_TRUE(result) << result.message();
 
     std::unique_ptr<cppbor::Array> csrPayload = std::move(*result);

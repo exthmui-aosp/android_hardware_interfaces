@@ -69,8 +69,8 @@ class BootControlClientAidl final : public BootControlClient {
     explicit BootControlClientAidl(std::shared_ptr<IBootControl> module)
         : module_(module),
           boot_control_death_recipient(AIBinder_DeathRecipient_new(onBootControlServiceDied)) {
-        binder_status_t status = AIBinder_linkToDeath(module->asBinder().get(),
-                                                      boot_control_death_recipient, nullptr);
+        binder_status_t status =
+                AIBinder_linkToDeath(module->asBinder().get(), boot_control_death_recipient, this);
         if (status != STATUS_OK) {
             LOG(ERROR) << "Could not link to binder death";
             return;

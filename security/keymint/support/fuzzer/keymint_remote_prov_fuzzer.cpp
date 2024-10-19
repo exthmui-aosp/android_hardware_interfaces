@@ -79,9 +79,13 @@ void KeyMintRemoteProv::process() {
 
     while (mFdp.remaining_bytes()) {
         auto invokeProvAPI = mFdp.PickValueInArray<const std::function<void()>>({
-                [&]() { verifyFactoryCsr(cborKeysToSign, csr, gRPC.get(), challenge); },
-                [&]() { verifyProductionCsr(cborKeysToSign, csr, gRPC.get(), challenge); },
-                [&]() { isCsrWithProperDiceChain(csr); },
+                [&]() {
+                    verifyFactoryCsr(cborKeysToSign, csr, gRPC.get(), kServiceName, challenge);
+                },
+                [&]() {
+                    verifyProductionCsr(cborKeysToSign, csr, gRPC.get(), kServiceName, challenge);
+                },
+                [&]() { isCsrWithProperDiceChain(csr, kServiceName); },
         });
         invokeProvAPI();
     }

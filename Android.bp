@@ -86,3 +86,9 @@ cc_defaults {
         "VtsHalHidlTargetTestBase",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_hardware_interfaces",
+    dirs: ["."],
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+}
