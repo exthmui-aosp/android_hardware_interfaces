@@ -36,6 +36,7 @@
         <library name="downmix" path="libdownmixaidl.so"/>
         <library name="dynamics_processing" path="libdynamicsprocessingaidl.so"/>
         <library name="equalizersw" path="libequalizersw.so"/>
+        <library name="erasersw" path="liberasersw.so"/>
         <library name="haptic_generator" path="libhapticgeneratoraidl.so"/>
         <library name="loudness_enhancer" path="libloudnessenhanceraidl.so"/>
         <library name="nssw" path="libnssw.so"/>

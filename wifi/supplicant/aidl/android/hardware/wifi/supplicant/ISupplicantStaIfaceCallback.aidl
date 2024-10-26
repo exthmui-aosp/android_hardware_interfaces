@@ -338,11 +338,19 @@ oneway interface ISupplicantStaIfaceCallback {
         /**
          * Multi-link reconfiguration - AP removal as described in
          * IEEE 802.11be spec, section 35.3.6. This is a mandatory feature for
-         * station.
+         * station according to Wi-Fi 7 R1 MRD.
          *
          * Removed link will not be present in |ISupplicantStaIface.getConnectionMloLinksInfo|.
          */
         MULTI_LINK_RECONFIG_AP_REMOVAL = 1,
+        /**
+         * Multi-link reconfiguration - Adding affiliated AP(s) as described in
+         * IEEE 802.11be spec, section 35.3.6. This is an optional feature for
+         * station according to Wi-Fi 7 R2 MRD.
+         *
+         * Added link will be present in |ISupplicantStaIface.getConnectionMloLinksInfo|.
+         */
+        MULTI_LINK_RECONFIG_AP_ADDITION = 2,
     }
 
     /**

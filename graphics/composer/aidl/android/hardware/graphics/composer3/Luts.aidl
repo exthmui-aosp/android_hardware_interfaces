@@ -26,19 +26,20 @@ import android.hardware.graphics.composer3.LutProperties;
  */
 
 @VintfStability
-parcelable Lut {
+parcelable Luts {
     /**
      * A handle to a memory region.
      * If the file descriptor is not set, this means that the HWC doesn't specify a Lut.
      *
      * When specifying a Lut, the HWC is required to follow the instructions as below:
-     * 1. use `memfd_create` to create a shared memory segment
+     * 1. use `ashmem_create_region` to create a shared memory segment
      *    with the size specified in lutProperties.
      * 2. use `mmap` to map the shared memory segment into its own virtual address space.
      *    PROT_READ/PROT_WRITE recommended for prot argument.
      *
      * For data precision, 32-bit float is used to specify a Lut by both the HWC and
      * the platform.
+     *
      *
      * For unflattening/flattening 3D Lut(s), the algorithm below should be observed
      * by both the HWC and the platform.
@@ -50,7 +51,15 @@ parcelable Lut {
     @nullable ParcelFileDescriptor pfd;
 
     /**
-     * The properties of the Lut.
+     * The offsets store the starting point of each Lut memory of the Lut buffer.
+     *
+     * Multiple Luts can be packed into one same `pfd`, and `offsets` is used to pinpoint
+     * the starting point of each Lut.
      */
-    LutProperties lutProperties;
+    @nullable int[] offsets;
+
+    /**
+     * The properties list of the Luts.
+     */
+    LutProperties[] lutProperties;
 }

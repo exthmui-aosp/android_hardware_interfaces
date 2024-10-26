@@ -31,9 +31,10 @@
 // with such a backward incompatible change, it has a high risk of breaking
 // later when a module using the interface is updated, e.g., Mainline modules.
 
-package android.hardware.vibrator;
-@VintfStability
-parcelable PwleV2OutputMapEntry {
-  float frequencyHz;
-  float maxOutputAccelerationGs;
+package android.hardware.broadcastradio;
+@Backing(type="int") @JavaDerive(equals=true, toString=true) @VintfStability
+enum AlertMessageType {
+  ALERT,
+  UPDATE,
+  CANCEL,
 }

@@ -32,7 +32,7 @@ parcelable LutProperties {
      * The size of the Lut.
      * This refers to the length of a 1D Lut, or the grid size of a 3D one.
      */
-    long size;
+    int size;
 
     /**
      * SamplingKey is about how a Lut can be sampled.

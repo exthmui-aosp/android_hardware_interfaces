@@ -147,6 +147,6 @@ vintf_compatibility_matrix {
     stem: "compatibility_matrix.202504.xml",
     srcs: ["compatibility_matrix.202504.xml"],
     kernel_configs: [
-        "kernel_config_w_6.next",
+        "kernel_config_w_6.12",
     ],
 }

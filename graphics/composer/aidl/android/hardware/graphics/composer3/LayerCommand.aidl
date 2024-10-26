@@ -24,7 +24,7 @@ import android.hardware.graphics.composer3.Buffer;
 import android.hardware.graphics.composer3.Color;
 import android.hardware.graphics.composer3.LayerBrightness;
 import android.hardware.graphics.composer3.LayerLifecycleBatchCommandType;
-import android.hardware.graphics.composer3.Lut;
+import android.hardware.graphics.composer3.Luts;
 import android.hardware.graphics.composer3.ParcelableBlendMode;
 import android.hardware.graphics.composer3.ParcelableComposition;
 import android.hardware.graphics.composer3.ParcelableDataspace;
@@ -284,5 +284,5 @@ parcelable LayerCommand {
     /**
      * Sets the lut(s) for the layer.
      */
-    @nullable Lut[] luts;
+    @nullable Luts luts;
 }

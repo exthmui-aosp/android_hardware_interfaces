@@ -86,5 +86,6 @@ interface ISupplicantStaIfaceCallback {
   enum MloLinkInfoChangeReason {
     TID_TO_LINK_MAP = 0,
     MULTI_LINK_RECONFIG_AP_REMOVAL = 1,
+    MULTI_LINK_RECONFIG_AP_ADDITION = 2,
   }
 }

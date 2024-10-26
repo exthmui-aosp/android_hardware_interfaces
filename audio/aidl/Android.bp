@@ -303,6 +303,7 @@ aidl_interface {
         "android.hardware.audio_defaults",
         "latest_android_hardware_audio_common_import_interface",
         "latest_android_media_audio_common_types_import_interface",
+        "latest_android_media_audio_eraser_types_import_interface",
     ],
     srcs: [
         "android/hardware/audio/effect/AcousticEchoCanceler.aidl",
@@ -317,6 +318,7 @@ aidl_interface {
         "android/hardware/audio/effect/DynamicsProcessing.aidl",
         "android/hardware/audio/effect/EnvironmentalReverb.aidl",
         "android/hardware/audio/effect/Equalizer.aidl",
+        "android/hardware/audio/effect/Eraser.aidl",
         "android/hardware/audio/effect/Flags.aidl",
         "android/hardware/audio/effect/HapticGenerator.aidl",
         "android/hardware/audio/effect/IEffect.aidl",

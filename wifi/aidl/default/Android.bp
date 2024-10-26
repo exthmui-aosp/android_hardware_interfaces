@@ -200,7 +200,7 @@ cc_test {
         "libgmock",
         "libgtest",
         "android.hardware.wifi-V3-ndk",
-        "android.hardware.wifi.common-V1-ndk",
+        "android.hardware.wifi.common-V2-ndk",
         "android.hardware.wifi-service-lib",
     ],
     shared_libs: [

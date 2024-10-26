@@ -494,9 +494,17 @@ ndk::ScopedAStatus Vibrator::composePwle(const std::vector<PrimitivePwle> &compo
     return ndk::ScopedAStatus::ok();
 }
 
-ndk::ScopedAStatus Vibrator::getPwleV2FrequencyToOutputAccelerationMap(
-        std::vector<PwleV2OutputMapEntry>* _aidl_return) {
-    std::vector<PwleV2OutputMapEntry> frequencyToOutputAccelerationMap;
+ndk::ScopedAStatus Vibrator::getFrequencyToOutputAccelerationMap(
+        std::vector<FrequencyAccelerationMapEntry>* _aidl_return) {
+    int32_t capabilities = 0;
+    if (!getCapabilities(&capabilities).isOk()) {
+        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
+    }
+    if (!(capabilities & IVibrator::CAP_FREQUENCY_CONTROL)) {
+        return ndk::ScopedAStatus(AStatus_fromExceptionCode(EX_UNSUPPORTED_OPERATION));
+    }
+
+    std::vector<FrequencyAccelerationMapEntry> frequencyToOutputAccelerationMap;
 
     std::vector<std::pair<float, float>> frequencyToOutputAccelerationData = {
             {30.0f, 0.01f},  {46.0f, 0.09f},  {50.0f, 0.1f},   {55.0f, 0.12f},  {62.0f, 0.66f},
@@ -507,8 +515,8 @@ ndk::ScopedAStatus Vibrator::getPwleV2FrequencyToOutputAccelerationMap(
             {263.0f, 1.39f}, {65.0f, 1.38f},  {278.0f, 1.37f}, {294.0f, 1.35f}, {300.0f, 1.34f}};
     for (const auto& entry : frequencyToOutputAccelerationData) {
         frequencyToOutputAccelerationMap.push_back(
-                PwleV2OutputMapEntry(/*frequency=*/entry.first,
-                                     /*maxOutputAcceleration=*/entry.second));
+                FrequencyAccelerationMapEntry(/*frequency=*/entry.first,
+                                              /*maxOutputAcceleration=*/entry.second));
     }
 
     *_aidl_return = frequencyToOutputAccelerationMap;
@@ -531,7 +539,8 @@ ndk::ScopedAStatus Vibrator::getPwleV2PrimitiveDurationMinMillis(int32_t* minDur
     return ndk::ScopedAStatus::ok();
 }
 
-float getPwleV2FrequencyMinHz(std::vector<PwleV2OutputMapEntry> frequencyToOutputAccelerationMap) {
+float getPwleV2FrequencyMinHz(
+        std::vector<FrequencyAccelerationMapEntry> frequencyToOutputAccelerationMap) {
     if (frequencyToOutputAccelerationMap.empty()) {
         return 0.0f;
     }
@@ -547,7 +556,8 @@ float getPwleV2FrequencyMinHz(std::vector<PwleV2OutputMapEntry> frequencyToOutpu
     return minFrequency;
 }
 
-float getPwleV2FrequencyMaxHz(std::vector<PwleV2OutputMapEntry> frequencyToOutputAccelerationMap) {
+float getPwleV2FrequencyMaxHz(
+        std::vector<FrequencyAccelerationMapEntry> frequencyToOutputAccelerationMap) {
     if (frequencyToOutputAccelerationMap.empty()) {
         return 0.0f;
     }
@@ -563,30 +573,31 @@ float getPwleV2FrequencyMaxHz(std::vector<PwleV2OutputMapEntry> frequencyToOutpu
     return maxFrequency;
 }
 
-ndk::ScopedAStatus Vibrator::composePwleV2(const std::vector<PwleV2Primitive>& composite,
+ndk::ScopedAStatus Vibrator::composePwleV2(const CompositePwleV2& composite,
                                            const std::shared_ptr<IVibratorCallback>& callback) {
     LOG(VERBOSE) << "Vibrator compose PWLE V2";
     int32_t capabilities = 0;
     if (!getCapabilities(&capabilities).isOk()) {
         return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
     }
-    if ((capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2) == 0) {
+    if (!(capabilities & IVibrator::CAP_COMPOSE_PWLE_EFFECTS_V2) ||
+        !(capabilities & IVibrator::CAP_FREQUENCY_CONTROL)) {
         return ndk::ScopedAStatus(AStatus_fromExceptionCode(EX_UNSUPPORTED_OPERATION));
     }
 
     int compositionSizeMax;
     getPwleV2CompositionSizeMax(&compositionSizeMax);
-    if (composite.size() <= 0 || composite.size() > compositionSizeMax) {
+    if (composite.pwlePrimitives.empty() || composite.pwlePrimitives.size() > compositionSizeMax) {
         return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
     }
 
     int32_t totalEffectDuration = 0;
-    std::vector<PwleV2OutputMapEntry> frequencyToOutputAccelerationMap;
-    getPwleV2FrequencyToOutputAccelerationMap(&frequencyToOutputAccelerationMap);
+    std::vector<FrequencyAccelerationMapEntry> frequencyToOutputAccelerationMap;
+    getFrequencyToOutputAccelerationMap(&frequencyToOutputAccelerationMap);
     float minFrequency = getPwleV2FrequencyMinHz(frequencyToOutputAccelerationMap);
     float maxFrequency = getPwleV2FrequencyMaxHz(frequencyToOutputAccelerationMap);
 
-    for (auto& e : composite) {
+    for (auto& e : composite.pwlePrimitives) {
         if (e.timeMillis < 0.0f || e.timeMillis > COMPOSE_PWLE_V2_PRIMITIVE_DURATION_MAX_MS) {
             return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
         }

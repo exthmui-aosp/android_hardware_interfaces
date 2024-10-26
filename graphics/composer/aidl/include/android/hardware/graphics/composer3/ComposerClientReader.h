@@ -247,11 +247,11 @@ class ComposerClientReader {
     void parseSetDisplayLuts(DisplayLuts&& displayLuts) {
         LOG_ALWAYS_FATAL_IF(mDisplay && displayLuts.display != *mDisplay);
         auto& data = mReturnData[displayLuts.display];
-        for (auto& layerLut : displayLuts.layerLuts) {
-            if (layerLut.lut.pfd.get() >= 0) {
+        for (auto& [layerId, luts] : displayLuts.layerLuts) {
+            if (luts.pfd.get() >= 0) {
                 data.layerLuts.push_back(
-                        {layerLut.layer, Lut{ndk::ScopedFileDescriptor(layerLut.lut.pfd.release()),
-                                             layerLut.lut.lutProperties}});
+                        {layerId, Luts{ndk::ScopedFileDescriptor(luts.pfd.release()), luts.offsets,
+                                       luts.lutProperties}});
             }
         }
     }

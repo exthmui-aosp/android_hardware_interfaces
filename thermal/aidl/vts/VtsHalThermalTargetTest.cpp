@@ -93,6 +93,10 @@ class ThermalCallback : public BnThermalChangedCallback {
         return ndk::ScopedAStatus::ok();
     }
 
+    ndk::ScopedAStatus notifyThresholdChanged(const TemperatureThreshold&) {
+        return ndk::ScopedAStatus::ok();
+    }
+
     template <typename R, typename P>
     [[nodiscard]] bool waitForCallback(std::chrono::duration<R, P> duration) {
         std::unique_lock<std::mutex> lock(mMutex);

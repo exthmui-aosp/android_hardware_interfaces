@@ -33,7 +33,8 @@
 
 package android.hardware.graphics.composer3;
 @VintfStability
-parcelable Lut {
+parcelable Luts {
   @nullable ParcelFileDescriptor pfd;
-  android.hardware.graphics.composer3.LutProperties lutProperties;
+  @nullable int[] offsets;
+  android.hardware.graphics.composer3.LutProperties[] lutProperties;
 }

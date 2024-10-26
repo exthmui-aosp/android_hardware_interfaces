@@ -59,12 +59,12 @@ class Vibrator : public BnVibrator {
     ndk::ScopedAStatus getSupportedBraking(std::vector<Braking>* supported) override;
     ndk::ScopedAStatus composePwle(const std::vector<PrimitivePwle> &composite,
                                    const std::shared_ptr<IVibratorCallback> &callback) override;
-    ndk::ScopedAStatus getPwleV2FrequencyToOutputAccelerationMap(
-            std::vector<PwleV2OutputMapEntry>* _aidl_return) override;
+    ndk::ScopedAStatus getFrequencyToOutputAccelerationMap(
+            std::vector<FrequencyAccelerationMapEntry>* _aidl_return) override;
     ndk::ScopedAStatus getPwleV2PrimitiveDurationMaxMillis(int32_t* maxDurationMs) override;
     ndk::ScopedAStatus getPwleV2PrimitiveDurationMinMillis(int32_t* minDurationMs) override;
     ndk::ScopedAStatus getPwleV2CompositionSizeMax(int32_t* maxSize) override;
-    ndk::ScopedAStatus composePwleV2(const std::vector<PwleV2Primitive>& composite,
+    ndk::ScopedAStatus composePwleV2(const CompositePwleV2& composite,
                                      const std::shared_ptr<IVibratorCallback>& callback) override;
 
     void setGlobalVibrationCallback(const std::shared_ptr<IVibratorCallback>& callback);

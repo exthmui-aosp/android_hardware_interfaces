@@ -26,106 +26,132 @@ using aidl::android::hardware::audio::common::SinkMetadata;
 using aidl::android::hardware::audio::common::SourceMetadata;
 using aidl::android::hardware::audio::core::r_submix::SubmixRoute;
 using aidl::android::media::audio::common::AudioDeviceAddress;
-using aidl::android::media::audio::common::AudioDeviceType;
 using aidl::android::media::audio::common::AudioOffloadInfo;
 using aidl::android::media::audio::common::MicrophoneDynamicInfo;
 using aidl::android::media::audio::common::MicrophoneInfo;
 
 namespace aidl::android::hardware::audio::core {
 
-StreamRemoteSubmix::StreamRemoteSubmix(StreamContext* context, const Metadata& metadata)
+using deprecated::InnerStreamWrapper;
+using deprecated::StreamCommonInterfaceEx;
+using deprecated::StreamSwitcher;
+
+StreamRemoteSubmix::StreamRemoteSubmix(StreamContext* context, const Metadata& metadata,
+                                       const AudioDeviceAddress& deviceAddress)
     : StreamCommonImpl(context, metadata),
-      mIsInput(isInput(metadata)),
-      mStreamConfig{.sampleRate = context->getSampleRate(),
-                    .format = context->getFormat(),
-                    .channelLayout = context->getChannelLayout(),
-                    .frameSize = context->getFrameSize()} {}
+      mDeviceAddress(deviceAddress),
+      mIsInput(isInput(metadata)) {
+    mStreamConfig.frameSize = context->getFrameSize();
+    mStreamConfig.format = context->getFormat();
+    mStreamConfig.channelLayout = context->getChannelLayout();
+    mStreamConfig.sampleRate = context->getSampleRate();
+}
 
 StreamRemoteSubmix::~StreamRemoteSubmix() {
     cleanupWorker();
 }
 
 ::android::status_t StreamRemoteSubmix::init() {
+    mCurrentRoute = SubmixRoute::findOrCreateRoute(mDeviceAddress, mStreamConfig);
+    if (mCurrentRoute == nullptr) {
+        return ::android::NO_INIT;
+    }
+    if (!mCurrentRoute->isStreamConfigValid(mIsInput, mStreamConfig)) {
+        LOG(ERROR) << __func__ << ": invalid stream config";
+        return ::android::NO_INIT;
+    }
+    sp<MonoPipe> sink = mCurrentRoute->getSink();
+    if (sink == nullptr) {
+        LOG(ERROR) << __func__ << ": nullptr sink when opening stream";
+        return ::android::NO_INIT;
+    }
+    if ((!mIsInput || mCurrentRoute->isStreamInOpen()) && sink->isShutdown()) {
+        LOG(DEBUG) << __func__ << ": Shut down sink when opening stream";
+        if (::android::OK != mCurrentRoute->resetPipe()) {
+            LOG(ERROR) << __func__ << ": reset pipe failed";
+            return ::android::NO_INIT;
+        }
+    }
+    mCurrentRoute->openStream(mIsInput);
     return ::android::OK;
 }
 
 ::android::status_t StreamRemoteSubmix::drain(StreamDescriptor::DrainMode) {
+    usleep(1000);
     return ::android::OK;
 }
 
 ::android::status_t StreamRemoteSubmix::flush() {
+    usleep(1000);
     return ::android::OK;
 }
 
 ::android::status_t StreamRemoteSubmix::pause() {
+    usleep(1000);
     return ::android::OK;
 }
 
 ::android::status_t StreamRemoteSubmix::standby() {
-    if (mCurrentRoute) mCurrentRoute->standby(mIsInput);
+    mCurrentRoute->standby(mIsInput);
     return ::android::OK;
 }
 
 ::android::status_t StreamRemoteSubmix::start() {
-    if (mDeviceAddressUpdated.load(std::memory_order_acquire)) {
-        LOG(DEBUG) << __func__ << ": device address updated, reset current route";
-        shutdown();
-        mDeviceAddressUpdated.store(false, std::memory_order_release);
-    }
-    if (!mCurrentRoute) {
-        RETURN_STATUS_IF_ERROR(setCurrentRoute());
-        LOG(DEBUG) << __func__ << ": have current route? " << (mCurrentRoute != nullptr);
-    }
-    if (mCurrentRoute) mCurrentRoute->exitStandby(mIsInput);
+    mCurrentRoute->exitStandby(mIsInput);
     mStartTimeNs = ::android::uptimeNanos();
     mFramesSinceStart = 0;
     return ::android::OK;
 }
 
+ndk::ScopedAStatus StreamRemoteSubmix::prepareToClose() {
+    if (!mIsInput) {
+        std::shared_ptr<SubmixRoute> route = SubmixRoute::findRoute(mDeviceAddress);
+        if (route != nullptr) {
+            sp<MonoPipe> sink = route->getSink();
+            if (sink == nullptr) {
+                ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
+            }
+            LOG(DEBUG) << __func__ << ": shutting down MonoPipe sink";
+
+            sink->shutdown(true);
+            // The client already considers this stream as closed, release the output end.
+            route->closeStream(mIsInput);
+        } else {
+            LOG(DEBUG) << __func__ << ": stream already closed.";
+            ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
+        }
+    }
+    return ndk::ScopedAStatus::ok();
+}
+
 // Remove references to the specified input and output streams.  When the device no longer
 // references input and output streams destroy the associated pipe.
 void StreamRemoteSubmix::shutdown() {
-    if (!mCurrentRoute) return;
     mCurrentRoute->closeStream(mIsInput);
     // If all stream instances are closed, we can remove route information for this port.
     if (!mCurrentRoute->hasAtleastOneStreamOpen()) {
         mCurrentRoute->releasePipe();
         LOG(DEBUG) << __func__ << ": pipe destroyed";
-        SubmixRoute::removeRoute(getDeviceAddress());
+        SubmixRoute::removeRoute(mDeviceAddress);
     }
     mCurrentRoute.reset();
 }
 
 ::android::status_t StreamRemoteSubmix::transfer(void* buffer, size_t frameCount,
                                                  size_t* actualFrameCount, int32_t* latencyMs) {
-    if (mDeviceAddressUpdated.load(std::memory_order_acquire)) {
-        // 'setConnectedDevices' was called. I/O will be restarted.
-        return ::android::OK;
-    }
-
     *latencyMs = getDelayInUsForFrameCount(getStreamPipeSizeInFrames()) / 1000;
     LOG(VERBOSE) << __func__ << ": Latency " << *latencyMs << "ms";
-    ::android::status_t status = ::android::OK;
-    if (mCurrentRoute) {
-        mCurrentRoute->exitStandby(mIsInput);
-        status = mIsInput ? inRead(buffer, frameCount, actualFrameCount)
-                          : outWrite(buffer, frameCount, actualFrameCount);
-        if ((status != ::android::OK && mIsInput) ||
-            ((status != ::android::OK && status != ::android::DEAD_OBJECT) && !mIsInput)) {
-            return status;
-        }
-    } else {
-        LOG(WARNING) << __func__ << ": no current route";
-        if (mIsInput) {
-            memset(buffer, 0, mStreamConfig.frameSize * frameCount);
-        }
-        *actualFrameCount = frameCount;
+    mCurrentRoute->exitStandby(mIsInput);
+    ::android::status_t status = mIsInput ? inRead(buffer, frameCount, actualFrameCount)
+                                          : outWrite(buffer, frameCount, actualFrameCount);
+    if ((status != ::android::OK && mIsInput) ||
+        ((status != ::android::OK && status != ::android::DEAD_OBJECT) && !mIsInput)) {
+        return status;
     }
     mFramesSinceStart += *actualFrameCount;
-    // If there is no route, always block, otherwise:
-    //  - Input streams always need to block, output streams need to block when there is no sink.
-    //  - When the sink exists, more sophisticated blocking algorithm is implemented by MonoPipe.
-    if (mCurrentRoute && !mIsInput && status != ::android::DEAD_OBJECT) return ::android::OK;
+    if (!mIsInput && status != ::android::DEAD_OBJECT) return ::android::OK;
+    // Input streams always need to block, output streams need to block when there is no sink.
+    // When the sink exists, more sophisticated blocking algorithm is implemented by MonoPipe.
     const long bufferDurationUs =
             (*actualFrameCount) * MICROS_PER_SECOND / mContext.getSampleRate();
     const auto totalDurationUs = (::android::uptimeNanos() - mStartTimeNs) / NANOS_PER_MICROSECOND;
@@ -141,10 +167,6 @@ void StreamRemoteSubmix::shutdown() {
 }
 
 ::android::status_t StreamRemoteSubmix::refinePosition(StreamDescriptor::Position* position) {
-    if (!mCurrentRoute) {
-        RETURN_STATUS_IF_ERROR(setCurrentRoute());
-        if (!mCurrentRoute) return ::android::OK;
-    }
     sp<MonoPipeReader> source = mCurrentRoute->getSource();
     if (source == nullptr) {
         return ::android::NO_INIT;
@@ -168,7 +190,6 @@ long StreamRemoteSubmix::getDelayInUsForFrameCount(size_t frameCount) {
 
 // Calculate the maximum size of the pipe buffer in frames for the specified stream.
 size_t StreamRemoteSubmix::getStreamPipeSizeInFrames() {
-    if (!mCurrentRoute) return r_submix::kDefaultPipeSizeInFrames;
     auto pipeConfig = mCurrentRoute->getPipeConfig();
     const size_t maxFrameSize = std::max(mStreamConfig.frameSize, pipeConfig.frameSize);
     return (pipeConfig.frameCount * pipeConfig.frameSize) / maxFrameSize;
@@ -192,7 +213,7 @@ size_t StreamRemoteSubmix::getStreamPipeSizeInFrames() {
     }
     mWriteShutdownCount = 0;
 
-    LOG(VERBOSE) << __func__ << ": " << getDeviceAddress().toString() << ", " << frameCount
+    LOG(VERBOSE) << __func__ << ": " << mDeviceAddress.toString() << ", " << frameCount
                  << " frames";
 
     const bool shouldBlockWrite = mCurrentRoute->shouldBlockWrite();
@@ -266,9 +287,8 @@ size_t StreamRemoteSubmix::getStreamPipeSizeInFrames() {
     }
     mReadErrorCount = 0;
 
-    LOG(VERBOSE) << __func__ << ": " << getDeviceAddress().toString() << ", " << frameCount
+    LOG(VERBOSE) << __func__ << ": " << mDeviceAddress.toString() << ", " << frameCount
                  << " frames";
-
     // read the data from the pipe
     char* buff = (char*)buffer;
     size_t actuallyRead = 0;
@@ -308,91 +328,10 @@ size_t StreamRemoteSubmix::getStreamPipeSizeInFrames() {
     return ::android::OK;
 }
 
-::android::status_t StreamRemoteSubmix::setCurrentRoute() {
-    const auto address = getDeviceAddress();
-    if (address == AudioDeviceAddress{}) {
-        return ::android::OK;
-    }
-    mCurrentRoute = SubmixRoute::findOrCreateRoute(address, mStreamConfig);
-    if (mCurrentRoute == nullptr) {
-        return ::android::NO_INIT;
-    }
-    if (!mCurrentRoute->isStreamConfigValid(mIsInput, mStreamConfig)) {
-        LOG(ERROR) << __func__ << ": invalid stream config";
-        return ::android::NO_INIT;
-    }
-    sp<MonoPipe> sink = mCurrentRoute->getSink();
-    if (sink == nullptr) {
-        LOG(ERROR) << __func__ << ": nullptr sink when opening stream";
-        return ::android::NO_INIT;
-    }
-    if ((!mIsInput || mCurrentRoute->isStreamInOpen()) && sink->isShutdown()) {
-        LOG(DEBUG) << __func__ << ": Shut down sink when opening stream";
-        if (::android::OK != mCurrentRoute->resetPipe()) {
-            LOG(ERROR) << __func__ << ": reset pipe failed";
-            return ::android::NO_INIT;
-        }
-    }
-    mCurrentRoute->openStream(mIsInput);
-    return ::android::OK;
-}
-
-ndk::ScopedAStatus StreamRemoteSubmix::prepareToClose() {
-    if (!mIsInput) {
-        const auto address = getDeviceAddress();
-        if (address == AudioDeviceAddress{}) return ndk::ScopedAStatus::ok();
-        std::shared_ptr<SubmixRoute> route = SubmixRoute::findRoute(address);
-        if (route != nullptr) {
-            sp<MonoPipe> sink = route->getSink();
-            if (sink == nullptr) {
-                ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
-            }
-            LOG(DEBUG) << __func__ << ": shutting down MonoPipe sink";
-
-            sink->shutdown(true);
-            // The client already considers this stream as closed, release the output end.
-            route->closeStream(mIsInput);
-        } else {
-            LOG(DEBUG) << __func__ << ": stream already closed.";
-            ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
-        }
-    }
-    return ndk::ScopedAStatus::ok();
-}
-
-ndk::ScopedAStatus StreamRemoteSubmix::setConnectedDevices(const ConnectedDevices& devices) {
-    if (devices.size() > 1) {
-        LOG(ERROR) << __func__ << ": Only single device supported, got " << devices.size();
-        return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
-    }
-    AudioDeviceAddress newAddress;
-    if (!devices.empty()) {
-        if (auto deviceDesc = devices.front().type;
-            (mIsInput && deviceDesc.type != AudioDeviceType::IN_SUBMIX) ||
-            (!mIsInput && deviceDesc.type != AudioDeviceType::OUT_SUBMIX)) {
-            LOG(ERROR) << __func__ << ": Device type " << toString(deviceDesc.type)
-                       << " not supported";
-            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
-        }
-        newAddress = devices.front().address;
-        LOG(DEBUG) << __func__ << ": connected to " << newAddress.toString();
-    } else {
-        LOG(DEBUG) << __func__ << ": disconnected";
-    }
-    RETURN_STATUS_IF_ERROR(StreamCommonImpl::setConnectedDevices(devices));
-    std::lock_guard guard(mLock);
-    if (mDeviceAddress != newAddress) {
-        mDeviceAddress = newAddress;
-        mDeviceAddressUpdated.store(true, std::memory_order_release);
-    }
-    return ndk::ScopedAStatus::ok();
-}
-
 StreamInRemoteSubmix::StreamInRemoteSubmix(StreamContext&& context,
                                            const SinkMetadata& sinkMetadata,
                                            const std::vector<MicrophoneInfo>& microphones)
-    : StreamIn(std::move(context), microphones),
-      StreamRemoteSubmix(&mContextInstance, sinkMetadata) {}
+    : StreamIn(std::move(context), microphones), StreamSwitcher(&mContextInstance, sinkMetadata) {}
 
 ndk::ScopedAStatus StreamInRemoteSubmix::getActiveMicrophones(
         std::vector<MicrophoneDynamicInfo>* _aidl_return) {
@@ -401,10 +340,66 @@ ndk::ScopedAStatus StreamInRemoteSubmix::getActiveMicrophones(
     return ndk::ScopedAStatus::ok();
 }
 
+StreamSwitcher::DeviceSwitchBehavior StreamInRemoteSubmix::switchCurrentStream(
+        const std::vector<::aidl::android::media::audio::common::AudioDevice>& devices) {
+    // This implementation effectively postpones stream creation until
+    // receiving the first call to 'setConnectedDevices' with a non-empty list.
+    if (isStubStream()) {
+        if (devices.size() == 1) {
+            auto deviceDesc = devices.front().type;
+            if (deviceDesc.type ==
+                ::aidl::android::media::audio::common::AudioDeviceType::IN_SUBMIX) {
+                return DeviceSwitchBehavior::CREATE_NEW_STREAM;
+            }
+            LOG(ERROR) << __func__ << ": Device type " << toString(deviceDesc.type)
+                       << " not supported";
+        } else {
+            LOG(ERROR) << __func__ << ": Only single device supported.";
+        }
+        return DeviceSwitchBehavior::UNSUPPORTED_DEVICES;
+    }
+    return DeviceSwitchBehavior::USE_CURRENT_STREAM;
+}
+
+std::unique_ptr<StreamCommonInterfaceEx> StreamInRemoteSubmix::createNewStream(
+        const std::vector<::aidl::android::media::audio::common::AudioDevice>& devices,
+        StreamContext* context, const Metadata& metadata) {
+    return std::unique_ptr<StreamCommonInterfaceEx>(
+            new InnerStreamWrapper<StreamRemoteSubmix>(context, metadata, devices.front().address));
+}
+
 StreamOutRemoteSubmix::StreamOutRemoteSubmix(StreamContext&& context,
                                              const SourceMetadata& sourceMetadata,
                                              const std::optional<AudioOffloadInfo>& offloadInfo)
     : StreamOut(std::move(context), offloadInfo),
-      StreamRemoteSubmix(&mContextInstance, sourceMetadata) {}
+      StreamSwitcher(&mContextInstance, sourceMetadata) {}
+
+StreamSwitcher::DeviceSwitchBehavior StreamOutRemoteSubmix::switchCurrentStream(
+        const std::vector<::aidl::android::media::audio::common::AudioDevice>& devices) {
+    // This implementation effectively postpones stream creation until
+    // receiving the first call to 'setConnectedDevices' with a non-empty list.
+    if (isStubStream()) {
+        if (devices.size() == 1) {
+            auto deviceDesc = devices.front().type;
+            if (deviceDesc.type ==
+                ::aidl::android::media::audio::common::AudioDeviceType::OUT_SUBMIX) {
+                return DeviceSwitchBehavior::CREATE_NEW_STREAM;
+            }
+            LOG(ERROR) << __func__ << ": Device type " << toString(deviceDesc.type)
+                       << " not supported";
+        } else {
+            LOG(ERROR) << __func__ << ": Only single device supported.";
+        }
+        return DeviceSwitchBehavior::UNSUPPORTED_DEVICES;
+    }
+    return DeviceSwitchBehavior::USE_CURRENT_STREAM;
+}
+
+std::unique_ptr<StreamCommonInterfaceEx> StreamOutRemoteSubmix::createNewStream(
+        const std::vector<::aidl::android::media::audio::common::AudioDevice>& devices,
+        StreamContext* context, const Metadata& metadata) {
+    return std::unique_ptr<StreamCommonInterfaceEx>(
+            new InnerStreamWrapper<StreamRemoteSubmix>(context, metadata, devices.front().address));
+}
 
 }  // namespace aidl::android::hardware::audio::core

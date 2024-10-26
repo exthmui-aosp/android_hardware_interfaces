@@ -218,11 +218,12 @@ ndk::ScopedAStatus StreamInPrimary::getHwGain(std::vector<float>* _aidl_return) 
     if (isStubStream()) {
         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
     }
-    float gain;
-    RETURN_STATUS_IF_ERROR(primary::PrimaryMixer::getInstance().getMicGain(&gain));
-    _aidl_return->resize(0);
-    _aidl_return->resize(mChannelCount, gain);
-    RETURN_STATUS_IF_ERROR(setHwGainImpl(*_aidl_return));
+    if (mHwGains.empty()) {
+        float gain;
+        RETURN_STATUS_IF_ERROR(primary::PrimaryMixer::getInstance().getMicGain(&gain));
+        _aidl_return->resize(mChannelCount, gain);
+        RETURN_STATUS_IF_ERROR(setHwGainImpl(*_aidl_return));
+    }
     return getHwGainImpl(_aidl_return);
 }
 
@@ -241,6 +242,14 @@ ndk::ScopedAStatus StreamInPrimary::setHwGain(const std::vector<float>& in_chann
         mHwGains = currentGains;
         return status;
     }
+    float gain;
+    RETURN_STATUS_IF_ERROR(primary::PrimaryMixer::getInstance().getMicGain(&gain));
+    // Due to rounding errors, round trip conversions between percents and indexed values may not
+    // match.
+    if (gain != in_channelGains[0]) {
+        LOG(WARNING) << __func__ << ": unmatched gain: set: " << in_channelGains[0]
+                     << ", from mixer: " << gain;
+    }
     return ndk::ScopedAStatus::ok();
 }
 
@@ -254,9 +263,11 @@ ndk::ScopedAStatus StreamOutPrimary::getHwVolume(std::vector<float>* _aidl_retur
     if (isStubStream()) {
         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
     }
-    RETURN_STATUS_IF_ERROR(primary::PrimaryMixer::getInstance().getVolumes(_aidl_return));
-    _aidl_return->resize(mChannelCount);
-    RETURN_STATUS_IF_ERROR(setHwVolumeImpl(*_aidl_return));
+    if (mHwVolumes.empty()) {
+        RETURN_STATUS_IF_ERROR(primary::PrimaryMixer::getInstance().getVolumes(_aidl_return));
+        _aidl_return->resize(mChannelCount);
+        RETURN_STATUS_IF_ERROR(setHwVolumeImpl(*_aidl_return));
+    }
     return getHwVolumeImpl(_aidl_return);
 }
 
@@ -271,6 +282,15 @@ ndk::ScopedAStatus StreamOutPrimary::setHwVolume(const std::vector<float>& in_ch
         !status.isOk()) {
         mHwVolumes = currentVolumes;
         return status;
+    }
+    std::vector<float> volumes;
+    RETURN_STATUS_IF_ERROR(primary::PrimaryMixer::getInstance().getVolumes(&volumes));
+    // Due to rounding errors, round trip conversions between percents and indexed values may not
+    // match.
+    if (volumes != in_channelVolumes) {
+        LOG(WARNING) << __func__ << ": unmatched volumes: set: "
+                     << ::android::internal::ToString(in_channelVolumes)
+                     << ", from mixer: " << ::android::internal::ToString(volumes);
     }
     return ndk::ScopedAStatus::ok();
 }

@@ -1849,6 +1849,12 @@ TEST_F(DefaultVehicleHalTest, testHeartbeatEvent) {
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
     auto maybeResults = getCallback()->nextOnPropertyEventResults();
+    size_t retryCount = 0;
+    // Add a 1s (100ms * 10) buffer time.
+    while (!maybeResults.has_value() && retryCount < 10) {
+        retryCount++;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
     ASSERT_TRUE(maybeResults.has_value()) << "no results in callback";
     ASSERT_EQ(maybeResults.value().payloads.size(), static_cast<size_t>(1));
     VehiclePropValue gotValue = maybeResults.value().payloads[0];

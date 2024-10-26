@@ -37,6 +37,17 @@
 
 using aidl::android::hardware::boot::MergeStatus;
 
+#define TEST_OP(_x, _y, op)                                                            \
+    do {                                                                               \
+        const auto& x = _x;                                                            \
+        const auto& y = _y;                                                            \
+        if (!(x op y)) {                                                               \
+            LOG(ERROR) << #_x " " #op " " #_y << " failed: " << x << " " #op " " << y; \
+            return {};                                                                 \
+        }                                                                              \
+    } while (0)
+#define TEST_NE(_x, _y) TEST_OP(_x, _y, !=)
+
 std::ostream& operator<<(std::ostream& os, MergeStatus status) {
     switch (status) {
         case MergeStatus::NONE:
@@ -79,31 +90,64 @@ class BootControlClientAidl final : public BootControlClient {
 
     BootControlVersion GetVersion() const override { return BootControlVersion::BOOTCTL_AIDL; }
 
-    ~BootControlClientAidl() {
-        if (boot_control_death_recipient) {
-            AIBinder_unlinkToDeath(module_->asBinder().get(), boot_control_death_recipient, this);
+    void onBootControlServiceDied() {
+        LOG(ERROR) << "boot control service AIDL died. Attempting to reconnect...";
+        const auto instance_name =
+                std::string(::aidl::android::hardware::boot::IBootControl::descriptor) + "/default";
+        if (AServiceManager_isDeclared(instance_name.c_str())) {
+            module_ = ::aidl::android::hardware::boot::IBootControl::fromBinder(
+                    ndk::SpAIBinder(AServiceManager_waitForService(instance_name.c_str())));
+            if (module_ == nullptr) {
+                LOG(ERROR) << "AIDL " << instance_name
+                           << " is declared but waitForService returned nullptr when trying to "
+                              "reconnect boot control service";
+                return;
+            }
+            LOG(INFO) << "Reconnected to AIDL version of IBootControl";
+            binder_status_t status = AIBinder_linkToDeath(module_->asBinder().get(),
+                                                          boot_control_death_recipient, this);
+            if (status != STATUS_OK) {
+                LOG(ERROR) << "Could not link to binder death";
+                return;
+            }
+
+        } else {
+            LOG(ERROR) << "Failed to get service manager for: " << instance_name;
         }
     }
 
-    void onBootControlServiceDied() { LOG(ERROR) << "boot control service AIDL died"; }
-
     int32_t GetNumSlots() const override {
         int32_t ret = -1;
+        if (!module_) {
+            LOG(ERROR) << "bootctl module not set";
+            return ret;
+        }
         LOG_NDK_STATUS(module_->getNumberSlots(&ret));
         return ret;
     }
 
     int32_t GetCurrentSlot() const override {
         int32_t ret = -1;
+        if (!module_) {
+            LOG(ERROR) << "bootctl module not set";
+            return ret;
+        }
         LOG_NDK_STATUS(module_->getCurrentSlot(&ret));
         return ret;
     }
+
     MergeStatus getSnapshotMergeStatus() const override {
         MergeStatus status = MergeStatus::UNKNOWN;
+        if (!module_) {
+            LOG(ERROR) << "bootctl module not set";
+            return status;
+        }
         LOG_NDK_STATUS(module_->getSnapshotMergeStatus(&status));
         return status;
     }
+
     std::string GetSuffix(int32_t slot) const override {
+        TEST_NE(module_, nullptr);
         std::string ret;
         const auto status = module_->getSuffix(slot, &ret);
         if (!status.isOk()) {
@@ -115,6 +159,7 @@ class BootControlClientAidl final : public BootControlClient {
     }
 
     std::optional<bool> IsSlotBootable(int32_t slot) const override {
+        TEST_NE(module_, nullptr);
         bool ret = false;
         const auto status = module_->isSlotBootable(slot, &ret);
         if (!status.isOk()) {
@@ -126,6 +171,7 @@ class BootControlClientAidl final : public BootControlClient {
     }
 
     CommandResult MarkSlotUnbootable(int32_t slot) override {
+        TEST_NE(module_, nullptr);
         const auto status = module_->setSlotAsUnbootable(slot);
         if (!status.isOk()) {
             LOG(ERROR) << __FUNCTION__ << "(" << slot << ")" << " failed "
@@ -135,6 +181,7 @@ class BootControlClientAidl final : public BootControlClient {
     }
 
     CommandResult SetActiveBootSlot(int slot) override {
+        TEST_NE(module_, nullptr);
         const auto status = module_->setActiveBootSlot(slot);
         if (!status.isOk()) {
             LOG(ERROR) << __FUNCTION__ << "(" << slot << ")" << " failed "
@@ -142,14 +189,20 @@ class BootControlClientAidl final : public BootControlClient {
         }
         return {.success = status.isOk(), .errMsg = status.getDescription()};
     }
+
     int GetActiveBootSlot() const {
         int ret = -1;
+        if (!module_) {
+            LOG(ERROR) << "bootctl module not set";
+            return ret;
+        }
         LOG_NDK_STATUS(module_->getActiveBootSlot(&ret));
         return ret;
     }
 
     // Check if |slot| is marked boot successfully.
     std::optional<bool> IsSlotMarkedSuccessful(int slot) const override {
+        TEST_NE(module_, nullptr);
         bool ret = false;
         const auto status = module_->isSlotMarkedSuccessful(slot, &ret);
         if (!status.isOk()) {
@@ -161,6 +214,7 @@ class BootControlClientAidl final : public BootControlClient {
     }
 
     CommandResult MarkBootSuccessful() override {
+        TEST_NE(module_, nullptr);
         const auto status = module_->markBootSuccessful();
         if (!status.isOk()) {
             LOG(ERROR) << __FUNCTION__ << " failed " << status.getDescription();
@@ -170,6 +224,7 @@ class BootControlClientAidl final : public BootControlClient {
 
     CommandResult SetSnapshotMergeStatus(
             aidl::android::hardware::boot::MergeStatus merge_status) override {
+        TEST_NE(module_, nullptr);
         const auto status = module_->setSnapshotMergeStatus(merge_status);
         if (!status.isOk()) {
             LOG(ERROR) << __FUNCTION__ << "(" << merge_status << ")" << " failed "
@@ -179,7 +234,7 @@ class BootControlClientAidl final : public BootControlClient {
     }
 
   private:
-    const std::shared_ptr<IBootControl> module_;
+    std::shared_ptr<IBootControl> module_;
     AIBinder_DeathRecipient* boot_control_death_recipient;
     static void onBootControlServiceDied(void* client) {
         BootControlClientAidl* self = static_cast<BootControlClientAidl*>(client);

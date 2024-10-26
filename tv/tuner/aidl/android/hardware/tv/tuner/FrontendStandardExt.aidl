@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package android.hardware.vibrator;
+package android.hardware.tv.tuner;
 
+import android.hardware.tv.tuner.FrontendDvbsStandard;
+import android.hardware.tv.tuner.FrontendDvbtStandard;
+
+/**
+ * @hide
+ */
 @VintfStability
-parcelable PwleV2OutputMapEntry {
+union FrontendStandardExt {
     /**
-     * Absolute frequency point in the units of hertz
-     *
+     * The DVB-S standard extension after standard transition.
      */
-    float frequencyHz;
+    FrontendDvbsStandard dvbsStandardExt = FrontendDvbsStandard.UNDEFINED;
 
     /**
-     * Max output acceleration for the specified frequency in units of Gs.
-     *
-     * This value represents the maximum safe output acceleration (in Gs) achievable at the
-     * specified frequency, typically determined during calibration. The actual output acceleration
-     * is assumed to scale linearly with the input amplitude within the range of [0, 1].
+     * The DVB-T standard extension after standard transition.
      */
-    float maxOutputAccelerationGs;
+    FrontendDvbtStandard dvbtStandardExt = FrontendDvbtStandard.UNDEFINED;
 }
