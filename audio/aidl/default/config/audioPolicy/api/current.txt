@@ -144,6 +144,7 @@ package android.audio.policy.configuration {
     enum_constant public static final android.audio.policy.configuration.AudioDevice AUDIO_DEVICE_OUT_HEARING_AID;
     enum_constant public static final android.audio.policy.configuration.AudioDevice AUDIO_DEVICE_OUT_IP;
     enum_constant public static final android.audio.policy.configuration.AudioDevice AUDIO_DEVICE_OUT_LINE;
+    enum_constant public static final android.audio.policy.configuration.AudioDevice AUDIO_DEVICE_OUT_MULTICHANNEL_GROUP;
     enum_constant public static final android.audio.policy.configuration.AudioDevice AUDIO_DEVICE_OUT_PROXY;
     enum_constant public static final android.audio.policy.configuration.AudioDevice AUDIO_DEVICE_OUT_REMOTE_SUBMIX;
     enum_constant public static final android.audio.policy.configuration.AudioDevice AUDIO_DEVICE_OUT_SPDIF;

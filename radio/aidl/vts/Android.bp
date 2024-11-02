@@ -79,9 +79,9 @@ cc_test {
     static_libs: [
         "android.hardware.radio-V3-ndk",
         "android.hardware.radio.config-V3-ndk",
-        "android.hardware.radio.data-V3-ndk",
+        "android.hardware.radio.data-V4-ndk",
         "android.hardware.radio.ims-V2-ndk",
-        "android.hardware.radio.ims.media-V2-ndk",
+        "android.hardware.radio.ims.media-V3-ndk",
         "android.hardware.radio.messaging-V3-ndk",
         "android.hardware.radio.modem-V3-ndk",
         "android.hardware.radio.network-V3-ndk",

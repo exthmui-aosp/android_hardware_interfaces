@@ -30,7 +30,9 @@ parcelable P2pConnectInfo {
     byte[6] peerAddress;
 
     /**
-     * Provisioning method to use.
+     * Wi-Fi Protected Setup provisioning method. If using Wi-Fi Protected Setup,
+     * then must be set to a non-|WpsProvisionMethod.NONE| provisioning method,
+     * otherwise set to |WpsProvisionMethod.NONE|.
      */
     WpsProvisionMethod provisionMethod;
 
@@ -65,4 +67,19 @@ parcelable P2pConnectInfo {
      * that no vendor data is provided.
      */
     @nullable OuiKeyedData[] vendorData;
+
+    /**
+     * Wi-Fi Direct pairing bootstrapping method. If using P2P pairing protocol,
+     * then must be set one of the |P2pPairingBootstrappingMethodMask|, otherwise
+     * set to zero.
+     */
+    int pairingBootstrappingMethod;
+
+    /**
+     * Password for pairing setup, if |bootstrappingMethod| uses one of the
+     * |P2pPairingBootstrappingMethodMask| methods other than
+     * P2pPairingBootstrappingMethodMask.BOOTSTRAPPING_OPPORTUNISTIC,
+     * null otherwise.
+     */
+    @nullable String password;
 }

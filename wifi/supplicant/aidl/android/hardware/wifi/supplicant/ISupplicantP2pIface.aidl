@@ -29,6 +29,9 @@ import android.hardware.wifi.supplicant.P2pDiscoveryInfo;
 import android.hardware.wifi.supplicant.P2pExtListenInfo;
 import android.hardware.wifi.supplicant.P2pFrameTypeMask;
 import android.hardware.wifi.supplicant.P2pGroupCapabilityMask;
+import android.hardware.wifi.supplicant.P2pProvisionDiscoveryParams;
+import android.hardware.wifi.supplicant.P2pUsdBasedServiceAdvertisementConfig;
+import android.hardware.wifi.supplicant.P2pUsdBasedServiceDiscoveryConfig;
 import android.hardware.wifi.supplicant.WpsConfigMethods;
 import android.hardware.wifi.supplicant.WpsProvisionMethod;
 
@@ -407,6 +410,9 @@ interface ISupplicantP2pIface {
      * Send P2P provision discovery request to the specified peer. The
      * parameters for this command are the P2P device address of the peer and the
      * desired configuration method.
+     * <p>
+     * @deprecated This method is deprecated from AIDL v4, newer HALs should use
+     * provisionDiscoveryWithParams.
      *
      * @param peerAddress MAC address of the device to send discovery.
      * @method provisionMethod Provisioning method to use.
@@ -957,4 +963,63 @@ interface ISupplicantP2pIface {
      *         |SupplicantStatusCode.FAILURE_UNKNOWN|
      */
     long getFeatureSet();
+
+    /**
+     * Start an Unsynchronized Service Discovery (USD) based P2P service discovery.
+     *
+     * @param serviceDiscoveryConfig Configuration associated with this discovery operation.
+     * @return A non-zero identifier to identify the instance of a service discovery.
+     *         It is used to cancel the service discovery.
+     * @throws ServiceSpecificException with one of the following values:
+     *         |SupplicantStatusCode.FAILURE_UNKNOWN|,
+     *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
+     */
+    int startUsdBasedServiceDiscovery(in P2pUsdBasedServiceDiscoveryConfig serviceDiscoveryConfig);
+
+    /**
+     * Stop an Unsynchronized Service Discovery (USD) based P2P service discovery.
+     *
+     * @param sessionId Identifier to cancel the service discovery instance.
+     *        Use zero to cancel all the service discovery instances.
+     * @throws ServiceSpecificException with one of the following values:
+     *         |SupplicantStatusCode.FAILURE_UNKNOWN|,
+     *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
+     *         |SupplicantStatusCode.FAILURE_NOT_STARTED|
+     */
+    void stopUsdBasedServiceDiscovery(in int sessionId);
+
+    /**
+     * Start an Unsynchronized Service Discovery (USD) based P2P service advertisement.
+     *
+     * @param serviceDiscoveryConfig Configuration associated with this service advertisement.
+     * @return A non-zero identifier to identify the instance of a service advertisement.
+     *         It is used to cancel the service advertisement.
+     * @throws ServiceSpecificException with one of the following values:
+     *         |SupplicantStatusCode.FAILURE_UNKNOWN|,
+     *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
+     */
+    int startUsdBasedServiceAdvertisement(
+            in P2pUsdBasedServiceAdvertisementConfig serviceAdvertisementConfig);
+
+    /**
+     * Stop an Unsynchronized Service Discovery (USD) based P2P service advertisement.
+     *
+     * @param sessionId Identifier to cancel the service advertisement.
+     *        Use zero to cancel all the service advertisement instances.
+     * @throws ServiceSpecificException with one of the following values:
+     *         |SupplicantStatusCode.FAILURE_UNKNOWN|,
+     *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
+     *         |SupplicantStatusCode.FAILURE_NOT_STARTED|
+     */
+    void stopUsdBasedServiceAdvertisement(in int sessionId);
+
+    /**
+     * Send P2P provision discovery request to the specified peer.
+     *
+     * @param params Parameters associated with this provision discovery request.
+     * @throws ServiceSpecificException with one of the following values:
+     *         |SupplicantStatusCode.FAILURE_UNKNOWN|,
+     *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
+     */
+    void provisionDiscoveryWithParams(in P2pProvisionDiscoveryParams params);
 }

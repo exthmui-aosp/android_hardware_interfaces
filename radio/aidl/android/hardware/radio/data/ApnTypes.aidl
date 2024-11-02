@@ -91,16 +91,12 @@ enum ApnTypes {
      * APN type for RCS (Rich Communication Services)
      */
     RCS = 1 << 15,
-
     /**
      * APN type for OEM_PAID networks (Automotive PANS)
      */
-    // TODO(b/366194627): enable once HAL unfreezes
-    // OEM_PAID = 1 << 16,
-
+    OEM_PAID = 1 << 16,
     /**
      * APN type for OEM_PRIVATE networks (Automotive PANS)
      */
-    // TODO(b/366194627): enable once HAL unfreezes
-    // OEM_PRIVATE = 1 << 17,
+    OEM_PRIVATE = 1 << 17,
 }

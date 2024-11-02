@@ -16,27 +16,44 @@
 
 package android.hardware.tv.mediaquality;
 
+import android.hardware.tv.mediaquality.AmbientBacklightSettings;
+import android.hardware.tv.mediaquality.IMediaQualityCallback;
+
 /**
  * Interface for the media quality service
  */
 @VintfStability
 interface IMediaQuality {
     /**
+     * Sets a callback for events.
+     *
+     * @param callback Callback object to pass events.
+     */
+    void setCallback(in IMediaQualityCallback callback);
+
+    /**
+     * Sets the ambient backlight detector settings.
+     *
+     * @param settings Ambient backlight detector settings.
+     */
+    void setAmbientBacklightDetector(in AmbientBacklightSettings settings);
+
+    /**
      * Sets the ambient backlight detection enabled or disabled. The ambient backlight is the
      * projection of light against the wall driven by the current content playing. Enable will
      * detects the Ambient backlight metadata and ambient control app can control the related
      * device as configured before.
      *
-     * @param enabled True to enable the ambient light detection, false to disable.
+     * @param enabled True to enable the ambient backlight detection, false to disable.
      */
-    void setAmbientLightDetectionEnabled(in boolean enabled);
+    void setAmbientBacklightDetectionEnabled(in boolean enabled);
 
     /**
-     * Gets the ambient light detection enabled status. The ambient light is enabled by
-     * calling setAmbientLightDetectionEnabled(in boolean enabled). True to enable the ambient
-     * light detection and False to disable the ambient light detection.
+     * Gets the ambient backlight detection enabled status. The ambient backlight is enabled by
+     * calling setAmbientBacklightDetectionEnabled(in boolean enabled). True to enable the
+     * ambient light detection and False to disable the ambient backlight detection.
      *
-     * @return True if the ambient light detection is enabled, false otherwise.
+     * @return True if the ambient backlight detection is enabled, false otherwise.
      */
-    boolean getAmbientLightDetectionEnabled();
+    boolean getAmbientBacklightDetectionEnabled();
 }

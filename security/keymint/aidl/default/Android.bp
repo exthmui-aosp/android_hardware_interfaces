@@ -97,9 +97,6 @@ rust_binary {
         "libkmr_hal_nonsecure",
         "libkmr_ta_nonsecure",
     ],
-    required: [
-        "android.hardware.hardware_keystore.xml",
-    ],
     vintf_fragment_modules: [
         "android.hardware.security.keymint-service.xml",
         "android.hardware.security.sharedsecret-service.xml",

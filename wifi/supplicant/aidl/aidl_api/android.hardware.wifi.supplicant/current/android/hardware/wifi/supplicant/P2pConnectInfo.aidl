@@ -41,4 +41,6 @@ parcelable P2pConnectInfo {
   boolean persistent;
   int goIntent;
   @nullable android.hardware.wifi.common.OuiKeyedData[] vendorData;
+  int pairingBootstrappingMethod;
+  @nullable String password;
 }

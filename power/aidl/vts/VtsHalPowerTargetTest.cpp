@@ -45,6 +45,7 @@ using android::hardware::power::IPowerHintSession;
 using android::hardware::power::Mode;
 using android::hardware::power::SessionHint;
 using android::hardware::power::SessionMode;
+using android::hardware::power::SupportInfo;
 using android::hardware::power::WorkDuration;
 using ChannelMessageContents = ChannelMessage::ChannelMessageContents;
 using ModeSetter = ChannelMessage::ChannelMessageContents::SessionModeSetter;
@@ -82,6 +83,16 @@ const std::vector<SessionMode> kInvalidSessionModes = {
         static_cast<SessionMode>(static_cast<int32_t>(kSessionModes.front()) - 1),
         static_cast<SessionMode>(static_cast<int32_t>(kSessionModes.back()) + 1),
 };
+
+template <class T>
+constexpr size_t enum_size() {
+    return static_cast<size_t>(*(ndk::enum_range<T>().end() - 1)) + 1;
+}
+
+template <class E>
+bool supportFromBitset(int64_t& supportInt, E type) {
+    return (supportInt >> static_cast<int>(type)) % 2;
+}
 
 class DurationWrapper : public WorkDuration {
   public:
@@ -286,6 +297,21 @@ TEST_P(PowerAidl, hasFixedPerformance) {
     bool supported;
     ASSERT_TRUE(power->isModeSupported(Mode::FIXED_PERFORMANCE, &supported).isOk());
     ASSERT_TRUE(supported);
+}
+
+TEST_P(PowerAidl, hasSupportInfo) {
+    SupportInfo config;
+    ASSERT_TRUE(power->getSupportInfo(&config).isOk());
+    for (Mode mode : kModes) {
+        bool supported;
+        power->isModeSupported(mode, &supported);
+        ASSERT_EQ(supported, supportFromBitset(config.modes, mode));
+    }
+    for (Boost boost : kBoosts) {
+        bool supported;
+        power->isBoostSupported(boost, &supported);
+        ASSERT_EQ(supported, supportFromBitset(config.boosts, boost));
+    }
 }
 
 TEST_P(HintSessionAidl, createAndCloseHintSession) {

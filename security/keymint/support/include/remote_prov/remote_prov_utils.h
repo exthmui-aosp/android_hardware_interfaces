@@ -94,6 +94,13 @@ const std::string DEFAULT_INSTANCE_NAME =
 const std::string RKPVM_INSTANCE_NAME =
         "android.hardware.security.keymint.IRemotelyProvisionedComponent/avf";
 
+/**
+ * Returns the portion of an instance name after the /
+ * e.g. for "android.hardware.security.keymint.IRemotelyProvisionedComponent/avf",
+ * it returns "avf".
+ */
+std::string deviceSuffix(const std::string& name);
+
 struct EekChain {
     bytevec chain;
     bytevec last_pubkey;
@@ -184,7 +191,9 @@ ErrMsgOr<std::vector<BccEntryData>> verifyProductionProtectedData(
 ErrMsgOr<std::unique_ptr<cppbor::Array>> verifyFactoryCsr(
         const cppbor::Array& keysToSign, const std::vector<uint8_t>& csr,
         IRemotelyProvisionedComponent* provisionable, const std::string& instanceName,
-        const std::vector<uint8_t>& challenge, bool allowDegenerate = true);
+        const std::vector<uint8_t>& challenge, bool allowDegenerate = true,
+        bool requireUdsCerts = false);
+
 /**
  * Verify the CSR as if the device is a final production sample.
  */

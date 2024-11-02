@@ -2478,6 +2478,8 @@ legacy_hal::wifi_rtt_type convertAidlRttTypeToLegacy(RttType type) {
             return legacy_hal::RTT_TYPE_2_SIDED_11MC;
         case RttType::TWO_SIDED_11AZ_NTB:
             return legacy_hal::RTT_TYPE_2_SIDED_11AZ_NTB;
+        case RttType::TWO_SIDED_11AZ_NTB_SECURE:
+            return legacy_hal::RTT_TYPE_2_SIDED_11AZ_NTB_SECURE;
     };
     CHECK(false);
 }
@@ -2491,6 +2493,8 @@ RttType convertLegacyRttTypeToAidl(legacy_hal::wifi_rtt_type type) {
             return RttType::TWO_SIDED_11MC;
         case legacy_hal::RTT_TYPE_2_SIDED_11AZ_NTB:
             return RttType::TWO_SIDED_11AZ_NTB;
+        case legacy_hal::RTT_TYPE_2_SIDED_11AZ_NTB_SECURE:
+            return RttType::TWO_SIDED_11AZ_NTB_SECURE;
     };
     CHECK(false) << "Unknown legacy type: " << type;
 }
@@ -2723,6 +2727,16 @@ RttStatus convertLegacyRttStatusToAidl(legacy_hal::wifi_rtt_status status) {
             return RttStatus::NAN_RANGING_PROTOCOL_FAILURE;
         case legacy_hal::RTT_STATUS_NAN_RANGING_CONCURRENCY_NOT_SUPPORTED:
             return RttStatus::NAN_RANGING_CONCURRENCY_NOT_SUPPORTED;
+        case legacy_hal::RTT_STATUS_SECURE_RANGING_FAILURE_INVALID_AKM:
+            return RttStatus::SECURE_RANGING_FAILURE_INVALID_AKM;
+        case legacy_hal::RTT_STATUS_SECURE_RANGING_FAILURE_INVALID_CIPHER:
+            return RttStatus::SECURE_RANGING_FAILURE_INVALID_CIPHER;
+        case legacy_hal::RTT_STATUS_SECURE_RANGING_FAILURE_INVALID_CONFIG:
+            return RttStatus::SECURE_RANGING_FAILURE_INVALID_CONFIG;
+        case legacy_hal::RTT_STATUS_SECURE_RANGING_FAILURE_REJECTED:
+            return RttStatus::SECURE_RANGING_FAILURE_REJECTED;
+        case legacy_hal::RTT_STATUS_SECURE_RANGING_FAILURE_UNKNOWN:
+            return RttStatus::SECURE_RANGING_FAILURE_UNKNOWN;
     };
     CHECK(false) << "Unknown legacy status: " << status;
 }

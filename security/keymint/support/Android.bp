@@ -126,6 +126,7 @@ cc_test {
     ],
     shared_libs: [
         "libbase",
+        "libbinder_ndk",
         "libcppbor",
         "libcppcose_rkp",
         "libcrypto",

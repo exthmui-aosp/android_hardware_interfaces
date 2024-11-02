@@ -70,6 +70,38 @@ enum CameraMetadataTag {
      */
     ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES,
     /**
+     * android.colorCorrection.colorTemperature [dynamic, int32, public]
+     *
+     * <p>Specifies the color temperature for CCT mode in Kelvin
+     * to adjust the white balance of the image.</p>
+     */
+    ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE,
+    /**
+     * android.colorCorrection.colorTint [dynamic, int32, public]
+     *
+     * <p>Specifies the color tint for CCT mode to adjust the white
+     * balance of the image.</p>
+     */
+    ANDROID_COLOR_CORRECTION_COLOR_TINT,
+    /**
+     * android.colorCorrection.colorTemperatureRange [static, int32[], public]
+     *
+     * <p>The range of supported color temperature values for
+     * ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE.</p>
+     *
+     * @see ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE
+     */
+    ANDROID_COLOR_CORRECTION_COLOR_TEMPERATURE_RANGE,
+    /**
+     * android.colorCorrection.availableModes [static, byte[], public]
+     *
+     * <p>List of color correction modes for ANDROID_COLOR_CORRECTION_MODE that are
+     * supported by this camera device.</p>
+     *
+     * @see ANDROID_COLOR_CORRECTION_MODE
+     */
+    ANDROID_COLOR_CORRECTION_AVAILABLE_MODES,
+    /**
      * android.control.aeAntibandingMode [dynamic, enum, public]
      *
      * <p>The desired setting for the camera device's auto-exposure

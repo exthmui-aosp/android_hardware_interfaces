@@ -43,4 +43,5 @@ interface IPower {
   android.hardware.power.IPowerHintSession createHintSessionWithConfig(in int tgid, in int uid, in int[] threadIds, in long durationNanos, in android.hardware.power.SessionTag tag, out android.hardware.power.SessionConfig config);
   android.hardware.power.ChannelConfig getSessionChannel(in int tgid, in int uid);
   oneway void closeSessionChannel(in int tgid, in int uid);
+  android.hardware.power.SupportInfo getSupportInfo();
 }

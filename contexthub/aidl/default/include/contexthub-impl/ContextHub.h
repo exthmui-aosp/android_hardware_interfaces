@@ -53,6 +53,24 @@ class ContextHub : public BnContextHub {
             int32_t in_contextHubId,
             const MessageDeliveryStatus& in_messageDeliveryStatus) override;
 
+    ::ndk::ScopedAStatus getHubs(std::vector<HubInfo>* _aidl_return) override;
+    ::ndk::ScopedAStatus getEndpoints(std::vector<EndpointInfo>* _aidl_return) override;
+    ::ndk::ScopedAStatus registerEndpoint(const EndpointInfo& in_endpoint) override;
+    ::ndk::ScopedAStatus unregisterEndpoint(const EndpointInfo& in_endpoint) override;
+    ::ndk::ScopedAStatus registerEndpointCallback(
+            const std::shared_ptr<IEndpointCallback>& in_callback) override;
+    ::ndk::ScopedAStatus requestSessionIdRange(int32_t in_size,
+                                               std::vector<int32_t>* _aidl_return) override;
+    ::ndk::ScopedAStatus openEndpointSession(
+            int32_t in_sessionId, const EndpointId& in_destination, const EndpointId& in_initiator,
+            const std::optional<std::string>& in_serviceDescriptor) override;
+    ::ndk::ScopedAStatus sendMessageToEndpoint(int32_t in_sessionId,
+                                               const Message& in_msg) override;
+    ::ndk::ScopedAStatus sendMessageDeliveryStatusToEndpoint(
+            int32_t in_sessionId, const MessageDeliveryStatus& in_msgStatus) override;
+    ::ndk::ScopedAStatus closeEndpointSession(int32_t in_sessionId, Reason in_reason) override;
+    ::ndk::ScopedAStatus endpointSessionOpenComplete(int32_t in_sessionId) override;
+
   private:
     static constexpr uint32_t kMockHubId = 0;
     std::shared_ptr<IContextHubCallback> mCallback;

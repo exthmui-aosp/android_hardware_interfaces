@@ -213,4 +213,25 @@ parcelable RttResult {
      * that no vendor data is provided.
      */
     @nullable OuiKeyedData[] vendorData;
+    /**
+     * Whether ranging frame protection is enabled.
+     */
+    boolean isRangingFrameProtectionEnabled;
+    /**
+     * Whether Secure HE-LTF is enabled.
+     */
+    boolean isSecureLtfEnabled;
+    /**
+     * Base Authentication and Key Management (AKM) protocol used for PASN as defined in |Akm|.
+     */
+    long baseAkm;
+    /**
+     * Pairwise cipher suite used for the PTKSA (Pairwise Transient Key Security Association)
+     * as defined in |CipherSuite|
+     */
+    long cipherSuite;
+    /**
+     * Secure HE-LTF protocol version used.
+     */
+    int secureHeLtfProtocolVersion;
 }

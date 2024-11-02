@@ -43,4 +43,11 @@ enum DisplayHotplugEvent {
      * displays that can be simultaneously connected
      */
     ERROR_TOO_MANY_DISPLAYS = -3,
+
+    /**
+     * Display link is unstable, e.g. link training failure (negotiation
+     * of connection speed failed), and the display needs to be
+     * reconfigured
+     */
+    ERROR_LINK_UNSTABLE = -4,
 }

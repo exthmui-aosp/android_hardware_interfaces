@@ -22,6 +22,7 @@ import android.hardware.power.IPowerHintSession;
 import android.hardware.power.Mode;
 import android.hardware.power.SessionConfig;
 import android.hardware.power.SessionTag;
+import android.hardware.power.SupportInfo;
 
 @VintfStability
 interface IPower {
@@ -144,4 +145,14 @@ interface IPower {
      * @param   uid The UID to be associated with this channel.
      */
     oneway void closeSessionChannel(in int tgid, in int uid);
+
+    /**
+     * Called to get detailed information on the support status of various PowerHAL
+     * features, such as hint sessions and specific boosts.
+     *
+     * @return  a SupportInfo giving detailed support information, or
+     *          EX_UNSUPPORTED_OPERATION if detailed support checking is itself
+     *          not supported.
+     */
+    SupportInfo getSupportInfo();
 }

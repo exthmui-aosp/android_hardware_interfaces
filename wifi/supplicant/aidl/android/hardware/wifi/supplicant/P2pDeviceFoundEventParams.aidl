@@ -89,4 +89,10 @@ parcelable P2pDeviceFoundEventParams {
      * Null value indicates that no vendor data is provided.
      */
     @nullable OuiKeyedData[] vendorData;
+
+    /**
+     * The bitmask of P2pPairingBootstrappingMethodMask.BOOTSTRAPPING_* methods used to enable
+     * the pairing bootstrapping between bootstrapping initiator and a bootstrapping responder.
+     */
+    int pairingBootstrappingMethods;
 }

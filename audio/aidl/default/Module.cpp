@@ -236,17 +236,24 @@ ndk::ScopedAStatus Module::createStreamContext(
     return ndk::ScopedAStatus::ok();
 }
 
-std::vector<AudioDevice> Module::findConnectedDevices(int32_t portConfigId) {
+std::vector<AudioDevice> Module::getDevicesFromDevicePortConfigIds(
+        const std::set<int32_t>& devicePortConfigIds) {
     std::vector<AudioDevice> result;
-    auto& ports = getConfig().ports;
-    auto portIds = portIdsFromPortConfigIds(findConnectedPortConfigIds(portConfigId));
-    for (auto it = portIds.begin(); it != portIds.end(); ++it) {
-        auto portIt = findById<AudioPort>(ports, *it);
-        if (portIt != ports.end() && portIt->ext.getTag() == AudioPortExt::Tag::device) {
-            result.push_back(portIt->ext.template get<AudioPortExt::Tag::device>().device);
+    auto& configs = getConfig().portConfigs;
+    for (const auto& id : devicePortConfigIds) {
+        auto it = findById<AudioPortConfig>(configs, id);
+        if (it != configs.end() && it->ext.getTag() == AudioPortExt::Tag::device) {
+            result.push_back(it->ext.template get<AudioPortExt::Tag::device>().device);
+        } else {
+            LOG(FATAL) << __func__ << ": " << mType
+                       << ": failed to find device for id" << id;
         }
     }
     return result;
+}
+
+std::vector<AudioDevice> Module::findConnectedDevices(int32_t portConfigId) {
+    return getDevicesFromDevicePortConfigIds(findConnectedPortConfigIds(portConfigId));
 }
 
 std::set<int32_t> Module::findConnectedPortConfigIds(int32_t portConfigId) {
@@ -483,7 +490,7 @@ ndk::ScopedAStatus Module::updateStreamsConnectedState(const AudioPatch& oldPatc
         const int32_t mixPortConfigId = connectionPair.first;
         if (auto it = oldConnections.find(mixPortConfigId);
             it == oldConnections.end() || it->second != connectionPair.second) {
-            const auto connectedDevices = findConnectedDevices(mixPortConfigId);
+            const auto connectedDevices = getDevicesFromDevicePortConfigIds(connectionPair.second);
             if (connectedDevices.empty()) {
                 // This is important as workers use the vector size to derive the connection status.
                 LOG(FATAL) << "updateStreamsConnectedState: No connected devices found for port "

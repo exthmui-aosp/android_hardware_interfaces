@@ -84,4 +84,20 @@ parcelable RttCapabilities {
      * that no vendor data is provided.
      */
     @nullable OuiKeyedData[] vendorData;
+    /**
+     * Bitmap of |Akm| values indicating the set of supported AKMs.
+     */
+    long akmsSupported;
+    /**
+     * Bitmap of |CipherSuite| values indicating the set of supported pairwise cipher suites.
+     */
+    long cipherSuitesSupported;
+    /**
+     * Whether secure HE-LTF is supported.
+     */
+    boolean secureHeLtfSupported;
+    /**
+     * Whether frame protection for ranging is supported.
+     */
+    boolean rangingFrameProtectionSupported;
 }

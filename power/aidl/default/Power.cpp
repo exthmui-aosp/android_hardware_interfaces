@@ -41,6 +41,11 @@ const std::vector<Boost> BOOST_RANGE{ndk::enum_range<Boost>().begin(),
                                      ndk::enum_range<Boost>().end()};
 const std::vector<Mode> MODE_RANGE{ndk::enum_range<Mode>().begin(), ndk::enum_range<Mode>().end()};
 
+template <class T>
+constexpr size_t enum_size() {
+    return static_cast<size_t>(*(ndk::enum_range<T>().end() - 1)) + 1;
+}
+
 ScopedAStatus Power::setMode(Mode type, bool enabled) {
     LOG(VERBOSE) << "Power setMode: " << static_cast<int32_t>(type) << " to: " << enabled;
     return ScopedAStatus::ok();
@@ -105,9 +110,28 @@ ndk::ScopedAStatus Power::closeSessionChannel(int32_t, int32_t) {
     return ndk::ScopedAStatus::ok();
 }
 
-ScopedAStatus Power::getHintSessionPreferredRate(int64_t* outNanoseconds) {
+ndk::ScopedAStatus Power::getHintSessionPreferredRate(int64_t* outNanoseconds) {
     *outNanoseconds = std::chrono::nanoseconds(1ms).count();
     return ScopedAStatus::ok();
+}
+
+template <class E>
+int64_t bitsForEnum() {
+    return static_cast<int64_t>(std::bitset<enum_size<E>()>().set().to_ullong());
+}
+
+ndk::ScopedAStatus Power::getSupportInfo(SupportInfo* _aidl_return) {
+    static SupportInfo supportInfo = {
+            .usesSessions = false,
+            .modes = bitsForEnum<Mode>(),
+            .boosts = bitsForEnum<Boost>(),
+            .sessionHints = 0,
+            .sessionModes = 0,
+            .sessionTags = 0,
+    };
+    // Copy the support object into the binder
+    *_aidl_return = supportInfo;
+    return ndk::ScopedAStatus::ok();
 }
 
 }  // namespace example

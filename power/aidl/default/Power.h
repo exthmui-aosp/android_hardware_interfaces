@@ -44,6 +44,7 @@ class Power : public BnPower {
     ndk::ScopedAStatus getSessionChannel(int32_t tgid, int32_t uid,
                                          ChannelConfig* _aidl_return) override;
     ndk::ScopedAStatus closeSessionChannel(int32_t tgid, int32_t uid) override;
+    ndk::ScopedAStatus getSupportInfo(SupportInfo* _aidl_return) override;
 
   private:
     std::vector<std::shared_ptr<IPowerHintSession>> mPowerHintSessions;

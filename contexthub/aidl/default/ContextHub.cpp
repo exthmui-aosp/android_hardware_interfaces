@@ -136,4 +136,83 @@ ScopedAStatus ContextHub::sendMessageDeliveryStatusToHub(
     return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
 
+ScopedAStatus ContextHub::getHubs(std::vector<HubInfo>* _aidl_return) {
+    ContextHubInfo hub = {};
+    hub.name = "Mock Context Hub";
+    hub.vendor = "AOSP";
+    hub.toolchain = "n/a";
+    hub.id = kMockHubId;
+    hub.peakMips = 1;
+    hub.maxSupportedMessageLengthBytes = 4096;
+    hub.chrePlatformId = UINT64_C(0x476f6f6754000000);
+    hub.chreApiMajorVersion = 1;
+    hub.chreApiMinorVersion = 6;
+    hub.supportsReliableMessages = false;
+
+    HubInfo hubInfo1 = {};
+    hubInfo1.hubId = hub.chrePlatformId;
+    hubInfo1.hubDetails = HubInfo::HubDetails::make<HubInfo::HubDetails::Tag::contextHubInfo>(hub);
+
+    VendorHubInfo vendorHub = {};
+    vendorHub.name = "Mock Vendor Hub";
+    vendorHub.version = 42;
+
+    HubInfo hubInfo2 = {};
+    hubInfo1.hubId = UINT64_C(0x1234567812345678);
+    hubInfo1.hubDetails =
+            HubInfo::HubDetails::make<HubInfo::HubDetails::Tag::vendorHubInfo>(vendorHub);
+
+    _aidl_return->push_back(hubInfo1);
+    _aidl_return->push_back(hubInfo2);
+
+    return ScopedAStatus::ok();
+};
+
+ScopedAStatus ContextHub::getEndpoints(std::vector<EndpointInfo>* /* _aidl_return */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
+ScopedAStatus ContextHub::registerEndpoint(const EndpointInfo& /* in_endpoint */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
+ScopedAStatus ContextHub::unregisterEndpoint(const EndpointInfo& /* in_endpoint */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
+ScopedAStatus ContextHub::registerEndpointCallback(
+        const std::shared_ptr<IEndpointCallback>& /* in_callback */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
+ScopedAStatus ContextHub::requestSessionIdRange(int32_t /* in_size */,
+                                                std::vector<int32_t>* /* _aidl_return */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
+ScopedAStatus ContextHub::openEndpointSession(
+        int32_t /* in_sessionId */, const EndpointId& /* in_destination */,
+        const EndpointId& /* in_initiator */,
+        const std::optional<std::string>& /* in_serviceDescriptor */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
+ScopedAStatus ContextHub::sendMessageToEndpoint(int32_t /* in_sessionId */,
+                                                const Message& /* in_msg */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
+ScopedAStatus ContextHub::sendMessageDeliveryStatusToEndpoint(
+        int32_t /* in_sessionId */, const MessageDeliveryStatus& /* in_msgStatus */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
+ScopedAStatus ContextHub::closeEndpointSession(int32_t /* in_sessionId */, Reason /* in_reason */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
+ScopedAStatus ContextHub::endpointSessionOpenComplete(int32_t /* in_sessionId */) {
+    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+};
+
 }  // namespace aidl::android::hardware::contexthub
