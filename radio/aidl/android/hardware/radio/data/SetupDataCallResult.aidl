@@ -68,10 +68,10 @@ parcelable SetupDataCallResult {
     /**
      * If cause is not DataCallFailCause.NONE, this field indicates the network suggested data
      * retry back-off time in milliseconds. Negative value indicates network does not give any
-     * suggestion. 0 indicates retry should be performed immediately. 0x7fffffffffffffff indicates
-     * the device should not retry data setup anymore. During this time, no calls to
-     * IRadioData.setupDataCall for this APN will be made unless IRadioDataIndication.unthrottleApn
-     * is sent with the same APN.
+     * suggestion. 0 indicates retry should be performed immediately.
+     * RadioConst:VALUE_UNAVAILABLE_LONG indicates the device should not retry data setup anymore.
+     * During this time, no calls to IRadioData.setupDataCall for this APN will be made unless
+     * IRadioDataIndication.unthrottleApn is sent with the same APN.
      */
     long suggestedRetryTime;
     /**

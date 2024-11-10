@@ -158,8 +158,8 @@ ScopedAStatus ContextHub::getHubs(std::vector<HubInfo>* _aidl_return) {
     vendorHub.version = 42;
 
     HubInfo hubInfo2 = {};
-    hubInfo1.hubId = UINT64_C(0x1234567812345678);
-    hubInfo1.hubDetails =
+    hubInfo2.hubId = UINT64_C(0x1234567812345678);
+    hubInfo2.hubDetails =
             HubInfo::HubDetails::make<HubInfo::HubDetails::Tag::vendorHubInfo>(vendorHub);
 
     _aidl_return->push_back(hubInfo1);

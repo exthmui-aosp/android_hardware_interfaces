@@ -80,6 +80,7 @@ using aidl::android::hardware::audio::core::StreamDescriptor;
 using aidl::android::hardware::audio::core::VendorParameter;
 using aidl::android::hardware::audio::core::sounddose::ISoundDose;
 using aidl::android::hardware::common::fmq::SynchronizedReadWrite;
+using aidl::android::media::audio::common::AudioChannelLayout;
 using aidl::android::media::audio::common::AudioContentType;
 using aidl::android::media::audio::common::AudioDevice;
 using aidl::android::media::audio::common::AudioDeviceAddress;
@@ -1514,7 +1515,7 @@ TEST_P(AudioCoreModule, CheckDevicePorts) {
     const int defaultDeviceFlag = 1 << AudioPortDeviceExt::FLAG_INDEX_DEFAULT_DEVICE;
     for (const auto& port : ports) {
         if (port.ext.getTag() != AudioPortExt::Tag::device) continue;
-        const auto& devicePort = port.ext.get<AudioPortExt::Tag::device>();
+        const AudioPortDeviceExt& devicePort = port.ext.get<AudioPortExt::Tag::device>();
         EXPECT_NE(AudioDeviceType::NONE, devicePort.device.type.type);
         EXPECT_NE(AudioDeviceType::IN_DEFAULT, devicePort.device.type.type);
         EXPECT_NE(AudioDeviceType::OUT_DEFAULT, devicePort.device.type.type);
@@ -1548,6 +1549,15 @@ TEST_P(AudioCoreModule, CheckDevicePorts) {
             } else {
                 FAIL() << "Invalid AudioIoFlags Tag: " << toString(port.flags.getTag());
             }
+        }
+        // Speaker layout can be null or layoutMask variant.
+        if (devicePort.speakerLayout.has_value()) {
+            // Should only be set for output ports.
+            EXPECT_EQ(AudioIoFlags::Tag::output, port.flags.getTag());
+            const auto speakerLayoutTag = devicePort.speakerLayout.value().getTag();
+            EXPECT_EQ(AudioChannelLayout::Tag::layoutMask, speakerLayoutTag)
+                    << "If set, speaker layout must be layoutMask.  Received: "
+                    << toString(speakerLayoutTag);
         }
     }
 }

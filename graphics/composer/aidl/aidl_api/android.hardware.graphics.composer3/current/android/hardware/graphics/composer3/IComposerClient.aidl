@@ -87,6 +87,7 @@ interface IComposerClient {
   void setRefreshRateChangedCallbackDebugEnabled(long display, boolean enabled);
   android.hardware.graphics.composer3.DisplayConfiguration[] getDisplayConfigurations(long display, int maxFrameIntervalNs);
   oneway void notifyExpectedPresent(long display, in android.hardware.graphics.composer3.ClockMonotonicTimestamp expectedPresentTime, int frameIntervalNs);
+  int getMaxLayerPictureProfiles(long display);
   const int EX_BAD_CONFIG = 1;
   const int EX_BAD_DISPLAY = 2;
   const int EX_BAD_LAYER = 3;
@@ -98,5 +99,6 @@ interface IComposerClient {
   const int EX_SEAMLESS_NOT_ALLOWED = 9;
   const int EX_SEAMLESS_NOT_POSSIBLE = 10;
   const int EX_CONFIG_FAILED = 11;
+  const int EX_PICTURE_PROFILE_MAX_EXCEEDED = 12;
   const int INVALID_CONFIGURATION = 0x7fffffff;
 }

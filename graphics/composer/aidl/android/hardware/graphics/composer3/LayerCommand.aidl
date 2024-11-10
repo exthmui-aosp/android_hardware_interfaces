@@ -285,4 +285,20 @@ parcelable LayerCommand {
      * Sets the lut(s) for the layer.
      */
     @nullable Luts luts;
+
+    /**
+     * If the display has multiple per-layer picture processing pipelines, then this value is used
+     * to look up a picture profile which defines the parameters used when configuring a
+     * picture-processing pipeline for this layer, enhancing the quality of the buffer contents. If
+     * the server doesn't recognize this profile, it must continue with composition and ignore
+     * this value. If the value is zero, then the no picture processing must be applied.
+     *
+     * Note that the client will never send a DisplayCommand.pictureProfileId if
+     * IComposerClient.getMaxLayerPictureProfiles is non-zero. Picture profiles will only be
+     * specified on a per-layer basis.
+     *
+     * @see IComposerClient.getMaxLayerPictureProfiles
+     * @see DisplayCommand.pictureProfileId
+     */
+    long pictureProfileId;
 }

@@ -36,8 +36,8 @@ parcelable LutProperties {
 
     /**
      * SamplingKey is about how a Lut can be sampled.
-     * A Lut can be sampled in more than one way,
-     * but only one sampling method is used at one time.
+     * A Lut can be sampled in more than one key,
+     * but only one sampling key is used at one time.
      *
      * The implementations should use a sampling strategy
      * at least as good as linear sampling.

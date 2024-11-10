@@ -77,7 +77,6 @@ aidl_interface {
                 "android.hardware.common-V2",
             ],
         },
-
     ],
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@
 
 package android.hardware.camera.metadata;
 @Backing(type="int") @VintfStability
-enum SensorReadoutTimestamp {
-  ANDROID_SENSOR_READOUT_TIMESTAMP_NOT_SUPPORTED,
-  ANDROID_SENSOR_READOUT_TIMESTAMP_HARDWARE,
+enum ExtensionNightModeIndicator {
+  ANDROID_EXTENSION_NIGHT_MODE_INDICATOR_UNKNOWN,
+  ANDROID_EXTENSION_NIGHT_MODE_INDICATOR_OFF,
+  ANDROID_EXTENSION_NIGHT_MODE_INDICATOR_ON,
 }

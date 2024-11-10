@@ -377,6 +377,7 @@
             <xs:enumeration value="AUDIO_USAGE_SAFETY" />
             <xs:enumeration value="AUDIO_USAGE_VEHICLE_STATUS" />
             <xs:enumeration value="AUDIO_USAGE_ANNOUNCEMENT" />
+            <xs:enumeration value="AUDIO_USAGE_SPEAKER_CLEANUP" />
         </xs:restriction>
     </xs:simpleType>
 

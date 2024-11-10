@@ -33,7 +33,7 @@ parcelable CellIdentityLte {
      */
     String mnc;
     /**
-     * 28-bit Cell Identity described in TS 27.007, INT_MAX if unknown
+     * 28-bit Cell Identity described in TS 27.007, RadioConst:VALUE_UNAVAILABLE if unknown
      */
     int ci;
     /**
@@ -41,7 +41,7 @@ parcelable CellIdentityLte {
      */
     int pci;
     /**
-     * 16-bit tracking area code, INT_MAX if unknown
+     * 16-bit tracking area code, RadioConst:VALUE_UNAVAILABLE if unknown
      */
     int tac;
     /**

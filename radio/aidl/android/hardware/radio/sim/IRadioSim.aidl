@@ -257,7 +257,7 @@ oneway interface IRadioSim {
      * Request APDU exchange on the basic channel. This command reflects TS 27.007
      * "generic SIM access" operation (+CSIM). The modem must ensure proper function of GSM/CDMA,
      * and filter commands appropriately. It must filter channel management and SELECT by DF
-     * name commands. "sessionid" field must be ignored.
+     * name commands. "sessionId" field is always 0 (for aid="") and may be ignored.
      *
      * @param serial Serial number of request.
      * @param message SimApdu to be sent

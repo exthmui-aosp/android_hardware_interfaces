@@ -45,6 +45,11 @@ class AidlCallbackHandler {
     ~AidlCallbackHandler() { invalidate(); }
 
     bool addCallback(const std::shared_ptr<CallbackType>& cb) {
+        if (cb == nullptr) {
+            LOG(ERROR) << "Unable to register a null callback";
+            return false;
+        }
+
         std::unique_lock<std::mutex> lk(callback_handler_lock_);
         void* cbPtr = reinterpret_cast<void*>(cb->asBinder().get());
         const auto& cbPosition = findCbInSet(cbPtr);

@@ -31,6 +31,7 @@ cc_defaults {
     ],
     header_libs: [
         "libaudioaidl_headers",
+        "libaudioutils_headers",
         "libexpectedutils_headers",
     ],
     cflags: [

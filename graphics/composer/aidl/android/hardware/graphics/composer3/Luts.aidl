@@ -40,13 +40,15 @@ parcelable Luts {
      * For data precision, 32-bit float is used to specify a Lut by both the HWC and
      * the platform.
      *
-     *
      * For unflattening/flattening 3D Lut(s), the algorithm below should be observed
      * by both the HWC and the platform.
      * Assuming that we have a 3D array `ORIGINAL[WIDTH, HEIGHT, DEPTH]`, we would turn it into
      * `FLAT[WIDTH * HEIGHT * DEPTH]` by
      *
      * `FLAT[z + DEPTH * (y + HEIGHT * x)] = ORIGINAL[x, y, z]`
+     *
+     * Noted that 1D Lut(s) should be gain curve ones
+     * and 3D Lut(s) should be pure color lookup ones.
      */
     @nullable ParcelFileDescriptor pfd;
 
@@ -60,6 +62,8 @@ parcelable Luts {
 
     /**
      * The properties list of the Luts.
+     *
+     * The number of sampling key inside should only be one.
      */
     LutProperties[] lutProperties;
 }

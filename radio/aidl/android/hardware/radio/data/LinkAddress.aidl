@@ -44,14 +44,14 @@ parcelable LinkAddress {
      * The time, as reported by SystemClock.elapsedRealtime(), when this link address will be or
      * was deprecated. -1 indicates this information is not available. At the time existing
      * connections can still use this address until it expires, but new connections should use the
-     * new address. LONG_MAX(0x7FFFFFFFFFFFFFFF) indicates this link address will never be
+     * new address. RadioConst:VALUE_UNAVAILABLE_LONG indicates this link address will never be
      * deprecated.
      */
     long deprecationTime;
     /**
      * The time, as reported by SystemClock.elapsedRealtime(), when this link address will expire
      * and be removed from the interface. -1 indicates this information is not available.
-     * LONG_MAX(0x7FFFFFFFFFFFFFFF) indicates this link address will never expire.
+     * RadioConst:VALUE_UNAVAILABLE_LONG indicates this link address will never expire.
      */
     long expirationTime;
 }

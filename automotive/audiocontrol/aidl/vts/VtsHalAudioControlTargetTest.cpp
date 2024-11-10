@@ -125,11 +125,12 @@ bool hasValidAudioRoute(const DeviceToContextEntry& entry, std::string& message,
     }
     std::set<std::string> contextInRoute;
     for (const auto& context : entry.contextNames) {
-        if (!contextInRoute.contains(ToString(context))) {
-            continue;
+        std::string contextString = ToString(context);
+        if (contextInRoute.contains(contextString)) {
+            message = " Context " + contextString + " repeats for DeviceToContextEntry";
+            return false;
         }
-        message = " Context can not repeat for the same DeviceToContextEntry";
-        return false;
+        groupDevices.insert(contextString);
     }
     audiomediacommon::AudioDeviceDescription description;
     if (!testutils::getAudioPortDeviceDescriptor(entry.device, description)) {
