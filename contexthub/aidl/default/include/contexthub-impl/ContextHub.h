@@ -18,6 +18,7 @@
 
 #include <aidl/android/hardware/contexthub/BnContextHub.h>
 
+#include <mutex>
 #include <unordered_set>
 #include <vector>
 
@@ -72,10 +73,37 @@ class ContextHub : public BnContextHub {
     ::ndk::ScopedAStatus endpointSessionOpenComplete(int32_t in_sessionId) override;
 
   private:
+    struct EndpointSession {
+        int32_t sessionId;
+        EndpointId initiator;
+        EndpointId peer;
+        std::optional<std::string> serviceDescriptor;
+    };
+
     static constexpr uint32_t kMockHubId = 0;
+
+    //! Finds an endpoint in the range defined by the endpoints
+    //! @return whether the endpoint was found
+    template <typename Iter>
+    bool findEndpoint(const EndpointId& target, const Iter& begin, const Iter& end) {
+        for (auto iter = begin; iter != end; ++iter) {
+            if (iter->id.id == target.id && iter->id.hubId == target.hubId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     std::shared_ptr<IContextHubCallback> mCallback;
 
     std::unordered_set<char16_t> mConnectedHostEndpoints;
+
+    //! Endpoint storage and information
+    std::mutex mEndpointMutex;
+    std::vector<EndpointInfo> mEndpoints;
+    std::vector<EndpointSession> mEndpointSessions;
+    std::shared_ptr<IEndpointCallback> mEndpointCallback;
+    int32_t mMaxValidSessionId = 0;
 };
 
 }  // namespace contexthub

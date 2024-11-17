@@ -51,4 +51,5 @@ parcelable RttCapabilities {
   long cipherSuitesSupported;
   boolean secureHeLtfSupported;
   boolean rangingFrameProtectionSupported;
+  int maxSupportedSecureHeLtfProtocolVersion;
 }

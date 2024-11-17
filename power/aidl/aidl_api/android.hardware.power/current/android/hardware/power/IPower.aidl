@@ -44,4 +44,8 @@ interface IPower {
   android.hardware.power.ChannelConfig getSessionChannel(in int tgid, in int uid);
   oneway void closeSessionChannel(in int tgid, in int uid);
   android.hardware.power.SupportInfo getSupportInfo();
+  float[] getCpuHeadroom(in android.hardware.power.CpuHeadroomParams params);
+  float getGpuHeadroom(in android.hardware.power.GpuHeadroomParams params);
+  long getCpuHeadroomMinIntervalMillis();
+  long getGpuHeadroomMinIntervalMillis();
 }

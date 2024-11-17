@@ -100,4 +100,8 @@ parcelable RttCapabilities {
      * Whether frame protection for ranging is supported.
      */
     boolean rangingFrameProtectionSupported;
+    /**
+     * Maximum supported secure HE-LTF protocol version.
+     */
+    int maxSupportedSecureHeLtfProtocolVersion;
 }

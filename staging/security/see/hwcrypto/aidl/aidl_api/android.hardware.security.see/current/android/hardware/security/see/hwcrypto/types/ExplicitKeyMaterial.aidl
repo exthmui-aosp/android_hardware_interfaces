@@ -34,4 +34,5 @@
 package android.hardware.security.see.hwcrypto.types;
 union ExplicitKeyMaterial {
   android.hardware.security.see.hwcrypto.types.AesKey aes;
+  android.hardware.security.see.hwcrypto.types.HmacKey hmac;
 }

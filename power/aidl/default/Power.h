@@ -45,6 +45,12 @@ class Power : public BnPower {
                                          ChannelConfig* _aidl_return) override;
     ndk::ScopedAStatus closeSessionChannel(int32_t tgid, int32_t uid) override;
     ndk::ScopedAStatus getSupportInfo(SupportInfo* _aidl_return) override;
+    ndk::ScopedAStatus getCpuHeadroom(const CpuHeadroomParams& params,
+                                      std::vector<float>* _aidl_return) override;
+    ndk::ScopedAStatus getGpuHeadroom(const GpuHeadroomParams& params,
+                                      float* _aidl_return) override;
+    ndk::ScopedAStatus getCpuHeadroomMinIntervalMillis(int64_t* _aidl_return) override;
+    ndk::ScopedAStatus getGpuHeadroomMinIntervalMillis(int64_t* _aidl_return) override;
 
   private:
     std::vector<std::shared_ptr<IPowerHintSession>> mPowerHintSessions;

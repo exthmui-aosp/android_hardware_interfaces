@@ -41,4 +41,5 @@ parcelable HalErrorCode {
   const int ALLOCATION_ERROR = (-5) /* -5 */;
   const int INVALID_KEY = (-6) /* -6 */;
   const int BAD_PARAMETER = (-7) /* -7 */;
+  const int UNAUTHORIZED = (-8) /* -8 */;
 }

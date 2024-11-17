@@ -16,6 +16,7 @@
 
 package android.hardware.automotive.vehicle;
 
+import android.hardware.automotive.vehicle.HasSupportedValueInfo;
 import android.hardware.automotive.vehicle.VehiclePropertyAccess;
 
 @VintfStability
@@ -83,6 +84,8 @@ parcelable VehicleAreaConfig {
     /**
      * Whether variable update rate is supported.
      *
+     * This is always {@code false} for VHAL implementation < V3.
+     *
      * This applies for continuous property only.
      *
      * It is HIGHLY RECOMMENDED to support variable update rate for all non-heartbeat continuous
@@ -109,4 +112,12 @@ parcelable VehicleAreaConfig {
      * so this should be false if the property is large (e.g. a byte array of 1k in size).
      */
     boolean supportVariableUpdateRate;
+
+    /**
+     * For VHAL implementation >= V4, this must not be {@code null}. This specifies whether
+     * this property may have min/max supported value or supported values list.
+     *
+     * For VHAL implementation < V4, this is always {@code null} and is not accessed.
+     */
+    @nullable HasSupportedValueInfo hasSupportedValueInfo;
 }

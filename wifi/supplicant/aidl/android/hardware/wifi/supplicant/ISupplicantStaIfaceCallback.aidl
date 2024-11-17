@@ -336,21 +336,24 @@ oneway interface ISupplicantStaIfaceCallback {
          */
         TID_TO_LINK_MAP = 0,
         /**
-         * Multi-link reconfiguration - AP removal as described in
-         * IEEE 802.11be spec, section 35.3.6. This is a mandatory feature for
-         * station according to Wi-Fi 7 R1 MRD.
+         * Multi-link reconfiguration - AP removal as described in the Wi-Fi 7 R1 MRD section
+         * 6.3.2.18. This is a mandatory feature for station.
          *
          * Removed link will not be present in |ISupplicantStaIface.getConnectionMloLinksInfo|.
          */
         MULTI_LINK_RECONFIG_AP_REMOVAL = 1,
         /**
-         * Multi-link reconfiguration - Adding affiliated AP(s) as described in
-         * IEEE 802.11be spec, section 35.3.6. This is an optional feature for
-         * station according to Wi-Fi 7 R2 MRD.
+         * Multi-link reconfiguration add/delete links without re-association as described in
+         * the Wi-Fi 7 R2 MRD section 6.4.2.4. This is an optional feature.
+         *
+         * This feature enables dynamic link reconfiguration operations (add link and/or delete
+         * link) on the multi-link setup of a STA MLD, either triggered by the AP MLD or initiated
+         * by the STA MLD itself. This avoids reassociation for any link reconfiguration operation.
          *
          * Added link will be present in |ISupplicantStaIface.getConnectionMloLinksInfo|.
+         * Deleted link will not be present in |ISupplicantStaIface.getConnectionMloLinksInfo|.
          */
-        MULTI_LINK_RECONFIG_AP_ADDITION = 2,
+        MULTI_LINK_DYNAMIC_RECONFIG = 2,
     }
 
     /**

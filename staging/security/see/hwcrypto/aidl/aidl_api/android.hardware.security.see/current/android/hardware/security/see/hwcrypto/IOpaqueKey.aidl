@@ -36,4 +36,6 @@ interface IOpaqueKey {
   byte[] exportWrappedKey(in android.hardware.security.see.hwcrypto.IOpaqueKey wrappingKey);
   android.hardware.security.see.hwcrypto.KeyPolicy getKeyPolicy();
   byte[] getPublicKey();
+  android.hardware.security.see.hwcrypto.types.OpaqueKeyToken getShareableToken(in byte[] sealingDicePolicy);
+  void setProtectionId(in android.hardware.security.see.hwcrypto.types.ProtectionId protectionId, in android.hardware.security.see.hwcrypto.types.OperationType[] allowedOperations);
 }

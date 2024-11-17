@@ -44,4 +44,5 @@ parcelable VehicleAreaConfig {
   @nullable long[] supportedEnumValues;
   android.hardware.automotive.vehicle.VehiclePropertyAccess access = android.hardware.automotive.vehicle.VehiclePropertyAccess.NONE;
   boolean supportVariableUpdateRate;
+  @nullable android.hardware.automotive.vehicle.HasSupportedValueInfo hasSupportedValueInfo;
 }

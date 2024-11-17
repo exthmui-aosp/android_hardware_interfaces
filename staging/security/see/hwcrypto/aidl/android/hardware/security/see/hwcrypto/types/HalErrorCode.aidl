@@ -42,4 +42,7 @@ parcelable HalErrorCode {
 
     /* Bad parameter supplied for the desired operation */
     const int BAD_PARAMETER = -7;
+
+    /* Caller is not authorized to make this call */
+    const int UNAUTHORIZED = -8;
 }

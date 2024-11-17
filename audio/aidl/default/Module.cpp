@@ -207,9 +207,9 @@ ndk::ScopedAStatus Module::createStreamContext(
         return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
     }
     const auto& flags = portConfigIt->flags.value();
-    StreamContext::DebugParameters params{mDebug.streamTransientStateDelayMs,
-                                          mVendorDebug.forceTransientBurst,
-                                          mVendorDebug.forceSynchronousDrain};
+    StreamContext::DebugParameters params{
+            mDebug.streamTransientStateDelayMs, mVendorDebug.forceTransientBurst,
+            mVendorDebug.forceSynchronousDrain, mVendorDebug.forceDrainToDraining};
     std::unique_ptr<StreamContext::DataMQ> dataMQ = nullptr;
     std::shared_ptr<IStreamCallback> streamAsyncCallback = nullptr;
     std::shared_ptr<ISoundDose> soundDose;
@@ -1524,6 +1524,7 @@ ndk::ScopedAStatus Module::generateHwAvSyncId(int32_t* _aidl_return) {
 
 const std::string Module::VendorDebug::kForceTransientBurstName = "aosp.forceTransientBurst";
 const std::string Module::VendorDebug::kForceSynchronousDrainName = "aosp.forceSynchronousDrain";
+const std::string Module::VendorDebug::kForceDrainToDrainingName = "aosp.forceDrainToDraining";
 
 ndk::ScopedAStatus Module::getVendorParameters(const std::vector<std::string>& in_ids,
                                                std::vector<VendorParameter>* _aidl_return) {
@@ -1538,6 +1539,10 @@ ndk::ScopedAStatus Module::getVendorParameters(const std::vector<std::string>& i
             VendorParameter forceSynchronousDrain{.id = id};
             forceSynchronousDrain.ext.setParcelable(Boolean{mVendorDebug.forceSynchronousDrain});
             _aidl_return->push_back(std::move(forceSynchronousDrain));
+        } else if (id == VendorDebug::kForceDrainToDrainingName) {
+            VendorParameter forceDrainToDraining{.id = id};
+            forceDrainToDraining.ext.setParcelable(Boolean{mVendorDebug.forceDrainToDraining});
+            _aidl_return->push_back(std::move(forceDrainToDraining));
         } else {
             allParametersKnown = false;
             LOG(VERBOSE) << __func__ << ": " << mType << ": unrecognized parameter \"" << id << "\"";
@@ -1576,6 +1581,10 @@ ndk::ScopedAStatus Module::setVendorParameters(const std::vector<VendorParameter
             }
         } else if (p.id == VendorDebug::kForceSynchronousDrainName) {
             if (!extractParameter<Boolean>(p, &mVendorDebug.forceSynchronousDrain)) {
+                return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
+            }
+        } else if (p.id == VendorDebug::kForceDrainToDrainingName) {
+            if (!extractParameter<Boolean>(p, &mVendorDebug.forceDrainToDraining)) {
                 return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
             }
         } else {

@@ -15,6 +15,7 @@
  */
 package android.hardware.security.see.hwcrypto;
 
+import android.hardware.security.see.hwcrypto.types.HmacOperationParameters;
 import android.hardware.security.see.hwcrypto.types.SymmetricAuthOperationParameters;
 import android.hardware.security.see.hwcrypto.types.SymmetricOperationParameters;
 
@@ -31,4 +32,9 @@ union OperationParameters {
      * Parameters for non-authenticated symmetric cryptography (AES/TDES).
      */
     SymmetricOperationParameters symmetricCrypto;
+
+    /*
+     * Parameters for hash based message authenticated code operations.
+     */
+    HmacOperationParameters hmac;
 }

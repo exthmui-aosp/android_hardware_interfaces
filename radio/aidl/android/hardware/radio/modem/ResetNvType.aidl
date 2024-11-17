@@ -23,6 +23,7 @@ package android.hardware.radio.modem;
 @VintfStability
 @Backing(type="int")
 @JavaDerive(toString=true)
+@SuppressWarnings(value={"redundant-name"})
 enum ResetNvType {
     /**
      * Reload all NV items

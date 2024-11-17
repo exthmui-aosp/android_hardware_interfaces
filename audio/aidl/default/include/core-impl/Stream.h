@@ -78,6 +78,10 @@ class StreamContext {
         bool forceTransientBurst = false;
         // Force the "drain" command to be synchronous, going directly to the IDLE state.
         bool forceSynchronousDrain = false;
+        // Force the "drain early notify" command to keep the SM in the DRAINING state
+        // after sending 'onDrainReady' callback. The SM moves to IDLE after
+        // 'transientStateDelayMs'.
+        bool forceDrainToDraining = false;
     };
 
     StreamContext() = default;
@@ -119,6 +123,7 @@ class StreamContext {
     ::aidl::android::media::audio::common::AudioIoFlags getFlags() const { return mFlags; }
     bool getForceTransientBurst() const { return mDebugParameters.forceTransientBurst; }
     bool getForceSynchronousDrain() const { return mDebugParameters.forceSynchronousDrain; }
+    bool getForceDrainToDraining() const { return mDebugParameters.forceDrainToDraining; }
     size_t getFrameSize() const;
     int getInternalCommandCookie() const { return mInternalCommandCookie; }
     int32_t getMixPortHandle() const { return mMixPortHandle; }
@@ -301,6 +306,9 @@ class StreamOutWorkerLogic : public StreamWorkerCommonLogic {
     bool write(size_t clientSize, StreamDescriptor::Reply* reply);
 
     std::shared_ptr<IStreamOutEventCallback> mEventCallback;
+
+    enum OnDrainReadyStatus : int32_t { IGNORE /*used for DRAIN_ALL*/, UNSENT, SENT };
+    OnDrainReadyStatus mOnDrainReadyStatus = OnDrainReadyStatus::IGNORE;
 };
 using StreamOutWorker = StreamWorkerImpl<StreamOutWorkerLogic>;
 

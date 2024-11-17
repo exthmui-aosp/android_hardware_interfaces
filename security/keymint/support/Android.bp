@@ -30,6 +30,7 @@ cc_library {
         "-Wall",
         "-Wextra",
         "-Werror",
+        "-DKEYMINT_HAL_V4",
     ],
     srcs: [
         "attestation_record.cpp",
@@ -114,6 +115,7 @@ cc_library {
 
 cc_test {
     name: "libkeymint_remote_prov_support_test",
+    cpp_std: "c++20",
     srcs: ["remote_prov_utils_test.cpp"],
     static_libs: [
         "android.hardware.security.rkp-V3-ndk",

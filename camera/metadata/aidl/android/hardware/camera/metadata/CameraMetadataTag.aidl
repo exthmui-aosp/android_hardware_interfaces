@@ -534,6 +534,21 @@ enum CameraMetadataTag {
      */
     ANDROID_CONTROL_LOW_LIGHT_BOOST_STATE,
     /**
+     * android.control.aePriorityMode [dynamic, enum, public]
+     *
+     * <p>Turn on AE priority mode.</p>
+     */
+    ANDROID_CONTROL_AE_PRIORITY_MODE = 65597,
+    /**
+     * android.control.aeAvailablePriorityModes [static, byte[], public]
+     *
+     * <p>List of auto-exposure priority modes for ANDROID_CONTROL_AE_PRIORITY_MODE
+     * that are supported by this camera device.</p>
+     *
+     * @see ANDROID_CONTROL_AE_PRIORITY_MODE
+     */
+    ANDROID_CONTROL_AE_AVAILABLE_PRIORITY_MODES,
+    /**
      * android.demosaic.mode [controls, enum, system]
      *
      * <p>Controls the quality of the demosaicing

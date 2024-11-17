@@ -93,14 +93,31 @@ static in_addr_t inetAddr(std::string_view addr) {
     return addrn;
 }
 
-bool setAddr4(std::string_view ifname, std::string_view addr) {
-    auto ifr = ifreqs::fromName(ifname);
+static in_addr_t prefixLengthToIpv4Netmask(uint8_t prefixlen) {
+    in_addr_t zero = 0;
+    return htonl(~zero << (32 - prefixlen));
+}
 
-    struct sockaddr_in* ifrAddr = reinterpret_cast<sockaddr_in*>(&ifr.ifr_addr);
+bool setAddr4(std::string_view ifname, std::string_view addr, std::optional<uint8_t> prefixlen) {
+    auto ifr = ifreqs::fromName(ifname);
+    auto ifrAddr = reinterpret_cast<sockaddr_in*>(&ifr.ifr_addr);
     ifrAddr->sin_family = AF_INET;
     ifrAddr->sin_addr.s_addr = inetAddr(addr);
+    if (!ifreqs::send(SIOCSIFADDR, ifr)) return false;
 
-    return ifreqs::send(SIOCSIFADDR, ifr);
+    if (prefixlen.has_value()) {
+        if (*prefixlen < 0 || *prefixlen > 32) {
+            LOG(ERROR) << "Invalid prefix length: " << *prefixlen;
+            return false;
+        }
+        ifr = ifreqs::fromName(ifname);
+        auto ifrNetmask = reinterpret_cast<sockaddr_in*>(&ifr.ifr_netmask);
+        ifrNetmask->sin_family = AF_INET;
+        ifrNetmask->sin_addr.s_addr = prefixLengthToIpv4Netmask(*prefixlen);
+        if (!ifreqs::send(SIOCSIFNETMASK, ifr)) return false;
+    }
+
+    return true;
 }
 
 bool addAddr4(std::string_view ifname, std::string_view addr, uint8_t prefixlen) {

@@ -1,0 +1,62 @@
+/*
+ * Copyright (C) 2024 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.hardware.power;
+
+@VintfStability
+@JavaDerive(equals=true, toString=true)
+parcelable CpuHeadroomParams {
+    /**
+     * Defines how to calculate the headroom.
+     */
+    enum CalculationType {
+        // Default to return the minimum headroom in a window.
+        MIN,
+        // Returns the average headroom in a window.
+        AVERAGE,
+    }
+
+    /**
+     * The calculation type.
+     */
+    CalculationType calculationType;
+
+    /**
+     * Defines how to select the CPU.
+     */
+    enum SelectionType {
+        // Default to return a single value for all cores.
+        ALL,
+        // Returns per-core headroom in a list.
+        PER_CORE,
+    }
+
+    /**
+     * The CPU selection type.
+     */
+    SelectionType selectionType;
+
+    /**
+     * The caller thread's PID.
+     *
+     * If pid is positive, return the headroom only for cores that are available
+     * to the given pid, otherwise return the headroom(s) for all cores.
+     *
+     * This should handle all the cases including but not limited to thread core
+     * affinity and app cpuset that change the available CPU cores for the caller.
+     */
+    int pid;
+}

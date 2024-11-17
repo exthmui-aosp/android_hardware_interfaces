@@ -38,9 +38,15 @@ interface IHwCryptoKey {
   android.hardware.security.see.hwcrypto.IHwCryptoKey.DerivedKey deriveKey(in android.hardware.security.see.hwcrypto.IHwCryptoKey.DerivedKeyParameters parameters);
   android.hardware.security.see.hwcrypto.IHwCryptoOperations getHwCryptoOperations();
   android.hardware.security.see.hwcrypto.IOpaqueKey importClearKey(in android.hardware.security.see.hwcrypto.types.ExplicitKeyMaterial keyMaterial, in android.hardware.security.see.hwcrypto.KeyPolicy newKeyPolicy);
+  byte[] getCurrentDicePolicy();
+  android.hardware.security.see.hwcrypto.IOpaqueKey keyTokenImport(in android.hardware.security.see.hwcrypto.types.OpaqueKeyToken requestedKey, in byte[] sealingDicePolicy);
+  android.hardware.security.see.hwcrypto.IOpaqueKey getKeyslotData(android.hardware.security.see.hwcrypto.IHwCryptoKey.KeySlot slotId);
   enum DeviceKeyId {
     DEVICE_BOUND_KEY,
     BATCH_KEY,
+  }
+  enum KeySlot {
+    KEYMINT_SHARED_HMAC_KEY,
   }
   union DiceBoundDerivationKey {
     android.hardware.security.see.hwcrypto.IOpaqueKey opaqueKey;

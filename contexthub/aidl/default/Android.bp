@@ -30,6 +30,7 @@ cc_library_static {
     shared_libs: [
         "libbase",
         "libbinder_ndk",
+        "liblog",
         "android.hardware.contexthub-V4-ndk",
     ],
     export_include_dirs: ["include"],
@@ -51,6 +52,7 @@ cc_binary {
     shared_libs: [
         "libbase",
         "libbinder_ndk",
+        "liblog",
         "android.hardware.contexthub-V4-ndk",
     ],
     static_libs: [

@@ -128,7 +128,8 @@ std::set<std::string> getAllAddr4(std::string_view ifname);
  * \param addr IPv4 address to set
  * \return true in case of success, false otherwise
  */
-bool setAddr4(std::string_view ifname, std::string_view addr);
+bool setAddr4(std::string_view ifname, std::string_view addr,
+              std::optional<uint8_t> prefixlen = std::nullopt);
 
 /**
  * Add new IPv4 address to a given interface.

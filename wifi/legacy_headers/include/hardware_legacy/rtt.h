@@ -257,7 +257,7 @@ typedef struct {
 typedef struct {
     wifi_rtt_result_v3 rtt_result_v3;
     bool is_ranging_protection_enabled;
-    bool is_secure_ltf_enabled;
+    bool is_secure_he_ltf_enabled;
     wifi_rtt_akm base_akm;
     wifi_rtt_cipher_suite cipher_suite;
     int secure_he_ltf_protocol_version;
@@ -395,7 +395,9 @@ typedef struct {
 /* RTT Capabilities v4 (11az secure support) */
 typedef struct {
     wifi_rtt_capabilities_v3 rtt_capab_v3;
-    bool secure_ltf_supported;
+    bool secure_he_ltf_supported;
+    int max_supported_secure_he_ltf_protocol_ver;  // Maximum supported secure HE-LTF protocol
+                                                   // version.
     bool ranging_fame_protection_supported;
     wifi_rtt_akm supported_akms;  // Bitmap of wifi_rtt_akm values indicating the set of supported
                                   // AKMs.

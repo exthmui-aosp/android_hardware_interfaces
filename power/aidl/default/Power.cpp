@@ -69,6 +69,27 @@ ScopedAStatus Power::isBoostSupported(Boost type, bool* _aidl_return) {
     return ScopedAStatus::ok();
 }
 
+ndk::ScopedAStatus Power::getCpuHeadroom(const CpuHeadroomParams& _,
+                                         std::vector<float>* _aidl_return) {
+    *_aidl_return = {0.5f};
+    return ndk::ScopedAStatus::ok();
+}
+
+ndk::ScopedAStatus Power::getGpuHeadroom(const GpuHeadroomParams& _, float* _aidl_return) {
+    *_aidl_return = 0.5f;
+    return ndk::ScopedAStatus::ok();
+}
+
+ndk::ScopedAStatus Power::getCpuHeadroomMinIntervalMillis(int64_t* _aidl_return) {
+    *_aidl_return = 1000;
+    return ndk::ScopedAStatus::ok();
+}
+
+ndk::ScopedAStatus Power::getGpuHeadroomMinIntervalMillis(int64_t* _aidl_return) {
+    *_aidl_return = 1000;
+    return ndk::ScopedAStatus::ok();
+}
+
 ScopedAStatus Power::createHintSession(int32_t, int32_t, const std::vector<int32_t>& tids, int64_t,
                                        std::shared_ptr<IPowerHintSession>* _aidl_return) {
     if (tids.size() == 0) {

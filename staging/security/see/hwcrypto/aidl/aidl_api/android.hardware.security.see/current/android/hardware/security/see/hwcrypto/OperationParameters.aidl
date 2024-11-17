@@ -35,4 +35,5 @@ package android.hardware.security.see.hwcrypto;
 union OperationParameters {
   android.hardware.security.see.hwcrypto.types.SymmetricAuthOperationParameters symmetricAuthCrypto;
   android.hardware.security.see.hwcrypto.types.SymmetricOperationParameters symmetricCrypto;
+  android.hardware.security.see.hwcrypto.types.HmacOperationParameters hmac;
 }

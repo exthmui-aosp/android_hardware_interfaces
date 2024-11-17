@@ -25,6 +25,7 @@
 #include "DeviceFileReader.h"
 #include "FixLocationParser.h"
 #include "GnssAntennaInfo.h"
+#include "GnssAssistanceInterface.h"
 #include "GnssBatching.h"
 #include "GnssConfiguration.h"
 #include "GnssDebug.h"
@@ -387,6 +388,14 @@ ndk::ScopedAStatus Gnss::getExtensionMeasurementCorrections(
 
     *iMeasurementCorrections =
             SharedRefBase::make<measurement_corrections::MeasurementCorrectionsInterface>();
+    return ndk::ScopedAStatus::ok();
+}
+
+ndk::ScopedAStatus Gnss::getExtensionGnssAssistanceInterface(
+        std::shared_ptr<gnss_assistance::IGnssAssistanceInterface>* iGnssAssistanceInterface) {
+    ALOGD("Gnss::getExtensionGnssAssistanceInterface");
+
+    *iGnssAssistanceInterface = SharedRefBase::make<gnss_assistance::GnssAssistanceInterface>();
     return ndk::ScopedAStatus::ok();
 }
 
