@@ -39,4 +39,5 @@ parcelable P2pPairingBootstrappingMethodMask {
   const int BOOTSTRAPPING_DISPLAY_PASSPHRASE = (1 << 2) /* 4 */;
   const int BOOTSTRAPPING_KEYPAD_PINCODE = (1 << 3) /* 8 */;
   const int BOOTSTRAPPING_KEYPAD_PASSPHRASE = (1 << 4) /* 16 */;
+  const int BOOTSTRAPPING_OUT_OF_BAND = (1 << 5) /* 32 */;
 }

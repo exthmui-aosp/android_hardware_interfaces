@@ -79,6 +79,9 @@ interface ISupplicantP2pIface {
    */
   void provisionDiscovery(in byte[] peerAddress, in android.hardware.wifi.supplicant.WpsProvisionMethod provisionMethod);
   void registerCallback(in android.hardware.wifi.supplicant.ISupplicantP2pIfaceCallback callback);
+  /**
+   * @deprecated This method is deprecated from AIDL v4, newer HALs should use reinvokePersistentGroup.
+   */
   void reinvoke(in int persistentNetworkId, in byte[] peerAddress);
   void reject(in byte[] peerAddress);
   void removeBonjourService(in byte[] query);
@@ -132,6 +135,9 @@ interface ISupplicantP2pIface {
   int startUsdBasedServiceAdvertisement(in android.hardware.wifi.supplicant.P2pUsdBasedServiceAdvertisementConfig serviceAdvertisementConfig);
   void stopUsdBasedServiceAdvertisement(in int sessionId);
   void provisionDiscoveryWithParams(in android.hardware.wifi.supplicant.P2pProvisionDiscoveryParams params);
+  android.hardware.wifi.supplicant.P2pDirInfo getDirInfo();
+  int validateDirInfo(in android.hardware.wifi.supplicant.P2pDirInfo dirInfo);
+  void reinvokePersistentGroup(in android.hardware.wifi.supplicant.P2pReinvokePersistentGroupParams reinvokeGroupParams);
   const long P2P_FEATURE_V2 = (1 << 0) /* 1 */;
   const long P2P_FEATURE_PCC_MODE_WPA3_COMPATIBILITY = (1 << 1) /* 2 */;
 }

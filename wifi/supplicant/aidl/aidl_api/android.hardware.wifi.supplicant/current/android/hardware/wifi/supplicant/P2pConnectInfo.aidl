@@ -43,4 +43,7 @@ parcelable P2pConnectInfo {
   @nullable android.hardware.wifi.common.OuiKeyedData[] vendorData;
   int pairingBootstrappingMethod;
   @nullable String password;
+  int frequencyMHz;
+  boolean authorizeConnectionFromPeer;
+  @nullable String groupInterfaceName;
 }

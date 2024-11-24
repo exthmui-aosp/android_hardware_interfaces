@@ -39,6 +39,9 @@ interface IRadioNetwork {
   oneway void getAvailableBandModes(in int serial);
   oneway void getAvailableNetworks(in int serial);
   oneway void getBarringInfo(in int serial);
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   oneway void getCdmaRoamingPreference(in int serial);
   oneway void getCellInfoList(in int serial);
   oneway void getDataRegistrationState(in int serial);
@@ -57,6 +60,9 @@ interface IRadioNetwork {
   oneway void setAllowedNetworkTypesBitmap(in int serial, in int networkTypeBitmap);
   oneway void setBandMode(in int serial, in android.hardware.radio.network.RadioBandMode mode);
   oneway void setBarringPassword(in int serial, in String facility, in String oldPassword, in String newPassword);
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   oneway void setCdmaRoamingPreference(in int serial, in android.hardware.radio.network.CdmaRoamingType type);
   oneway void setCellInfoListRate(in int serial, in int rate);
   oneway void setIndicationFilter(in int serial, in int indicationFilter);

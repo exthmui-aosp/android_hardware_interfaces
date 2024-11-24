@@ -32,5 +32,11 @@ parcelable GpuHeadroomParams {
     /**
      * The calculation type.
      */
-    CalculationType calculationType;
+    CalculationType calculationType = CalculationType.MIN;
+
+    /**
+     * The device should support a superset of [50, 10000] and try to use the closest feasible
+     * window size to the provided value param.
+     */
+    int calculationWindowMillis = 1000;
 }

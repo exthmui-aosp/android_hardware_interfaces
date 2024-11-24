@@ -31,36 +31,13 @@
 // with such a backward incompatible change, it has a high risk of breaking
 // later when a module using the interface is updated, e.g., Mainline modules.
 
-package android.hardware.gnss.gnss_assistance;
-/* @hide */
+package android.hardware.power;
 @VintfStability
-parcelable GalileoAlmanac {
-  long issueDate;
-  int weekNumber;
-  int toa;
-  int iod;
-  android.hardware.gnss.gnss_assistance.GalileoAlmanac.GalileoSatelliteAlmanac[] satelliteAlmanac;
-  @VintfStability
-  parcelable GalileoSatelliteAlmanac {
-    int svId;
-    android.hardware.gnss.gnss_assistance.GalileoAlmanac.GalileoAlmanacSvHealth svHealth;
-    double eccentricity;
-    double deltaI;
-    double omega;
-    double omega0;
-    double omegaDot;
-    double rootA;
-    double m0;
-    double af0;
-    double af1;
-    int weekNumber;
-    int toa;
-    int iod;
-  }
-  @VintfStability
-  parcelable GalileoAlmanacSvHealth {
-    int fNavE5a;
-    int iNavE5b;
-    int iNavE1b;
-  }
+parcelable FrameProducer {
+  long producerId;
+  int uid;
+  double fps;
+  @nullable android.hardware.power.LatchedFrameData currentlyLatchedFrame;
+  boolean cpuDeadlineMissed;
+  boolean gpuDeadlineMissed;
 }

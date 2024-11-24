@@ -37,37 +37,73 @@ import android.hardware.power.SessionMode;
 @VintfStability
 parcelable SupportInfo {
     /**
-     * Boolean representing whether hint sessions are supported on this device
+     * Boolean representing whether hint sessions are supported on this device.
      */
     boolean usesSessions;
 
     /**
-     * The set of "Boost" enum values that are supported by this device
-     * Each bit should correspond to a value of the "Boost.aidl" enum
+     * The set of "Boost" enum values that are supported by this device,
+     * each bit should correspond to a value of the "Boost.aidl" enum.
      */
     long boosts;
 
     /**
-     * The set of "Mode" enum values that are supported by this device
-     * Each bit should correspond to a value of the "Mode.aidl" enum
+     * The set of "Mode" enum values that are supported by this device,
+     * each bit should correspond to a value of the "Mode.aidl" enum.
      */
     long modes;
 
     /**
-     * The set of "SessionHint" enum values that are supported by this device
-     * Each bit should correspond to a value of the "SessionHint.aidl" enum
+     * The set of "SessionHint" enum values that are supported by this device,
+     * each bit should correspond to a value of the "SessionHint.aidl" enum.
      */
     long sessionHints;
 
     /**
-     * The set of "SessionMode" enum values that are supported by this device
-     * Each bit should correspond to a value of the "SessionMode.aidl" enum
+     * The set of "SessionMode" enum values that are supported by this device,
+     * each bit should correspond to a value of the "SessionMode.aidl" enum.
      */
     long sessionModes;
 
     /**
-     * The set of "SessionTag" enum values that are supported by this device
-     * Each bit should correspond to a value of the "SessionTag.aidl" enum
+     * The set of "SessionTag" enum values that are supported by this device,
+     * each bit should correspond to a value of the "SessionTag.aidl" enum.
      */
     long sessionTags;
+
+    /**
+     * Parcel detailing support info for receiving additional frame composition
+     * data when sessions are associated with frame producers.
+     */
+    CompositionDataSupportInfo compositionData;
+
+    @VintfStability
+    parcelable CompositionDataSupportInfo {
+        /**
+         * Whether the sendCompositionData and sendCompositionUpdate APIs are
+         * supported on this device. The rest of the fields on this parcelable
+         * are ignored if this is false.
+         */
+        boolean isSupported;
+
+        /**
+         * Whether to disable sending relevant GPU fence file descriptors along with
+         * timing information when the frame callback happens.
+         */
+        boolean disableGpuFences;
+
+        /**
+         * The maximum number of updates to batch before sending. This can be ignored
+         * if "overrideIfUrgent" is set. Setting to a value less than or equal to 1
+         * disables batching entirely.
+         */
+        int maxBatchSize;
+
+        /**
+         * Whether to ignore important notifications such as FPS changes and frame
+         * deadline misses, and always send maximum size batches. By default, the
+         * framework will send batches early if these important events happen.
+         */
+        boolean alwaysBatch;
+    }
 }

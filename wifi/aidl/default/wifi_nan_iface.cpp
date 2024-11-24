@@ -672,6 +672,10 @@ std::string WifiNanIface::getName() {
     return ifname_;
 }
 
+int32_t WifiNanIface::getMinCallbackVersion() {
+    return event_cb_handler_.getMinCallbackVersion();
+}
+
 std::set<std::shared_ptr<IWifiNanIfaceEventCallback>> WifiNanIface::getEventCallbacks() {
     LOG(ERROR) << "Using original getEventCallbacks";
     return event_cb_handler_.getCallbacks();

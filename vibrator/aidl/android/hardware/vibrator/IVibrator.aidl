@@ -472,7 +472,11 @@ interface IVibrator {
     int getPwleV2PrimitiveDurationMinMillis();
 
     /**
-     * Play composed sequence of chirps with optional callback upon completion.
+     * Play composed sequence of PWLEs with optional callback upon completion.
+     *
+     * A PWLE (Piecewise-Linear Envelope) effect defines a vibration waveform using amplitude and
+     * frequency points. The envelope linearly interpolates both amplitude and frequency between
+     * consecutive points, creating smooth transitions in the vibration pattern.
      *
      * This may not be supported and this support is reflected in
      * getCapabilities (CAP_COMPOSE_PWLE_EFFECTS_V2).

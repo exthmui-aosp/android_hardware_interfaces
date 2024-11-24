@@ -29,7 +29,7 @@ parcelable FrequencyAccelerationMapEntry {
      *
      * This value represents the maximum safe output acceleration (in Gs) achievable at the
      * specified frequency, typically determined during calibration. The actual output acceleration
-     * is assumed to scale linearly with the input amplitude within the range of [0, 1].
+     * should scale linearly based on the 'amplitude' input value.
      */
     float maxOutputAccelerationGs;
 }

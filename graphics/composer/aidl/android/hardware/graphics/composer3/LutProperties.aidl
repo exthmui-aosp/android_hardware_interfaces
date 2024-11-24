@@ -42,7 +42,6 @@ parcelable LutProperties {
      * The implementations should use a sampling strategy
      * at least as good as linear sampling.
      */
-    // TODO(b/358422255): add sampling ways
-    @VintfStability enum SamplingKey { RGB, MAX_RGB }
+    @VintfStability enum SamplingKey { RGB, MAX_RGB, CIE_Y }
     SamplingKey[] samplingKeys;
 }

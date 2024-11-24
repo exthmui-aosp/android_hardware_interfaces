@@ -27,6 +27,7 @@ import android.hardware.radio.data.TrafficDescriptor;
 /** @hide */
 @VintfStability
 @JavaDerive(toString=true)
+@SuppressWarnings(value={"redundant-name"})
 parcelable SetupDataCallResult {
     /**
      * Indicates the data connection is inactive.
@@ -64,7 +65,7 @@ parcelable SetupDataCallResult {
     /**
      * Data call fail cause. DataCallFailCause.NONE if no error.
      */
-    DataCallFailCause cause;
+    DataCallFailCause cause = DataCallFailCause.NONE;
     /**
      * If cause is not DataCallFailCause.NONE, this field indicates the network suggested data
      * retry back-off time in milliseconds. Negative value indicates network does not give any
@@ -87,7 +88,7 @@ parcelable SetupDataCallResult {
      * PDP protocol type. If cause is DataCallFailCause.ONLY_SINGLE_BEARER_ALLOWED, this is the
      * protocol type supported, such as "IP" or "IPV6".
      */
-    PdpProtocolType type;
+    PdpProtocolType type = PdpProtocolType.IP;
     /**
      * The network interface name.
      */

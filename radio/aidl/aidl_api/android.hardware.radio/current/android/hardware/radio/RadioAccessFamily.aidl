@@ -41,12 +41,24 @@ enum RadioAccessFamily {
   UMTS = (1 << android.hardware.radio.RadioTechnology.UMTS) /* 8 */,
   IS95A = (1 << android.hardware.radio.RadioTechnology.IS95A) /* 16 */,
   IS95B = (1 << android.hardware.radio.RadioTechnology.IS95B) /* 32 */,
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   ONE_X_RTT = (1 << android.hardware.radio.RadioTechnology.ONE_X_RTT) /* 64 */,
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   EVDO_0 = (1 << android.hardware.radio.RadioTechnology.EVDO_0) /* 128 */,
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   EVDO_A = (1 << android.hardware.radio.RadioTechnology.EVDO_A) /* 256 */,
   HSDPA = (1 << android.hardware.radio.RadioTechnology.HSDPA) /* 512 */,
   HSUPA = (1 << android.hardware.radio.RadioTechnology.HSUPA) /* 1024 */,
   HSPA = (1 << android.hardware.radio.RadioTechnology.HSPA) /* 2048 */,
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   EVDO_B = (1 << android.hardware.radio.RadioTechnology.EVDO_B) /* 4096 */,
   EHRPD = (1 << android.hardware.radio.RadioTechnology.EHRPD) /* 8192 */,
   LTE = (1 << android.hardware.radio.RadioTechnology.LTE) /* 16384 */,

@@ -25,11 +25,13 @@ import android.hardware.wifi.supplicant.MiracastMode;
 import android.hardware.wifi.supplicant.P2pAddGroupConfigurationParams;
 import android.hardware.wifi.supplicant.P2pConnectInfo;
 import android.hardware.wifi.supplicant.P2pCreateGroupOwnerInfo;
+import android.hardware.wifi.supplicant.P2pDirInfo;
 import android.hardware.wifi.supplicant.P2pDiscoveryInfo;
 import android.hardware.wifi.supplicant.P2pExtListenInfo;
 import android.hardware.wifi.supplicant.P2pFrameTypeMask;
 import android.hardware.wifi.supplicant.P2pGroupCapabilityMask;
 import android.hardware.wifi.supplicant.P2pProvisionDiscoveryParams;
+import android.hardware.wifi.supplicant.P2pReinvokePersistentGroupParams;
 import android.hardware.wifi.supplicant.P2pUsdBasedServiceAdvertisementConfig;
 import android.hardware.wifi.supplicant.P2pUsdBasedServiceDiscoveryConfig;
 import android.hardware.wifi.supplicant.WpsConfigMethods;
@@ -439,6 +441,9 @@ interface ISupplicantP2pIface {
 
     /**
      * Reinvoke a device from a persistent group.
+     * <p>
+     * @deprecated This method is deprecated from AIDL v4, newer HALs should use
+     * reinvokePersistentGroup.
      *
      * @param persistentNetworkId Used to specify the persistent group.
      * @param peerAddress MAC address of the device to reinvoke.
@@ -1022,4 +1027,42 @@ interface ISupplicantP2pIface {
      *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
      */
     void provisionDiscoveryWithParams(in P2pProvisionDiscoveryParams params);
+
+    /**
+     * The Device Identity Resolution (DIR) Info used to send in
+     * Bluetooth LE advertising packet for the receiving device to
+     * check if the device is a previously paired device.
+     *
+     * @return The DIR info - |P2pDirInfo|
+     * @throws ServiceSpecificException with one of the following values:
+     *         |SupplicantStatusCode.FAILURE_UNKNOWN|,
+     *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
+     *         |SupplicantStatusCode.FAILURE_DATA_NOT_AVAILABLE|
+     */
+    P2pDirInfo getDirInfo();
+
+    /**
+     * Validate a Device Identity Resolution (DIR) Info of a P2P device.
+     * wpa_supplicant takes the |P2pDirInfo| and derives a set of Tag values based on
+     * the cached Device Identity Keys (DevIK) of all paired peers saved in the
+     * configuration file. If a derived Tag value matches the Tag value received in the
+     * |P2pDirInfo|, the device is identified as a paired peer and returns an identifier
+     * identifying the device identity key information stored in the configuration file.
+     *
+     * @return The identifier of device identity key stored in the configuration file.
+     * @throws ServiceSpecificException with one of the following values:
+     *         |SupplicantStatusCode.FAILURE_UNKNOWN|,
+     *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
+     */
+    int validateDirInfo(in P2pDirInfo dirInfo);
+
+    /**
+     * Reinvoke a device from a persistent group.
+     *
+     * @param reinvokeGroupParams Parameters associated to reinvoke a group.
+     * @throws ServiceSpecificException with one of the following values:
+     *         |SupplicantStatusCode.FAILURE_UNKNOWN|,
+     *         |SupplicantStatusCode.FAILURE_IFACE_INVALID|
+     */
+    void reinvokePersistentGroup(in P2pReinvokePersistentGroupParams reinvokeGroupParams);
 }

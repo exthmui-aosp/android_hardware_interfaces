@@ -46,7 +46,7 @@ enum AlertUrgency {
     PAST,
 
     /**
-     * Unknown rgency.
+     * Unknown urgency.
      */
     UNKNOWN,
 }

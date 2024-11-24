@@ -36,11 +36,13 @@ parcelable SignalStrength {
     /**
      * If CDMA measurements are provided, this structure must contain valid measurements; otherwise
      * all fields should be set to RadioConst:VALUE_UNAVAILABLE to mark them as invalid.
+     * @deprecated Legacy CDMA is unsupported.
      */
     CdmaSignalStrength cdma;
     /**
      * If EvDO measurements are provided, this structure must contain valid measurements; otherwise
      * all fields should be set to RadioConst:VALUE_UNAVAILABLE to mark them as invalid.
+     * @deprecated Legacy CDMA is unsupported.
      */
     EvdoSignalStrength evdo;
     /**

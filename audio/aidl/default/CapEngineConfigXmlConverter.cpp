@@ -96,8 +96,8 @@ ConversionResult<AudioHalCapRule::CriterionRule> convertCriterionRuleToAidl(
     } else if (!fastcmp<strncmp>(criterionName.c_str(), kXsdcForceConfigForUse,
             strlen(kXsdcForceConfigForUse))) {
         AudioHalCapCriterionV2::ForceConfigForUse value;
-        value.forceUse = VALUE_OR_RETURN(convertForceUseCriterionToAidl(criterionName));
-        value.values.emplace_back(VALUE_OR_RETURN(convertForcedConfigToAidl(criterionValue)));
+        value.values.emplace_back(
+                VALUE_OR_RETURN(convertForceUseToAidl(criterionName, criterionValue)));
         rule.criterionAndValue = AudioHalCapCriterionV2::make<Tag::forceConfigForUse>(value);
     } else {
         LOG(ERROR) << __func__ << " unrecognized criterion " << criterionName;

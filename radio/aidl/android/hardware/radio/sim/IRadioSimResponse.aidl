@@ -145,6 +145,7 @@ oneway interface IRadioSimResponse {
      *   RadioError:NO_RESOURCES
      *   RadioError:CANCELLED
      *   RadioError:SIM_ABSENT
+     * @deprecated Legacy CDMA is unsupported.
      */
     void getCdmaSubscriptionResponse(in RadioResponseInfo info, in String mdn, in String hSid,
             in String hNid, in String min, in String prl);
@@ -163,6 +164,7 @@ oneway interface IRadioSimResponse {
      *   RadioError:NO_RESOURCES
      *   RadioError:CANCELLED
      *   RadioError:SIM_ABSENT
+     * @deprecated Legacy CDMA is unsupported.
      */
     void getCdmaSubscriptionSourceResponse(
             in RadioResponseInfo info, in CdmaSubscriptionSource source);
@@ -484,6 +486,7 @@ oneway interface IRadioSimResponse {
      *   RadioError:NO_MEMORY
      *   RadioError:NO_RESOURCES
      *   RadioError:CANCELLED
+     * @deprecated Legacy CDMA is unsupported.
      */
     void setCdmaSubscriptionSourceResponse(in RadioResponseInfo info);
 

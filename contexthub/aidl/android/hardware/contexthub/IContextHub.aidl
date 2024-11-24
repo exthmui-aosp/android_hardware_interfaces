@@ -323,9 +323,6 @@ interface IContextHub {
      *         (nullable). Null indicates a fully custom marshalling scheme. The value should match
      *         a published descriptor for both destination and initiator.
      *
-     * @return An integer identifying the session, the integer can be used to present
-     *         the tuple of (destination, initiator, serviceDescriptor).
-     *
      * @throws EX_ILLEGAL_ARGUMENT if any of the arguments are invalid, or the combination of the
      *         arguments is invalid.
      * @throws EX_SERVICE_SPECIFIC on other errors

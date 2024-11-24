@@ -31,25 +31,13 @@
 // with such a backward incompatible change, it has a high risk of breaking
 // later when a module using the interface is updated, e.g., Mainline modules.
 
-package android.hardware.gnss.gnss_assistance;
-/* @hide */
+package android.hardware.power;
 @VintfStability
-parcelable GpsAlmanac {
-  int gpsWeekNumber;
-  int secondsOfGpsWeek;
-  android.hardware.gnss.gnss_assistance.GpsAlmanac.GpsSatelliteAlmanac[] satelliteAlmanac;
-  @VintfStability
-  parcelable GpsSatelliteAlmanac {
-    int prn;
-    int svHealth;
-    double eccentricity;
-    double inclination;
-    double omega;
-    double omega0;
-    double omegaDot;
-    double rootA;
-    double m0;
-    double af0;
-    double af1;
-  }
+parcelable LatchedFrameData {
+  long frameStartTimestampNanos;
+  long intendedPresentTimestampNanos;
+  long bufferSubmissionTimestampNanos;
+  long gpuSignalTimestampNanos;
+  boolean usedGpu;
+  @nullable ParcelFileDescriptor gpuAcquireFence;
 }

@@ -426,6 +426,23 @@ TEST_P(ThermalAidlTest, CoolingDeviceTest) {
     }
 }
 
+// Test Thermal->forecastSkinTemperature.
+TEST_P(ThermalAidlTest, ForecastSkinTemperatureTest) {
+    auto apiLevel = ::android::base::GetIntProperty<int32_t>("ro.vendor.api_level", 0);
+    if (apiLevel < 202504) {
+        GTEST_SKIP() << "Skipping test as the vendor level is below 202504: " << apiLevel;
+    }
+    float temperature = 0.0f;
+    ::ndk::ScopedAStatus status = mThermal->forecastSkinTemperature(1, &temperature);
+    if (status.getExceptionCode() == EX_UNSUPPORTED_OPERATION) {
+        GTEST_SKIP() << "Skipping test as temperature forecast is not supported";
+    }
+    for (int i = 0; i <= 60; i++) {
+        status = mThermal->forecastSkinTemperature(i, &temperature);
+        ASSERT_NE(NAN, temperature);
+    }
+}
+
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ThermalAidlTest);
 INSTANTIATE_TEST_SUITE_P(
         Thermal, ThermalAidlTest,

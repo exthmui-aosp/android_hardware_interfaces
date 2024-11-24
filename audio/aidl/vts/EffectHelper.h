@@ -375,7 +375,8 @@ class EffectHelper {
                                         std::vector<float>& outputBuffer,
                                         const std::shared_ptr<IEffect>& effect,
                                         IEffect::OpenEffectReturn* openEffectReturn,
-                                        int version = -1, int times = 1) {
+                                        int version = -1, int times = 1,
+                                        bool callStopReset = true) {
         // Initialize AidlMessagequeues
         auto statusMQ = std::make_unique<EffectHelper::StatusMQ>(openEffectReturn->statusMQ);
         ASSERT_TRUE(statusMQ->isValid());
@@ -401,10 +402,14 @@ class EffectHelper {
         }
 
         // Disable the process
-        ASSERT_NO_FATAL_FAILURE(command(effect, CommandId::STOP));
+        if (callStopReset) {
+            ASSERT_NO_FATAL_FAILURE(command(effect, CommandId::STOP));
+        }
         EXPECT_NO_FATAL_FAILURE(EffectHelper::readFromFmq(statusMQ, 0, outputMQ, 0, outputBuffer));
 
-        ASSERT_NO_FATAL_FAILURE(command(effect, CommandId::RESET));
+        if (callStopReset) {
+            ASSERT_NO_FATAL_FAILURE(command(effect, CommandId::RESET));
+        }
     }
 
     // Find FFT bin indices for testFrequencies and get bin center frequencies

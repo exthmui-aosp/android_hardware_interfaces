@@ -16,19 +16,16 @@
 
 package android.hardware.gnss.gnss_assistance;
 
-import android.hardware.gnss.gnss_assistance.BeidouAlmanac;
 import android.hardware.gnss.gnss_assistance.BeidouSatelliteEphemeris;
-import android.hardware.gnss.gnss_assistance.GalileoAlmanac;
 import android.hardware.gnss.gnss_assistance.GalileoIonosphericModel;
 import android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris;
 import android.hardware.gnss.gnss_assistance.GlonassAlmanac;
 import android.hardware.gnss.gnss_assistance.GlonassSatelliteEphemeris;
-import android.hardware.gnss.gnss_assistance.GpsAlmanac;
+import android.hardware.gnss.gnss_assistance.GnssAlmanac;
 import android.hardware.gnss.gnss_assistance.GpsSatelliteEphemeris;
 import android.hardware.gnss.gnss_assistance.IonosphericCorrection;
 import android.hardware.gnss.gnss_assistance.KlobucharIonosphericModel;
 import android.hardware.gnss.gnss_assistance.LeapSecondsModel;
-import android.hardware.gnss.gnss_assistance.QzssAlmanac;
 import android.hardware.gnss.gnss_assistance.QzssSatelliteEphemeris;
 import android.hardware.gnss.gnss_assistance.RealTimeIntegrityModel;
 import android.hardware.gnss.gnss_assistance.TimeModel;
@@ -65,7 +62,7 @@ parcelable GnssAssistance {
     @VintfStability
     parcelable GpsAssistance {
         /** The GPS almanac. */
-        GpsAlmanac almanac;
+        GnssAlmanac almanac;
 
         /** The Klobuchar ionospheric model. */
         KlobucharIonosphericModel ionosphericModel;
@@ -93,7 +90,7 @@ parcelable GnssAssistance {
     @VintfStability
     parcelable GalileoAssistance {
         /** The Galileo almanac. */
-        GalileoAlmanac almanac;
+        GnssAlmanac almanac;
 
         /** The Galileo ionospheric model. */
         GalileoIonosphericModel ionosphericModel;
@@ -140,7 +137,7 @@ parcelable GnssAssistance {
     @VintfStability
     parcelable QzssAssistance {
         /** The QZSS almanac. */
-        QzssAlmanac almanac;
+        GnssAlmanac almanac;
 
         /** The Klobuchar ionospheric model. */
         KlobucharIonosphericModel ionosphericModel;
@@ -168,7 +165,7 @@ parcelable GnssAssistance {
     @VintfStability
     parcelable BeidouAssistance {
         /** The Beidou almanac. */
-        BeidouAlmanac almanac;
+        GnssAlmanac almanac;
 
         /** The Klobuchar ionospheric model. */
         KlobucharIonosphericModel ionosphericModel;
@@ -196,14 +193,14 @@ parcelable GnssAssistance {
     GpsAssistance gpsAssistance;
 
     /** Glonass assistance. */
-    GlonassAssistance gloAssistance;
+    GlonassAssistance glonassAssistance;
 
     /** Galileo assistance. */
-    GalileoAssistance galAssistance;
+    GalileoAssistance galileoAssistance;
 
     /** Beidou assistance. */
-    BeidouAssistance bdsAssistance;
+    BeidouAssistance beidouAssistance;
 
     /** QZSS assistance. */
-    QzssAssistance qzsAssistance;
+    QzssAssistance qzssAssistance;
 }

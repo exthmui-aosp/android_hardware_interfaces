@@ -228,6 +228,13 @@ aidl_interface_defaults {
     ],
 }
 
+rust_defaults {
+    name: "latest_android_hardware_audio_core_rust",
+    rustlibs: [
+        latest_android_hardware_audio_core + "-rust",
+    ],
+}
+
 // Used for the standalone sounddose HAL
 aidl_interface {
     name: "android.hardware.audio.core.sounddose",

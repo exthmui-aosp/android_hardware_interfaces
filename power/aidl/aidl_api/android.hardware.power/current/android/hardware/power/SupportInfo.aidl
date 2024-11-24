@@ -40,4 +40,12 @@ parcelable SupportInfo {
   long sessionHints;
   long sessionModes;
   long sessionTags;
+  android.hardware.power.SupportInfo.CompositionDataSupportInfo compositionData;
+  @VintfStability
+  parcelable CompositionDataSupportInfo {
+    boolean isSupported;
+    boolean disableGpuFences;
+    int maxBatchSize;
+    boolean alwaysBatch;
+  }
 }

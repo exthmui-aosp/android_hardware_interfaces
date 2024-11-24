@@ -31,25 +31,10 @@
 // with such a backward incompatible change, it has a high risk of breaking
 // later when a module using the interface is updated, e.g., Mainline modules.
 
-package android.hardware.gnss.gnss_assistance;
-/* @hide */
+package android.hardware.power;
 @VintfStability
-parcelable BeidouAlmanac {
-  int beidouWeekNumber;
-  android.hardware.gnss.gnss_assistance.BeidouAlmanac.BeidouSatelliteAlmanac[] satelliteAlmanac;
-  @VintfStability
-  parcelable BeidouSatelliteAlmanac {
-    int prn;
-    int svHealth;
-    int toaSeconds;
-    double eccentricity;
-    double deltaI;
-    double omega;
-    double omega0;
-    double omegaDot;
-    double rootA;
-    double m0;
-    double af0;
-    double af1;
-  }
+parcelable FrameProducerUpdate {
+  long producerId;
+  boolean isDead;
+  int[] sessions;
 }

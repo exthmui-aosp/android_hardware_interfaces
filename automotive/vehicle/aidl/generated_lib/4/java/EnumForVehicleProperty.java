@@ -51,6 +51,7 @@ public final class EnumForVehicleProperty {
         Map.entry(VehicleProperty.FUEL_VOLUME_DISPLAY_UNITS, List.of(VehicleUnit.class)),
         Map.entry(VehicleProperty.TIRE_PRESSURE_DISPLAY_UNITS, List.of(VehicleUnit.class)),
         Map.entry(VehicleProperty.EV_BATTERY_DISPLAY_UNITS, List.of(VehicleUnit.class)),
+        Map.entry(VehicleProperty.VEHICLE_SPEED_DISPLAY_UNITS, List.of(VehicleUnit.class)),
         Map.entry(VehicleProperty.HW_ROTARY_INPUT, List.of(RotaryInputType.class)),
         Map.entry(VehicleProperty.HW_CUSTOM_INPUT, List.of(CustomInputType.class)),
         Map.entry(VehicleProperty.SEAT_FOOTWELL_LIGHTS_STATE, List.of(VehicleLightState.class)),

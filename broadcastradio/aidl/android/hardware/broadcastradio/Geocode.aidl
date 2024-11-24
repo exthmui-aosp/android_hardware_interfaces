@@ -17,9 +17,10 @@
 package android.hardware.broadcastradio;
 
 /**
- * Geographic code reprensenting location in alert message
+ * Geographic code reprensenting location in alert message.
  *
- * <p>(see ITU-T X.1303 bis for more info).
+ * <p>Geocode is mainly for information display instead of parsing on radio application side. See
+ * ITU-T X.1303 bis for more info.
  */
 @VintfStability
 @JavaDerive(equals=true, toString=true)

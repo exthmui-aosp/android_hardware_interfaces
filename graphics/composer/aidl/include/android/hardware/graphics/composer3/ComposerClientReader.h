@@ -145,6 +145,18 @@ class ComposerClientReader {
         return std::move(data.releasedLayers);
     }
 
+    // Get and clear saved layer present fences.
+    std::vector<PresentFence::LayerPresentFence> takeLayerPresentFences(int64_t display) {
+        LOG_ALWAYS_FATAL_IF(mDisplay && display != *mDisplay);
+        auto found = mReturnData.find(display);
+        if (found == mReturnData.end()) {
+            return {};
+        }
+
+        ReturnData& data = found->second;
+        return std::move(data.layerPresentFences);
+    }
+
     // Get and clear saved present fence.
     ndk::ScopedFileDescriptor takePresentFence(int64_t display) {
         LOG_ALWAYS_FATAL_IF(mDisplay && display != *mDisplay);
@@ -223,6 +235,14 @@ class ComposerClientReader {
         LOG_ALWAYS_FATAL_IF(mDisplay && presentFence.display != *mDisplay);
         auto& data = mReturnData[presentFence.display];
         data.presentFence = std::move(presentFence.fence);
+
+        if (presentFence.layerPresentFences.has_value()) {
+            for (auto& optionalFence : presentFence.layerPresentFences.value()) {
+                if (optionalFence.has_value()) {
+                    data.layerPresentFences.push_back(std::move(optionalFence.value()));
+                }
+            }
+        }
     }
 
     void parseSetReleaseFences(ReleaseFences&& releaseFences) {
@@ -260,6 +280,7 @@ class ComposerClientReader {
         DisplayRequest displayRequests;
         std::vector<ChangedCompositionLayer> changedLayers;
         ndk::ScopedFileDescriptor presentFence;
+        std::vector<PresentFence::LayerPresentFence> layerPresentFences;
         std::vector<ReleaseFences::Layer> releasedLayers;
         PresentOrValidate::Result presentOrValidateState;
 

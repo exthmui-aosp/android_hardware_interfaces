@@ -41,12 +41,24 @@ enum RadioTechnology {
   UMTS,
   IS95A,
   IS95B,
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   ONE_X_RTT,
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   EVDO_0,
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   EVDO_A,
   HSDPA,
   HSUPA,
   HSPA,
+  /**
+   * @deprecated Legacy CDMA is unsupported.
+   */
   EVDO_B,
   EHRPD,
   LTE,

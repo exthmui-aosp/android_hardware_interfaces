@@ -34,9 +34,10 @@
 package android.hardware.power;
 @JavaDerive(equals=true, toString=true) @VintfStability
 parcelable CpuHeadroomParams {
-  android.hardware.power.CpuHeadroomParams.CalculationType calculationType;
-  android.hardware.power.CpuHeadroomParams.SelectionType selectionType;
-  int pid;
+  android.hardware.power.CpuHeadroomParams.CalculationType calculationType = android.hardware.power.CpuHeadroomParams.CalculationType.MIN;
+  int calculationWindowMillis = 1000;
+  android.hardware.power.CpuHeadroomParams.SelectionType selectionType = android.hardware.power.CpuHeadroomParams.SelectionType.ALL;
+  int[] tids;
   enum CalculationType {
     MIN,
     AVERAGE,

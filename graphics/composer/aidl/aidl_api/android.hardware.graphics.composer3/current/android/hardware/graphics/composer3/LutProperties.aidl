@@ -46,5 +46,6 @@ parcelable LutProperties {
   enum SamplingKey {
     RGB,
     MAX_RGB,
+    CIE_Y,
   }
 }

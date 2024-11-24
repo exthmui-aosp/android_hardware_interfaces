@@ -34,6 +34,13 @@ interface ISecureStorage {
     /**
      * Starts a storage session for a filesystem.
      *
+     * Clients should be prepared for `startSession` and any methods called on the `IStorageSession`
+     * or its sub-interfaces to return `WOULD_BLOCK` (a `binder::Status` with an exception code of
+     * `EX_TRANSACTION_FAILED` and a transaction error code of `android::WOULD_BLOCK`), which
+     * indicates that the requested storage is not currently available. Possible cases that might
+     * cause this return code might be accessing the data partition during boot stages where it
+     * isn't yet mounted or attempting to commit changes while an A/B update is in progress.
+     *
      * @filesystem:
      *     The minimum filesystem properties requested.
      *

@@ -63,6 +63,7 @@ oneway interface IRadioNetworkIndication {
      *
      * @param type Type of radio indication
      * @param version PRL version after PRL changes
+     * @deprecated Legacy CDMA is unsupported.
      */
     void cdmaPrlChanged(in RadioIndicationType type, in int version);
 
@@ -306,7 +307,7 @@ oneway interface IRadioNetworkIndication {
      *      operation, it becomes complicated when integrity is used to determine whether an
      *      emergency call is protected or not, hence its exclusion to simplify implementation.
      *    - 4G and 5G with multiple DRBs : emergency calls are protected under that RAT only if all
-     *      DRBs are protected (including IMS DRB).
+     *      SRBs and DRBs are protected (including IMS DRB).
      *    - 4G and 5G DRB integrity: Since DRB integrity is not enabled in most networks, if both
      *      ciphering and integrity are taken into account to determine the value of
      *      isUnprotectedEmergency, the value will mostly be false, hence why it is excluded.

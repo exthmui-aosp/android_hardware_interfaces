@@ -32,7 +32,14 @@ parcelable CpuHeadroomParams {
     /**
      * The calculation type.
      */
-    CalculationType calculationType;
+    CalculationType calculationType = CalculationType.MIN;
+
+    /**
+     * The calculation rolling window size in milliseconds.
+     * The device should support a superset of [50, 10000] and try to use the closest feasible
+     * window size to the provided value param.
+     */
+    int calculationWindowMillis = 1000;
 
     /**
      * Defines how to select the CPU.
@@ -47,16 +54,17 @@ parcelable CpuHeadroomParams {
     /**
      * The CPU selection type.
      */
-    SelectionType selectionType;
+    SelectionType selectionType = SelectionType.ALL;
 
     /**
-     * The caller thread's PID.
+     * The thread TIDs to track.
      *
-     * If pid is positive, return the headroom only for cores that are available
-     * to the given pid, otherwise return the headroom(s) for all cores.
+     * If tids are not-empty, return the headrooms only for cores that are available
+     * to the given tids, otherwise return the headroom(s) for all cores.
      *
-     * This should handle all the cases including but not limited to thread core
-     * affinity and app cpuset that change the available CPU cores for the caller.
+     * This should handle all the cases including but not limited to core affinity and app cpuset
+     * that change the available CPU cores for the caller. And the HAL should check that the TIDs
+     * have the same core affinity.
      */
-    int pid;
+    int[] tids;
 }

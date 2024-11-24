@@ -200,6 +200,47 @@ cc_test {
     test_suites: ["general-tests"],
 }
 
+cc_test {
+    name: "audio_alsa_utils_tests",
+    vendor_available: true,
+    defaults: [
+        "latest_android_media_audio_common_types_ndk_static",
+        "latest_android_hardware_audio_core_ndk_static",
+    ],
+    static_libs: [
+        "libalsautilsv2",
+        "libtinyalsav2",
+    ],
+    shared_libs: [
+        "libaudio_aidl_conversion_common_ndk",
+        "libaudioaidlcommon",
+        "libaudioutils",
+        "libbase",
+        "libbinder_ndk",
+        "libcutils",
+        "libfmq",
+        "libmedia_helper",
+        "libstagefright_foundation",
+        "libutils",
+    ],
+    header_libs: [
+        "libaudio_system_headers",
+        "libaudioaidl_headers",
+    ],
+    srcs: [
+        "alsa/Utils.cpp",
+        "tests/AlsaUtilsTest.cpp",
+    ],
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wthread-safety",
+        "-DBACKEND_NDK",
+    ],
+    test_suites: ["general-tests"],
+}
+
 cc_defaults {
     name: "aidlaudioeffectservice_defaults",
     defaults: [

@@ -18,8 +18,12 @@ package android.hardware.power;
 
 import android.hardware.power.Boost;
 import android.hardware.power.ChannelConfig;
+import android.hardware.power.CompositionData;
+import android.hardware.power.CompositionUpdate;
 import android.hardware.power.CpuHeadroomParams;
+import android.hardware.power.CpuHeadroomResult;
 import android.hardware.power.GpuHeadroomParams;
+import android.hardware.power.GpuHeadroomResult;
 import android.hardware.power.IPowerHintSession;
 import android.hardware.power.Mode;
 import android.hardware.power.SessionConfig;
@@ -152,9 +156,7 @@ interface IPower {
      * Called to get detailed information on the support status of various PowerHAL
      * features, such as hint sessions and specific boosts.
      *
-     * @return  a SupportInfo giving detailed support information, or
-     *          EX_UNSUPPORTED_OPERATION if detailed support checking is itself
-     *          not supported.
+     * @return  a SupportInfo giving detailed support information.
      */
     SupportInfo getSupportInfo();
 
@@ -162,24 +164,21 @@ interface IPower {
      * Provides an estimate of available CPU headroom the device based on past history.
      * <p>
      * @param params params to customize the CPU headroom calculation
-     * @return a single value or an array of values depending on selection type of params.
-     *         Each value is ranged from [0, 100], and 0 indicates no CPU resources were left
-     *         during the calculation interval and the app may expect low resources to be granted.
      * @throws EX_UNSUPPORTED_OPERATION if the API is unsupported or the request params can't be
      *         served.
+     * @throws EX_SECURITY if the TIDs passed in do not belong to the same process.
+     * @throws EX_ILLEGAL_STATE if the TIDs passed in do not have the same core affinity setting.
      */
-    float[] getCpuHeadroom(in CpuHeadroomParams params);
+    CpuHeadroomResult getCpuHeadroom(in CpuHeadroomParams params);
 
     /**
      * Provides an estimate of available GPU headroom the device based on past history.
      * <p>
      * @param params params to customize the GPU headroom calculation
-     * @return Value is ranged from [0, 100], and 0 indicates no GPU resources were left
-     *         during the calculation interval and the app may expect low resources to be granted.
      * @throws EX_UNSUPPORTED_OPERATION if the API is unsupported or the request params can't be
      *         served.
      */
-    float getGpuHeadroom(in GpuHeadroomParams params);
+    GpuHeadroomResult getGpuHeadroom(in GpuHeadroomParams params);
 
     /**
      * Minimum polling interval for calling getCpuHeadroom in milliseconds.
@@ -200,4 +199,22 @@ interface IPower {
      * @throws EX_UNSUPPORTED_OPERATION if the API is unsupported.
      */
     long getGpuHeadroomMinIntervalMillis();
+
+    /**
+     * Sent to PowerHAL when there are surface-attached sessions being composed,
+     * providing FPS and frame timing data that can be used to supplement
+     * and validate timing sent via reportActual. This call can be batched,
+     * especially in the case of a steady state or low-intensity workload.
+     *
+     * @param   data The aggregated composition data object.
+     */
+    oneway void sendCompositionData(in CompositionData[] data);
+
+    /**
+     * Sent to inform the HAL about important updates outside of the normal
+     * reporting cycle, such as lifecycle updates for displays or FrameProducers.
+     *
+     * @param   update The aggregated composition update object.
+     */
+    oneway void sendCompositionUpdate(in CompositionUpdate update);
 }

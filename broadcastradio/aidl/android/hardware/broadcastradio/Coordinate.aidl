@@ -34,7 +34,7 @@ parcelable Coordinate {
     /**
      * Longitude of the cooridinate.
      *
-     * <p>Longitude is in the range of -90 to 90.
+     * <p>Longitude is in the range of -180 to 180.
      */
     double longitude;
 }

@@ -17,7 +17,6 @@
 package android.hardware.radio.modem;
 
 /**
- * Note: This will be deprecated along with nvResetConfig in Android U.
  * @hide
  */
 @VintfStability
@@ -26,7 +25,7 @@ package android.hardware.radio.modem;
 @SuppressWarnings(value={"redundant-name"})
 enum ResetNvType {
     /**
-     * Reload all NV items
+     * Reload all NV items. This may reboot modem.
      */
     RELOAD,
     /**

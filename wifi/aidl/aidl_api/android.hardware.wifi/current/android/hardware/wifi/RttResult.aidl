@@ -71,4 +71,6 @@ parcelable RttResult {
   long baseAkm;
   long cipherSuite;
   int secureHeLtfProtocolVersion;
+  long pasnComebackAfterMillis;
+  @nullable byte[] pasnComebackCookie;
 }

@@ -29,6 +29,7 @@
 #include <android/hardware/graphics/composer3/ComposerClientWriter.h>
 #include <binder/ProcessState.h>
 #include <cutils/ashmem.h>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <ui/Fence.h>
 #include <ui/GraphicBuffer.h>
@@ -46,6 +47,8 @@
 
 #undef LOG_TAG
 #define LOG_TAG "VtsHalGraphicsComposer3_TargetTest"
+
+using testing::Ge;
 
 namespace aidl::android::hardware::graphics::composer3::vts {
 
@@ -1265,6 +1268,16 @@ TEST_P(GraphicsComposerAidlV3Test, GetDisplayConfigurations) {
         EXPECT_TRUE(status.isOk());
         EXPECT_FALSE(displayConfigurations.empty());
 
+        const bool areAllModesARR =
+                std::all_of(displayConfigurations.cbegin(), displayConfigurations.cend(),
+                            [](const auto& config) { return config.vrrConfig.has_value(); });
+
+        const bool areAllModesMRR =
+                std::all_of(displayConfigurations.cbegin(), displayConfigurations.cend(),
+                            [](const auto& config) { return !config.vrrConfig.has_value(); });
+
+        EXPECT_TRUE(areAllModesARR || areAllModesMRR) << "Mixing MRR and ARR modes is not allowed";
+
         for (const auto& displayConfig : displayConfigurations) {
             EXPECT_NE(-1, displayConfig.width);
             EXPECT_NE(-1, displayConfig.height);
@@ -1396,14 +1409,6 @@ TEST_P(GraphicsComposerAidlV3Test, GetDisplayConfigsIsSubsetOfGetDisplayConfigur
                         }
                     }));
         }
-    }
-}
-
-TEST_P(GraphicsComposerAidlV3Test, GetMaxLayerPictureProfiles) {
-    for (const auto& display : mDisplays) {
-        const auto& [status, maxPorfiles] =
-                mComposerClient->getMaxLayerPictureProfiles(display.getDisplayId());
-        EXPECT_TRUE(status.isOk());
     }
 }
 
@@ -3239,19 +3244,44 @@ TEST_P(GraphicsComposerAidlCommandV3Test, frameIntervalChangeAtPresentFrame) {
     });
 }
 
-TEST_P(GraphicsComposerAidlCommandV3Test, getMaxLayerPictureProfiles_success) {
+class GraphicsComposerAidlCommandV4Test : public GraphicsComposerAidlCommandTest {
+  protected:
+    void SetUp() override {
+        GraphicsComposerAidlTest::SetUp();
+        if (getInterfaceVersion() <= 3) {
+            GTEST_SKIP() << "Device interface version is expected to be >= 4";
+        }
+    }
+};
+
+TEST_P(GraphicsComposerAidlCommandV4Test, getMaxLayerPictureProfiles_success) {
     for (auto& display : mDisplays) {
         int64_t displayId = display.getDisplayId();
         if (!hasDisplayCapability(displayId, DisplayCapability::PICTURE_PROCESSING)) {
             continue;
         }
         const auto& [status, maxProfiles] =
-                mComposerClient->getMaxLayerPictureProfiles(getPrimaryDisplayId());
+                mComposerClient->getMaxLayerPictureProfiles(displayId);
         EXPECT_TRUE(status.isOk());
+        EXPECT_THAT(maxProfiles, Ge(0));
     }
 }
 
-TEST_P(GraphicsComposerAidlCommandV3Test, setDisplayPictureProfileId_success) {
+TEST_P(GraphicsComposerAidlCommandV4Test, getMaxLayerPictureProfiles_unsupported) {
+    for (auto& display : mDisplays) {
+        int64_t displayId = display.getDisplayId();
+        if (hasDisplayCapability(displayId, DisplayCapability::PICTURE_PROCESSING)) {
+            continue;
+        }
+        const auto& [status, maxProfiles] =
+                mComposerClient->getMaxLayerPictureProfiles(displayId);
+        EXPECT_FALSE(status.isOk());
+        EXPECT_NO_FATAL_FAILURE(
+                assertServiceSpecificError(status, IComposerClient::EX_UNSUPPORTED));
+    }
+}
+
+TEST_P(GraphicsComposerAidlCommandV4Test, setDisplayPictureProfileId_success) {
     for (auto& display : mDisplays) {
         int64_t displayId = display.getDisplayId();
         if (!hasDisplayCapability(displayId, DisplayCapability::PICTURE_PROCESSING)) {
@@ -3262,7 +3292,7 @@ TEST_P(GraphicsComposerAidlCommandV3Test, setDisplayPictureProfileId_success) {
         const auto layer = createOnScreenLayer(display);
         const auto buffer = allocate(::android::PIXEL_FORMAT_RGBA_8888);
         ASSERT_NE(nullptr, buffer->handle);
-        // TODO(b/337330263): Lookup profile IDs from PictureProfileService
+        // TODO(b/337330263): Lookup profile IDs from MediaQualityManager
         writer.setDisplayPictureProfileId(displayId, PictureProfileId(1));
         writer.setLayerBuffer(displayId, layer, /*slot*/ 0, buffer->handle,
                               /*acquireFence*/ -1);
@@ -3271,7 +3301,7 @@ TEST_P(GraphicsComposerAidlCommandV3Test, setDisplayPictureProfileId_success) {
     }
 }
 
-TEST_P(GraphicsComposerAidlCommandV3Test, setLayerPictureProfileId_success) {
+TEST_P(GraphicsComposerAidlCommandV4Test, setLayerPictureProfileId_success) {
     for (auto& display : mDisplays) {
         int64_t displayId = display.getDisplayId();
         if (!hasDisplayCapability(displayId, DisplayCapability::PICTURE_PROCESSING)) {
@@ -3289,14 +3319,14 @@ TEST_P(GraphicsComposerAidlCommandV3Test, setLayerPictureProfileId_success) {
         ASSERT_NE(nullptr, buffer->handle);
         writer.setLayerBuffer(displayId, layer, /*slot*/ 0, buffer->handle,
                               /*acquireFence*/ -1);
-        // TODO(b/337330263): Lookup profile IDs from PictureProfileService
+        // TODO(b/337330263): Lookup profile IDs from MediaQualityManager
         writer.setLayerPictureProfileId(displayId, layer, PictureProfileId(1));
         execute();
         ASSERT_TRUE(mReader.takeErrors().empty());
     }
 }
 
-TEST_P(GraphicsComposerAidlCommandV3Test, setLayerPictureProfileId_failsWithTooManyProfiles) {
+TEST_P(GraphicsComposerAidlCommandV4Test, setLayerPictureProfileId_failsWithTooManyProfiles) {
     for (auto& display : mDisplays) {
         int64_t displayId = display.getDisplayId();
         if (!hasDisplayCapability(displayId, DisplayCapability::PICTURE_PROCESSING)) {
@@ -3315,7 +3345,7 @@ TEST_P(GraphicsComposerAidlCommandV3Test, setLayerPictureProfileId_failsWithTooM
             ASSERT_NE(nullptr, buffer->handle);
             writer.setLayerBuffer(displayId, layer, /*slot*/ 0, buffer->handle,
                                   /*acquireFence*/ -1);
-            // TODO(b/337330263): Lookup profile IDs from PictureProfileService
+            // TODO(b/337330263): Lookup profile IDs from MediaQualityManager
             writer.setLayerPictureProfileId(displayId, layer, PictureProfileId(profileId));
         }
         execute();
@@ -3324,16 +3354,6 @@ TEST_P(GraphicsComposerAidlCommandV3Test, setLayerPictureProfileId_failsWithTooM
                     errors[0].errorCode == IComposerClient::EX_PICTURE_PROFILE_MAX_EXCEEDED);
     }
 }
-
-class GraphicsComposerAidlCommandV4Test : public GraphicsComposerAidlCommandTest {
-  protected:
-    void SetUp() override {
-        GraphicsComposerAidlTest::SetUp();
-        if (getInterfaceVersion() <= 3) {
-            GTEST_SKIP() << "Device interface version is expected to be >= 4";
-        }
-    }
-};
 
 TEST_P(GraphicsComposerAidlCommandV4Test, SetUnsupportedLayerLuts) {
     auto& writer = getWriter(getPrimaryDisplayId());

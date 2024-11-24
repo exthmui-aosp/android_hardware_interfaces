@@ -33,25 +33,25 @@ parcelable KeplerianOrbitModel {
     /** Eccentricity. */
     double eccentricity;
 
-    /** Inclination angle at reference time in semi-circles. */
+    /** Inclination angle at reference time in radians. */
     double i0;
 
-    /** Rate of change of inclination angle in semi-circles per second. */
+    /** Rate of change of inclination angle in radians per second. */
     double iDot;
 
-    /** Argument of perigee in semi-circles. */
+    /** Argument of perigee in radians. */
     double omega;
 
-    /** Longitude of ascending node of orbit plane at beginning of week in semi-circles. */
+    /** Longitude of ascending node of orbit plane at beginning of week in radians. */
     double omega0;
 
-    /** Rate of right ascension in semi-circles per second. */
+    /** Rate of right ascension in radians per second. */
     double omegaDot;
 
-    /** Mean anomaly at reference time in semi-circles. */
+    /** Mean anomaly at reference time in radians. */
     double m0;
 
-    /** Mean motion difference from computed value in semi-circles per second. */
+    /** Mean motion difference from computed value in radians per second. */
     double deltaN;
 
     /**

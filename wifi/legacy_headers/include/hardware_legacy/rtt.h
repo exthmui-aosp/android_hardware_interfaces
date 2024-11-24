@@ -100,6 +100,7 @@ typedef enum {
 
 #define RTT_SECURITY_MAX_PASSPHRASE_LEN 63
 #define PMKID_LEN 16
+#define RTT_MAX_COOKIE_LEN 255
 
 typedef struct {
     wifi_rtt_akm base_akm;  // Base Authentication and Key Management (AKM) protocol used for PASN
@@ -111,7 +112,9 @@ typedef struct {
     u32 pmkid_len;
     u8 pmkid[PMKID_LEN];  // PMKID corresponding to the cached PMK from the base AKM. PMKID can be
                           // null if no cached PMK is present.
-
+    u8 comeback_cookie_len;  // Comeback cookie length. If the length is 0, it indicates there is no
+                             // cookie.
+    u8 comeback_cookie[RTT_MAX_COOKIE_LEN];  // Comeback cookie indicated over wifi_rtt_result_v4.
 } wifi_rtt_pasn_config;
 
 typedef struct {
@@ -261,6 +264,11 @@ typedef struct {
     wifi_rtt_akm base_akm;
     wifi_rtt_cipher_suite cipher_suite;
     int secure_he_ltf_protocol_version;
+    u16 pasn_comeback_after_millis;  // The time in milliseconds after which the non-AP STA is
+                                     // requested to retry the PASN authentication.
+    u8 pasn_comeback_cookie_len;  // Comeback cookie length. If the length is 0, it indicates there
+                                  // is no cookie.
+    u8 pasn_comeback_cookie[RTT_MAX_COOKIE_LEN];  // Comeback cookie octets.
 } wifi_rtt_result_v4;
 
 /* RTT result callbacks */

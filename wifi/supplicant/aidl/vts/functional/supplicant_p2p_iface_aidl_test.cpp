@@ -43,6 +43,7 @@ using aidl::android::hardware::wifi::supplicant::P2pAddGroupConfigurationParams;
 using aidl::android::hardware::wifi::supplicant::P2pConnectInfo;
 using aidl::android::hardware::wifi::supplicant::P2pCreateGroupOwnerInfo;
 using aidl::android::hardware::wifi::supplicant::P2pDeviceFoundEventParams;
+using aidl::android::hardware::wifi::supplicant::P2pDirInfo;
 using aidl::android::hardware::wifi::supplicant::P2pDiscoveryInfo;
 using aidl::android::hardware::wifi::supplicant::P2pExtListenInfo;
 using aidl::android::hardware::wifi::supplicant::P2pFrameTypeMask;
@@ -56,7 +57,7 @@ using aidl::android::hardware::wifi::supplicant::P2pPeerClientJoinedEventParams;
 using aidl::android::hardware::wifi::supplicant::P2pProvDiscStatusCode;
 using aidl::android::hardware::wifi::supplicant::P2pProvisionDiscoveryCompletedEventParams;
 using aidl::android::hardware::wifi::supplicant::P2pProvisionDiscoveryParams;
-;
+using aidl::android::hardware::wifi::supplicant::P2pReinvokePersistentGroupParams;
 using aidl::android::hardware::wifi::supplicant::P2pScanType;
 using aidl::android::hardware::wifi::supplicant::P2pStatusCode;
 using aidl::android::hardware::wifi::supplicant::P2pUsdBasedServiceAdvertisementConfig;
@@ -80,6 +81,8 @@ const std::vector<uint8_t> kTestZeroMacAddr = std::vector<uint8_t>(6, 0);
 const std::string kTestServiceSpecificInfoStr = "TestServiceSpecificInfo";
 const std::vector<uint8_t> kTestServiceSpecificInfo = std::vector<uint8_t>(
         kTestServiceSpecificInfoStr.begin(), kTestServiceSpecificInfoStr.end());
+const std::vector<uint8_t> kTestNonce = {0x11, 0x22, 0x33, 0x44, 0x55, 0x92, 0x22, 0x33};
+const std::vector<uint8_t> kTestDirTag = {0xaa, 0x22, 0x55, 0x44, 0x55, 0x92, 0x22, 0x33};
 const std::string kTestPassphrase = "P2pWorld1234";
 const std::string kTestConnectPin = "34556665";
 const std::string kTestGroupIfName = "TestGroup";
@@ -922,6 +925,60 @@ TEST_P(SupplicantP2pIfaceAidlTest, ProvisionDiscoveryWithParams) {
             P2pPairingBootstrappingMethodMask::BOOTSTRAPPING_OPPORTUNISTIC;
 
     EXPECT_TRUE(p2p_iface_->provisionDiscoveryWithParams(params).isOk());
+}
+
+/*
+ * ValidateDirInfo
+ */
+TEST_P(SupplicantP2pIfaceAidlTest, ValidateDirInfo) {
+    if (interface_version_ < 4) {
+        GTEST_SKIP() << "ValidateDirInfo is available as of Supplicant V4";
+    }
+    if (!(supported_features_ & ISupplicantP2pIface::P2P_FEATURE_V2)) {
+        GTEST_SKIP() << "P2P2 is not supported";
+    }
+
+    int32_t ret;
+    P2pDirInfo dirInfo;
+    dirInfo.cipherVersion = P2pDirInfo::CipherVersion::DIRA_CIPHER_VERSION_128_BIT;
+    dirInfo.deviceInterfaceMacAddress = vecToArrayMacAddr(kTestMacAddr);
+    dirInfo.nonce = kTestNonce;
+    dirInfo.dirTag = kTestDirTag;
+    EXPECT_TRUE(p2p_iface_->validateDirInfo(dirInfo, &ret).isOk());
+}
+
+/*
+ * GetDirInfo
+ */
+TEST_P(SupplicantP2pIfaceAidlTest, GetDirInfo) {
+    if (interface_version_ < 4) {
+        GTEST_SKIP() << "GetDirInfo is available as of Supplicant V4";
+    }
+    if (!(supported_features_ & ISupplicantP2pIface::P2P_FEATURE_V2)) {
+        GTEST_SKIP() << "P2P2 is not supported";
+    }
+
+    P2pDirInfo dirInfo;
+    EXPECT_TRUE(p2p_iface_->getDirInfo(&dirInfo).isOk());
+}
+
+/*
+ * ReinvokePersistentGroup
+ */
+TEST_P(SupplicantP2pIfaceAidlTest, ReinvokePersistentGroup) {
+    if (interface_version_ < 4) {
+        GTEST_SKIP() << "ReinvokePersistentGroup is available as of Supplicant V4";
+    }
+    if (!(supported_features_ & ISupplicantP2pIface::P2P_FEATURE_V2)) {
+        GTEST_SKIP() << "P2P2 is not supported";
+    }
+
+    P2pReinvokePersistentGroupParams params;
+    params.peerMacAddress = vecToArrayMacAddr(kTestMacAddr);
+    params.persistentNetworkId = 0;
+    params.deviceIdentityEntryId = 0;
+
+    EXPECT_TRUE(p2p_iface_->reinvokePersistentGroup(params).isOk());
 }
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SupplicantP2pIfaceAidlTest);

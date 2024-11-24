@@ -94,6 +94,8 @@ oneway interface IRadioNetwork {
      * Response function is IRadioNetworkResponse.getCdmaRoamingPreferenceResponse()
      *
      * This is available when android.hardware.telephony.cdma is defined.
+     *
+     * @deprecated Legacy CDMA is unsupported.
      */
     void getCdmaRoamingPreference(in int serial);
 
@@ -272,6 +274,8 @@ oneway interface IRadioNetwork {
      * Response function is IRadioNetworkResponse.setCdmaRoamingPreferenceResponse()
      *
      * This is available when android.hardware.telephony.cdma is defined.
+     *
+     * @deprecated Legacy CDMA is unsupported.
      */
     void setCdmaRoamingPreference(in int serial, in CdmaRoamingType type);
 
@@ -334,7 +338,7 @@ oneway interface IRadioNetwork {
 
     /**
      * Enables/disables network state change notifications due to changes in LAC and/or CID (for
-     * GSM) or BID/SID/NID/latitude/longitude (for CDMA). Basically +CREG=2 vs. +CREG=1 (TS 27.007).
+     * GSM). Basically +CREG=2 vs. +CREG=1 (TS 27.007).
      * The Radio implementation must default to "updates enabled" when the screen is on and
      * "updates disabled" when the screen is off.
      *
@@ -503,7 +507,7 @@ oneway interface IRadioNetwork {
      *
      * This is available when android.hardware.telephony is defined.
      */
-    oneway void setUsageSetting(in int serial, in UsageSetting usageSetting);
+    void setUsageSetting(in int serial, in UsageSetting usageSetting);
 
     /**
      * Get the UE usage setting for data/voice centric usage.
@@ -514,7 +518,7 @@ oneway interface IRadioNetwork {
      *
      * This is available when android.hardware.telephony is defined.
      */
-    oneway void getUsageSetting(in int serial);
+    void getUsageSetting(in int serial);
 
     /**
      * Set the Emergency Mode

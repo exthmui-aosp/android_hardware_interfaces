@@ -31,4 +31,9 @@ parcelable P2pPairingBootstrappingMethodMask {
     const int BOOTSTRAPPING_KEYPAD_PINCODE = 1 << 3;
     /** Keypad passphrase */
     const int BOOTSTRAPPING_KEYPAD_PASSPHRASE = 1 << 4;
+    /**
+     * Pairing bootstrapping done Out of band (For example: Over Bluetooth LE.
+     * Refer Wi-Fi Alliance Wi-Fi Direct R2 specification Section 3.9 for the details).
+     */
+    const int BOOTSTRAPPING_OUT_OF_BAND = 1 << 5;
 }

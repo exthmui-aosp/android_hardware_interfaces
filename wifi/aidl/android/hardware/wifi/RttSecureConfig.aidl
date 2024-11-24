@@ -35,4 +35,8 @@ parcelable RttSecureConfig {
      * Enable Ranging frame protection.
      */
     boolean enableRangingFrameProtection;
+    /**
+     * Comeback cookie is an opaque sequence of octets retrieved from |RttResult|.
+     */
+    byte[] pasnComebackCookie;
 }

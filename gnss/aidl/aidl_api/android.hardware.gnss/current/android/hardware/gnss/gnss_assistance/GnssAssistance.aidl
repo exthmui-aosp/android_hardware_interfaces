@@ -36,10 +36,10 @@ package android.hardware.gnss.gnss_assistance;
 @VintfStability
 parcelable GnssAssistance {
   android.hardware.gnss.gnss_assistance.GnssAssistance.GpsAssistance gpsAssistance;
-  android.hardware.gnss.gnss_assistance.GnssAssistance.GlonassAssistance gloAssistance;
-  android.hardware.gnss.gnss_assistance.GnssAssistance.GalileoAssistance galAssistance;
-  android.hardware.gnss.gnss_assistance.GnssAssistance.BeidouAssistance bdsAssistance;
-  android.hardware.gnss.gnss_assistance.GnssAssistance.QzssAssistance qzsAssistance;
+  android.hardware.gnss.gnss_assistance.GnssAssistance.GlonassAssistance glonassAssistance;
+  android.hardware.gnss.gnss_assistance.GnssAssistance.GalileoAssistance galileoAssistance;
+  android.hardware.gnss.gnss_assistance.GnssAssistance.BeidouAssistance beidouAssistance;
+  android.hardware.gnss.gnss_assistance.GnssAssistance.QzssAssistance qzssAssistance;
   @VintfStability
   parcelable GnssSatelliteCorrections {
     int svid;
@@ -47,7 +47,7 @@ parcelable GnssAssistance {
   }
   @VintfStability
   parcelable GpsAssistance {
-    android.hardware.gnss.gnss_assistance.GpsAlmanac almanac;
+    android.hardware.gnss.gnss_assistance.GnssAlmanac almanac;
     android.hardware.gnss.gnss_assistance.KlobucharIonosphericModel ionosphericModel;
     android.hardware.gnss.gnss_assistance.UtcModel utcModel;
     android.hardware.gnss.gnss_assistance.LeapSecondsModel leapSecondsModel;
@@ -58,7 +58,7 @@ parcelable GnssAssistance {
   }
   @VintfStability
   parcelable GalileoAssistance {
-    android.hardware.gnss.gnss_assistance.GalileoAlmanac almanac;
+    android.hardware.gnss.gnss_assistance.GnssAlmanac almanac;
     android.hardware.gnss.gnss_assistance.GalileoIonosphericModel ionosphericModel;
     android.hardware.gnss.gnss_assistance.UtcModel utcModel;
     android.hardware.gnss.gnss_assistance.LeapSecondsModel leapSecondsModel;
@@ -77,7 +77,7 @@ parcelable GnssAssistance {
   }
   @VintfStability
   parcelable QzssAssistance {
-    android.hardware.gnss.gnss_assistance.QzssAlmanac almanac;
+    android.hardware.gnss.gnss_assistance.GnssAlmanac almanac;
     android.hardware.gnss.gnss_assistance.KlobucharIonosphericModel ionosphericModel;
     android.hardware.gnss.gnss_assistance.UtcModel utcModel;
     android.hardware.gnss.gnss_assistance.LeapSecondsModel leapSecondsModel;
@@ -88,7 +88,7 @@ parcelable GnssAssistance {
   }
   @VintfStability
   parcelable BeidouAssistance {
-    android.hardware.gnss.gnss_assistance.BeidouAlmanac almanac;
+    android.hardware.gnss.gnss_assistance.GnssAlmanac almanac;
     android.hardware.gnss.gnss_assistance.KlobucharIonosphericModel ionosphericModel;
     android.hardware.gnss.gnss_assistance.UtcModel utcModel;
     android.hardware.gnss.gnss_assistance.LeapSecondsModel leapSecondsModel;

@@ -29,12 +29,16 @@ enum RadioAccessFamily {
     UMTS = 1 << RadioTechnology.UMTS,
     IS95A = 1 << RadioTechnology.IS95A,
     IS95B = 1 << RadioTechnology.IS95B,
+    /** @deprecated Legacy CDMA is unsupported. */
     ONE_X_RTT = 1 << RadioTechnology.ONE_X_RTT,
+    /** @deprecated Legacy CDMA is unsupported. */
     EVDO_0 = 1 << RadioTechnology.EVDO_0,
+    /** @deprecated Legacy CDMA is unsupported. */
     EVDO_A = 1 << RadioTechnology.EVDO_A,
     HSDPA = 1 << RadioTechnology.HSDPA,
     HSUPA = 1 << RadioTechnology.HSUPA,
     HSPA = 1 << RadioTechnology.HSPA,
+    /** @deprecated Legacy CDMA is unsupported. */
     EVDO_B = 1 << RadioTechnology.EVDO_B,
     EHRPD = 1 << RadioTechnology.EHRPD,
     LTE = 1 << RadioTechnology.LTE,

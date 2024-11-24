@@ -16,6 +16,7 @@
 
 package android.hardware.graphics.composer3;
 
+import android.hardware.drm.HdcpLevels;
 import android.hardware.graphics.common.DisplayDecorationSupport;
 import android.hardware.graphics.common.Hdr;
 import android.hardware.graphics.common.HdrConversionCapability;
@@ -938,4 +939,21 @@ interface IComposerClient {
      * pipeline, a value of zero should be returned here.
      */
     int getMaxLayerPictureProfiles(long display);
+
+    /**
+     * Supports HDCP lazy activation.
+     *
+     * When SurfaceFlinger detects secure layers, this method is called to instruct HWC side that
+     * HDCP negotiation process can be started.
+     *
+     * When HDCP is successfully started or failed to start, HWC reports the HDCP levels via
+     * IComposerCallback.onHdcpLevelsChanged().
+     *
+     * @param display is the display whose HDCP negotiation can be started.
+     * @param levels is the desired HDCP levels.
+     *
+     * @see IComposerCallback.onHdcpLevelsChanged
+     *
+     */
+    oneway void startHdcpNegotiation(long display, in HdcpLevels levels);
 }

@@ -34,7 +34,8 @@
 package android.hardware.power;
 @JavaDerive(equals=true, toString=true) @VintfStability
 parcelable GpuHeadroomParams {
-  android.hardware.power.GpuHeadroomParams.CalculationType calculationType;
+  android.hardware.power.GpuHeadroomParams.CalculationType calculationType = android.hardware.power.GpuHeadroomParams.CalculationType.MIN;
+  int calculationWindowMillis = 1000;
   enum CalculationType {
     MIN,
     AVERAGE,

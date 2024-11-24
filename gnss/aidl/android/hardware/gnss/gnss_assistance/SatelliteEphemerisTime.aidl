@@ -28,7 +28,7 @@ parcelable SatelliteEphemerisTime {
     /** The issue of ephemeris data. */
     int iode;
 
-    /** The satellite week number. */
+    /** The satellite week number without rollover. */
     int weekNumber;
 
     /** The broadcast time of ephemeris in GNSS time of week in seconds. */

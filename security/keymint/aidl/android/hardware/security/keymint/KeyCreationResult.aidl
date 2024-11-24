@@ -125,9 +125,9 @@ parcelable KeyCreationResult {
      * straightforward translation of the KeyMint tag/value parameter lists to ASN.1.
      *
      * KeyDescription ::= SEQUENCE {
-     *     attestationVersion         INTEGER, # Value 300
+     *     attestationVersion         INTEGER, # Value 400
      *     attestationSecurityLevel   SecurityLevel, # See below
-     *     keyMintVersion             INTEGER, # Value 300
+     *     keyMintVersion             INTEGER, # Value 400
      *     keymintSecurityLevel       SecurityLevel, # See below
      *     attestationChallenge       OCTET_STRING, # Tag::ATTESTATION_CHALLENGE from attestParams
      *     uniqueId                   OCTET_STRING, # Empty unless key has Tag::INCLUDE_UNIQUE_ID
@@ -145,9 +145,9 @@ parcelable KeyCreationResult {
      *     verifiedBootKey            OCTET_STRING,
      *     deviceLocked               BOOLEAN,
      *     verifiedBootState          VerifiedBootState,
-     *     # verifiedBootHash must contain 32-byte value that represents the state of all binaries
-     *     # or other components validated by verified boot.  Updating any verified binary or
-     *     # component must cause this value to change.
+     *     # verifiedBootHash must contain a SHA-256 digest of all binaries and components validated
+     *     # by Verified Boot. Updating any verified binary or component must cause this value to
+     *     # change.
      *     verifiedBootHash           OCTET_STRING,
      * }
      *
@@ -156,6 +156,17 @@ parcelable KeyCreationResult {
      *     SelfSigned                 (1),
      *     Unverified                 (2),
      *     Failed                     (3),
+     * }
+     *
+     * # Modules contains version information for APEX modules.
+     * # Note that the Modules information is DER-encoded before being hashed, which requires a
+     * # specific ordering (lexicographic by encoded value) for the constituent Module entries. This
+     * # ensures that the ordering of Module entries is predictable and that the resulting SHA-256
+     * # hash value is identical for the same set of modules.
+     * Modules ::= SET OF Module
+     * Module ::= SEQUENCE {
+     *     packageName                OCTET_STRING,
+     *     version                    INTEGER, # As determined at boot time
      * }
      *
      * -- Note that the AuthorizationList SEQUENCE is also used in IKeyMintDevice::importWrappedKey
@@ -210,6 +221,7 @@ parcelable KeyCreationResult {
      *     bootPatchLevel             [719] EXPLICIT INTEGER OPTIONAL,
      *     deviceUniqueAttestation    [720] EXPLICIT NULL OPTIONAL,
      *     attestationIdSecondImei    [723] EXPLICIT OCTET_STRING OPTIONAL,
+     *     moduleHash                 [724] EXPLICIT OCTET_STRING OPTIONAL, -- SHA-256 hash of DER-encoded `Modules`
      * }
      */
     Certificate[] certificateChain;

@@ -67,7 +67,7 @@ parcelable BeidouSatelliteEphemeris {
          */
         int aode;
 
-        /** Beidou week number. */
+        /** Beidou week number without rollover. */
         int weekNumber;
 
         /**

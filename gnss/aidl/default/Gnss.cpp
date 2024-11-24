@@ -123,10 +123,13 @@ ScopedAStatus Gnss::start() {
             std::this_thread::sleep_for(std::chrono::milliseconds(TTFF_MILLIS));
             mFirstFixReceived = true;
         }
+        int reportGnssCount = 0;
         do {
             if (!mIsActive) {
+                ALOGD("Do not report location. mIsActive is false");
                 break;
             }
+            reportGnssCount += 1;
             if (!mGnssMeasurementEnabled || mMinIntervalMs <= mGnssMeasurementIntervalMs) {
                 this->reportSvStatus();
             }
@@ -141,6 +144,7 @@ ScopedAStatus Gnss::start() {
                 this->reportLocation(location);
             }
         } while (mIsActive && mThreadBlocker.wait_for(std::chrono::milliseconds(mMinIntervalMs)));
+        ALOGD("reportGnssCount: %d", reportGnssCount);
     });
     return ScopedAStatus::ok();
 }

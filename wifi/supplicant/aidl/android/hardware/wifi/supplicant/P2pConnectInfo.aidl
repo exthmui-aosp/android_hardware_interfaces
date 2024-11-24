@@ -25,7 +25,8 @@ import android.hardware.wifi.supplicant.WpsProvisionMethod;
 @VintfStability
 parcelable P2pConnectInfo {
     /**
-     * MAC address of the device to connect to.
+     * MAC address of the peer device to connect to or to authorize a connect
+     * request.
      */
     byte[6] peerAddress;
 
@@ -82,4 +83,23 @@ parcelable P2pConnectInfo {
      * null otherwise.
      */
     @nullable String password;
+
+    /**
+     * Channel frequency in MHz to start group formation,
+     * join an existing group owner or authorize a connection request.
+     */
+    int frequencyMHz;
+
+    /**
+     * Used to authorize a connection request from the Peer device.
+     * The MAC address of the peer device is set in peerAddress.
+     */
+    boolean authorizeConnectionFromPeer;
+
+    /**
+     * Used to check if the authorize connection request is on an existing Group Owner
+     * interface to allow a peer device to connect. This field is set to null if the request
+     * is to form a group or join an existing group.
+     */
+    @nullable String groupInterfaceName;
 }

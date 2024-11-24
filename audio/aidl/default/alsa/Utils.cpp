@@ -39,6 +39,8 @@ using aidl::android::media::audio::common::PcmType;
 
 namespace aidl::android::hardware::audio::core::alsa {
 
+const float kUnityGainFloat = 1.0f;
+
 DeviceProxy::DeviceProxy() : mProfile(nullptr), mProxy(nullptr, alsaProxyDeleter) {}
 
 DeviceProxy::DeviceProxy(const DeviceProfile& deviceProfile)
@@ -140,7 +142,6 @@ AudioFormatDescription make_AudioFormatDescription(PcmType pcm) {
 
 const AudioFormatDescToPcmFormatMap& getAudioFormatDescriptorToPcmFormatMap() {
     static const AudioFormatDescToPcmFormatMap formatDescToPcmFormatMap = {
-            {make_AudioFormatDescription(PcmType::UINT_8_BIT), PCM_FORMAT_S8},
             {make_AudioFormatDescription(PcmType::INT_16_BIT), PCM_FORMAT_S16_LE},
             {make_AudioFormatDescription(PcmType::FIXED_Q_8_24), PCM_FORMAT_S24_LE},
             {make_AudioFormatDescription(PcmType::INT_24_BIT), PCM_FORMAT_S24_3LE},
@@ -163,6 +164,92 @@ const PcmFormatToAudioFormatDescMap& getPcmFormatToAudioFormatDescMap() {
     static const PcmFormatToAudioFormatDescMap pcmFormatToFormatDescMap =
             make_PcmFormatToAudioFormatDescMap(getAudioFormatDescriptorToPcmFormatMap());
     return pcmFormatToFormatDescMap;
+}
+
+void applyGainToInt16Buffer(void* buffer, const size_t bufferSizeBytes, const float gain,
+                            int channelCount) {
+    const uint16_t unityGainQ4_12 = u4_12_from_float(kUnityGainFloat);
+    const uint16_t vl = u4_12_from_float(gain);
+    const uint32_t vrl = (vl << 16) | vl;
+    int numFrames = 0;
+    if (channelCount == 2) {
+        numFrames = bufferSizeBytes / sizeof(uint32_t);
+        if (numFrames == 0) {
+            return;
+        }
+        uint32_t* intBuffer = (uint32_t*)buffer;
+        if (CC_UNLIKELY(vl > unityGainQ4_12)) {
+            do {
+                int32_t l = mulRL(1, *intBuffer, vrl) >> 12;
+                int32_t r = mulRL(0, *intBuffer, vrl) >> 12;
+                l = clamp16(l);
+                r = clamp16(r);
+                *intBuffer++ = (r << 16) | (l & 0xFFFF);
+            } while (--numFrames);
+        } else {
+            do {
+                int32_t l = mulRL(1, *intBuffer, vrl) >> 12;
+                int32_t r = mulRL(0, *intBuffer, vrl) >> 12;
+                *intBuffer++ = (r << 16) | (l & 0xFFFF);
+            } while (--numFrames);
+        }
+    } else {
+        numFrames = bufferSizeBytes / sizeof(uint16_t);
+        if (numFrames == 0) {
+            return;
+        }
+        int16_t* intBuffer = (int16_t*)buffer;
+        if (CC_UNLIKELY(vl > unityGainQ4_12)) {
+            do {
+                int32_t mono = mul(*intBuffer, static_cast<int16_t>(vl)) >> 12;
+                *intBuffer++ = clamp16(mono);
+            } while (--numFrames);
+        } else {
+            do {
+                int32_t mono = mul(*intBuffer, static_cast<int16_t>(vl)) >> 12;
+                *intBuffer++ = static_cast<int16_t>(mono & 0xFFFF);
+            } while (--numFrames);
+        }
+    }
+}
+
+void applyGainToInt32Buffer(int32_t* typedBuffer, const size_t bufferSizeBytes, const float gain) {
+    int numSamples = bufferSizeBytes / sizeof(int32_t);
+    if (numSamples == 0) {
+        return;
+    }
+    if (CC_UNLIKELY(gain > kUnityGainFloat)) {
+        do {
+            float multiplied = (*typedBuffer) * gain;
+            if (multiplied > INT32_MAX) {
+                *typedBuffer++ = INT32_MAX;
+            } else if (multiplied < INT32_MIN) {
+                *typedBuffer++ = INT32_MIN;
+            } else {
+                *typedBuffer++ = multiplied;
+            }
+        } while (--numSamples);
+    } else {
+        do {
+            *typedBuffer++ = (*typedBuffer) * gain;
+        } while (--numSamples);
+    }
+}
+
+void applyGainToFloatBuffer(float* floatBuffer, const size_t bufferSizeBytes, const float gain) {
+    int numSamples = bufferSizeBytes / sizeof(float);
+    if (numSamples == 0) {
+        return;
+    }
+    if (CC_UNLIKELY(gain > kUnityGainFloat)) {
+        do {
+            *floatBuffer++ = std::clamp((*floatBuffer) * gain, -kUnityGainFloat, kUnityGainFloat);
+        } while (--numSamples);
+    } else {
+        do {
+            *floatBuffer++ = (*floatBuffer) * gain;
+        } while (--numSamples);
+    }
 }
 
 }  // namespace
@@ -345,7 +432,7 @@ pcm_format aidl2c_AudioFormatDescription_pcm_format(const AudioFormatDescription
     return findValueOrDefault(getAudioFormatDescriptorToPcmFormatMap(), aidl, PCM_FORMAT_INVALID);
 }
 
-void applyGain(void* buffer, float gain, size_t bytesToTransfer, enum pcm_format pcmFormat,
+void applyGain(void* buffer, float gain, size_t bufferSizeBytes, enum pcm_format pcmFormat,
                int channelCount) {
     if (channelCount != 1 && channelCount != 2) {
         LOG(WARNING) << __func__ << ": unsupported channel count " << channelCount;
@@ -355,56 +442,37 @@ void applyGain(void* buffer, float gain, size_t bytesToTransfer, enum pcm_format
         LOG(WARNING) << __func__ << ": unsupported pcm format " << pcmFormat;
         return;
     }
-    const float unityGainFloat = 1.0f;
-    if (std::abs(gain - unityGainFloat) < 1e-6) {
+    if (std::abs(gain - kUnityGainFloat) < 1e-6) {
         return;
     }
-    int numFrames;
     switch (pcmFormat) {
-        case PCM_FORMAT_S16_LE: {
-            const uint16_t unityGainQ4_12 = u4_12_from_float(unityGainFloat);
-            const uint16_t vl = u4_12_from_float(gain);
-            const uint32_t vrl = (vl << 16) | vl;
-            if (channelCount == 2) {
-                numFrames = bytesToTransfer / sizeof(uint32_t);
-                uint32_t* intBuffer = (uint32_t*)buffer;
-                if (CC_UNLIKELY(vl > unityGainQ4_12)) {
-                    // volume is boosted, so we might need to clamp even though
-                    // we process only one track.
-                    do {
-                        int32_t l = mulRL(1, *intBuffer, vrl) >> 12;
-                        int32_t r = mulRL(0, *intBuffer, vrl) >> 12;
-                        l = clamp16(l);
-                        r = clamp16(r);
-                        *intBuffer++ = (r << 16) | (l & 0xFFFF);
-                    } while (--numFrames);
-                } else {
-                    do {
-                        int32_t l = mulRL(1, *intBuffer, vrl) >> 12;
-                        int32_t r = mulRL(0, *intBuffer, vrl) >> 12;
-                        *intBuffer++ = (r << 16) | (l & 0xFFFF);
-                    } while (--numFrames);
-                }
-            } else {
-                numFrames = bytesToTransfer / sizeof(uint16_t);
-                int16_t* intBuffer = (int16_t*)buffer;
-                if (CC_UNLIKELY(vl > unityGainQ4_12)) {
-                    // volume is boosted, so we might need to clamp even though
-                    // we process only one track.
-                    do {
-                        int32_t mono = mulRL(1, *intBuffer, vrl) >> 12;
-                        *intBuffer++ = clamp16(mono);
-                    } while (--numFrames);
-                } else {
-                    do {
-                        int32_t mono = mulRL(1, *intBuffer, vrl) >> 12;
-                        *intBuffer++ = static_cast<int16_t>(mono & 0xFFFF);
-                    } while (--numFrames);
-                }
+        case PCM_FORMAT_S16_LE:
+            applyGainToInt16Buffer(buffer, bufferSizeBytes, gain, channelCount);
+            break;
+        case PCM_FORMAT_FLOAT_LE: {
+            float* floatBuffer = (float*)buffer;
+            applyGainToFloatBuffer(floatBuffer, bufferSizeBytes, gain);
+        } break;
+        case PCM_FORMAT_S24_LE:
+            // PCM_FORMAT_S24_LE buffer is composed of signed fixed-point 32-bit Q8.23 data with
+            // min and max limits of the same bit representation as min and max limits of
+            // PCM_FORMAT_S32_LE buffer.
+        case PCM_FORMAT_S32_LE: {
+            int32_t* typedBuffer = (int32_t*)buffer;
+            applyGainToInt32Buffer(typedBuffer, bufferSizeBytes, gain);
+        } break;
+        case PCM_FORMAT_S24_3LE: {
+            int numSamples = bufferSizeBytes / (sizeof(uint8_t) * 3);
+            if (numSamples == 0) {
+                return;
             }
+            std::unique_ptr<int32_t[]> typedBuffer(new int32_t[numSamples]);
+            memcpy_to_i32_from_p24(typedBuffer.get(), (uint8_t*)buffer, numSamples);
+            applyGainToInt32Buffer(typedBuffer.get(), numSamples * sizeof(int32_t), gain);
+            memcpy_to_p24_from_i32((uint8_t*)buffer, typedBuffer.get(), numSamples);
         } break;
         default:
-            // TODO(336370745): Implement gain for other supported formats
+            LOG(FATAL) << __func__ << ": unsupported pcm format " << pcmFormat;
             break;
     }
 }

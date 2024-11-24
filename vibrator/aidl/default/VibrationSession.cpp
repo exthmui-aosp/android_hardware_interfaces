@@ -24,7 +24,7 @@ namespace android {
 namespace hardware {
 namespace vibrator {
 
-static constexpr int32_t SESSION_END_DELAY_MS = 50;
+static constexpr int32_t SESSION_END_DELAY_MS = 20;
 
 ndk::ScopedAStatus VibrationSession::close() {
     LOG(VERBOSE) << "Vibration Session close";

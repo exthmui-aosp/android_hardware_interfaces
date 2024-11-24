@@ -31,25 +31,10 @@
 // with such a backward incompatible change, it has a high risk of breaking
 // later when a module using the interface is updated, e.g., Mainline modules.
 
-package android.hardware.gnss.gnss_assistance;
-/* @hide */
+package android.hardware.wifi.supplicant;
 @VintfStability
-parcelable QzssAlmanac {
-  int qzssWeekNumber;
-  int secondsOfQzssWeek;
-  android.hardware.gnss.gnss_assistance.QzssAlmanac.QzssSatelliteAlmanac[] satelliteAlmanac;
-  @VintfStability
-  parcelable QzssSatelliteAlmanac {
-    int prn;
-    int svHealth;
-    double eccentricity;
-    double inclination;
-    double omega;
-    double omega0;
-    double omegaDot;
-    double rootA;
-    double m0;
-    double af0;
-    double af1;
-  }
+parcelable P2pReinvokePersistentGroupParams {
+  byte[6] peerMacAddress;
+  int persistentNetworkId;
+  int deviceIdentityEntryId;
 }
