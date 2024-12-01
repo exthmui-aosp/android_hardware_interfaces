@@ -16,10 +16,11 @@
 
 package android.hardware.bluetooth.audio;
 
+import android.hardware.bluetooth.audio.AptxAdaptiveLeCapabilities;
 import android.hardware.bluetooth.audio.AudioLocation;
 import android.hardware.bluetooth.audio.CodecType;
 import android.hardware.bluetooth.audio.Lc3Capabilities;
-import android.hardware.bluetooth.audio.AptxAdaptiveLeCapabilities;
+import android.hardware.bluetooth.audio.OpusCapabilities;
 
 /**
  * Used to specify the le audio unicast codec capabilities for hardware offload.
@@ -35,6 +36,7 @@ parcelable UnicastCapability {
         Lc3Capabilities lc3Capabilities;
         VendorCapabilities vendorCapabillities;
         AptxAdaptiveLeCapabilities aptxAdaptiveLeCapabilities;
+        OpusCapabilities opusCapabilities;
     }
     CodecType codecType;
     AudioLocation supportedChannel;

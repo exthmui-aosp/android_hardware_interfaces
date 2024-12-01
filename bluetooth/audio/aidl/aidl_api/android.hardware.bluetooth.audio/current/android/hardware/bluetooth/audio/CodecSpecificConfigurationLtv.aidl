@@ -59,6 +59,7 @@ union CodecSpecificConfigurationLtv {
   enum FrameDuration {
     US7500 = 0x00,
     US10000 = 0x01,
+    US20000 = 0x02,
   }
   parcelable AudioChannelAllocation {
     int bitmask;

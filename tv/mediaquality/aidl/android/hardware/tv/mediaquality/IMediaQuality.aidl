@@ -18,6 +18,12 @@ package android.hardware.tv.mediaquality;
 
 import android.hardware.tv.mediaquality.AmbientBacklightSettings;
 import android.hardware.tv.mediaquality.IMediaQualityCallback;
+import android.hardware.tv.mediaquality.IPictureProfileAdjustmentListener;
+import android.hardware.tv.mediaquality.IPictureProfileChangedListener;
+import android.hardware.tv.mediaquality.ISoundProfileAdjustmentListener;
+import android.hardware.tv.mediaquality.ISoundProfileChangedListener;
+import android.hardware.tv.mediaquality.PictureParameters;
+import android.hardware.tv.mediaquality.SoundParameters;
 
 /**
  * Interface for the media quality service
@@ -56,4 +62,120 @@ interface IMediaQuality {
      * @return True if the ambient backlight detection is enabled, false otherwise.
      */
     boolean getAmbientBacklightDetectionEnabled();
+
+    /**
+     * Check if auto picture quality feature is supported on the current TV device.
+     *
+     * @return true when the device supports the auto picture quality, false when the device does
+     * not supports the auto picture quality.
+     */
+    boolean isAutoPqSupported();
+
+    /**
+     * Get the current state of auto picture quality.
+     *
+     * @return true when auto picture quality is enabled, false when auto picture quality is
+     * disabled.
+     */
+    boolean getAutoPqEnabled();
+
+    /**
+     * Set the auto picture quality enable/disable. Auto picture quality is to adjust the Picture
+     * parameters depends on the current content playing.
+     *
+     * @param enable True to enable, false to disable.
+     */
+    void setAutoPqEnabled(boolean enable);
+
+    /**
+     * Check if auto super resolution feature is supported on the current TV device.
+     *
+     * @return true when the device supports the super resolution feature, false when the device
+     * does not support super resolution.
+     */
+    boolean isAutoSrSupported();
+
+    /**
+     * Get the current state of auto super resolution.
+     *
+     * @return true when auto super resolution is enabled, false when auto super resolution is
+     * disabled.
+     */
+    boolean getAutoSrEnabled();
+
+    /**
+     * Set the auto super resolution enable/disable. Auto super resolution is to analyze the
+     * lower resolution image and invent the missing pixel to make the image looks sharper.
+     *
+     * @param enable True to enable, false to disable.
+     */
+    void setAutoSrEnabled(boolean enable);
+
+    /**
+     * Check if auto sound/audio quality feature is supported on the current TV device.
+     *
+     * @return true when the device supports the auto sound/audio quality, false when
+     * the device does not supports the auto sound/audio quality.
+     */
+    boolean isAutoAqSupported();
+
+    /**
+     * Get the current state of auto sound/audio quality.
+     *
+     * @return true when auto sound/audio quality is enabled, false when auto sound/audio
+     * quality is disabled.
+     */
+    boolean getAutoAqEnabled();
+
+    /**
+     * Set the auto sound/audio quality enable/disable. Auto sound/audio quality is to
+     * adjust the sound parameters depends on the current content playing.
+     *
+     * @param enable True to enable, false to disable.
+     */
+    void setAutoAqEnabled(boolean enable);
+
+    /**
+     * Get picture profile changed listener.
+     *
+     * @return the IPictureProfileChangedListener.
+     */
+    IPictureProfileChangedListener getPictureProfileListener();
+
+    /**
+     * Sets the listener for picture adjustment from the HAL.
+     *
+     * @param IPictureProfileAdjustmentListener listener object to pass picture profile.
+     */
+    void setPictureProfileAdjustmentListener(IPictureProfileAdjustmentListener listener);
+
+    /**
+     * Get the picture parameters by PictureProfile id. Check PictureParameters for its' detail.
+     *
+     * @param pictureProfileId The PictureProfile id that associate with the PictureProfile.
+     * @return PictureParameters with all the pre-defined parameters and vendor defined parameters.
+     */
+    PictureParameters getPictureParameters(long pictureProfileId);
+
+    /**
+     * Get sound profile changed listener.
+     *
+     * @return the ISoundProfileChangedListener.
+     */
+    ISoundProfileChangedListener getSoundProfileListener();
+
+    /**
+     * Sets the listener for sound adjustment from the HAL.
+     *
+     * @param ISoundProfileAdjustmentListener listener object to pass sound profile.
+     */
+    void setSoundProfileAdjustmentListener(ISoundProfileAdjustmentListener listener);
+
+    /**
+     * Get the sound parameters by SoundProfile id. Check SoundParameters for its' detail.
+     *
+     * @param soundProfileId The SoundProfile id that associate with a SoundProfile.
+     * @return SoundParameters with all the pre-defined parameters and vendor defined parameters.
+     */
+    SoundParameters getSoundParameters(long soundProfileId);
 }

@@ -94,7 +94,7 @@ interface IWifiChip {
    */
   @PropagateAllowBlocking android.hardware.wifi.IWifiApIface createApOrBridgedApIface(in android.hardware.wifi.IfaceConcurrencyType iface, in android.hardware.wifi.common.OuiKeyedData[] vendorData);
   void setVoipMode(in android.hardware.wifi.IWifiChip.VoipMode mode);
-  @PropagateAllowBlocking android.hardware.wifi.IWifiApIface createApOrBridgedApIfaceWithParams(in android.hardware.wifi.ApIfaceParams params);
+  @PropagateAllowBlocking android.hardware.wifi.IWifiApIface createApOrBridgedApIfaceWithParams(in android.hardware.wifi.IWifiChip.ApIfaceParams params);
   const int NO_POWER_CAP_CONSTANT = 0x7FFFFFFF;
   @Backing(type="int") @VintfStability
   enum FeatureSetMask {
@@ -190,5 +190,11 @@ interface IWifiChip {
     LOW_LATENCY = 1,
     HIGH_THROUGHPUT = 2,
     LOW_POWER = 3,
+  }
+  @VintfStability
+  parcelable ApIfaceParams {
+    android.hardware.wifi.IfaceConcurrencyType ifaceType;
+    boolean usesMlo;
+    @nullable android.hardware.wifi.common.OuiKeyedData[] vendorData;
   }
 }

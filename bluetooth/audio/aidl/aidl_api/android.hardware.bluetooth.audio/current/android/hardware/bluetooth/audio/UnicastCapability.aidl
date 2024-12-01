@@ -48,5 +48,6 @@ parcelable UnicastCapability {
     android.hardware.bluetooth.audio.Lc3Capabilities lc3Capabilities;
     android.hardware.bluetooth.audio.UnicastCapability.VendorCapabilities vendorCapabillities;
     android.hardware.bluetooth.audio.AptxAdaptiveLeCapabilities aptxAdaptiveLeCapabilities;
+    android.hardware.bluetooth.audio.OpusCapabilities opusCapabilities;
   }
 }

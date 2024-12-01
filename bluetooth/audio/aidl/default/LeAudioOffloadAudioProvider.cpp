@@ -82,6 +82,8 @@ const std::map<CodecSpecificConfigurationLtv::FrameDuration, uint32_t>
          CodecSpecificCapabilitiesLtv::SupportedFrameDurations::US7500},
         {CodecSpecificConfigurationLtv::FrameDuration::US10000,
          CodecSpecificCapabilitiesLtv::SupportedFrameDurations::US10000},
+        {CodecSpecificConfigurationLtv::FrameDuration::US20000,
+         CodecSpecificCapabilitiesLtv::SupportedFrameDurations::US20000},
 };
 
 std::map<int32_t, CodecSpecificConfigurationLtv::SamplingFrequency>
@@ -768,7 +770,7 @@ ndk::ScopedAStatus LeAudioOffloadAudioProvider::getLeAudioAseConfiguration(
   // A setting must match both source and sink.
   // First filter all setting matched with sink capability
   if (in_remoteSinkAudioCapabilities.has_value()) {
-    for (auto& setting : ase_configuration_settings)
+    for (auto& setting : ase_configuration_settings) {
       for (auto& capability : in_remoteSinkAudioCapabilities.value()) {
         if (!capability.has_value()) continue;
         auto filtered_ase_configuration_setting =
@@ -779,6 +781,7 @@ ndk::ScopedAStatus LeAudioOffloadAudioProvider::getLeAudioAseConfiguration(
               filtered_ase_configuration_setting.value());
         }
       }
+    }
   } else {
     sink_matched_ase_configuration_settings = ase_configuration_settings;
   }
@@ -809,7 +812,6 @@ ndk::ScopedAStatus LeAudioOffloadAudioProvider::getLeAudioAseConfiguration(
     // Matching priority list:
     // Preferred context - exact match with allocation
     // Any context - exact match with allocation
-
     auto matched_setting_with_context = matchWithRequirement(
         matched_ase_configuration_settings, requirement, true);
     if (matched_setting_with_context.has_value()) {

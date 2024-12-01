@@ -139,6 +139,14 @@
         </interface>
     </hal>
     <hal format="aidl">
+        <name>android.hardware.bluetooth.socket</name>
+        <version>1</version>
+        <interface>
+            <name>IBluetoothSocket</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl">
         <name>android.hardware.bluetooth.finder</name>
         <version>1</version>
         <interface>
@@ -249,7 +257,7 @@
     </hal>
     <hal format="aidl">
         <name>android.hardware.health</name>
-        <version>3</version>
+        <version>3-4</version>
         <interface>
             <name>IHealth</name>
             <instance>default</instance>
@@ -505,6 +513,14 @@
         <interface>
             <name>IAuthGraphKeyExchange</name>
             <instance>nonsecure</instance>
+        </interface>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.security.see.hwcrypto</name>
+        <version>1</version>
+        <interface>
+            <name>IHwCryptoKey</name>
+            <instance>default</instance>
         </interface>
     </hal>
     <hal format="aidl" updatable-via-apex="true">

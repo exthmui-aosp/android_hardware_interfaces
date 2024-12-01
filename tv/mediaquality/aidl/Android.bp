@@ -25,10 +25,11 @@ aidl_interface {
         },
         ndk: {
             enabled: true,
-            min_sdk_version: "29",
+            min_sdk_version: "31",
         },
         rust: {
             enabled: true,
+            min_sdk_version: "31",
         },
         cpp: {
             enabled: false,

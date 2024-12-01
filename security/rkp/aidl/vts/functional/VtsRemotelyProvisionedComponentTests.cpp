@@ -416,6 +416,32 @@ TEST_P(GenerateKeyTests, generateEcdsaP256Key_testMode) {
     check_maced_pubkey(macedPubKey, testMode, nullptr);
 }
 
+/**
+ * Generate and validate at most 2**16 production-mode keys. This aims to catch issues that do not
+ * deterministically show up. In practice, this will test far fewer keys, but a certain number are
+ * tested at a minimum.
+ */
+TEST_P(GenerateKeyTests, generateManyEcdsaP256KeysInProdMode) {
+    const auto start = std::chrono::steady_clock::now();
+    const auto time_bound = std::chrono::seconds(5);
+    const auto upper_bound = 1 << 16;
+    const auto lower_bound = 1 << 8;
+    for (auto iteration = 0; iteration < upper_bound; iteration++) {
+        MacedPublicKey macedPubKey;
+        bytevec privateKeyBlob;
+        bool testMode = false;
+        auto status =
+                provisionable_->generateEcdsaP256KeyPair(testMode, &macedPubKey, &privateKeyBlob);
+        ASSERT_TRUE(status.isOk());
+        vector<uint8_t> coseKeyData;
+        check_maced_pubkey(macedPubKey, testMode, &coseKeyData);
+        const auto current_time = std::chrono::steady_clock::now() - start;
+        if (iteration >= lower_bound && current_time >= time_bound) {
+            break;
+        }
+    }
+}
+
 class CertificateRequestTestBase : public VtsRemotelyProvisionedComponentTests {
   protected:
     CertificateRequestTestBase()

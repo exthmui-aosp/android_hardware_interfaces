@@ -83,6 +83,16 @@ const uint32_t kInvalidPatchlevel = 99998877;
 // additional overhead, for the digest algorithmIdentifier required by PKCS#1.
 const size_t kPkcs1UndigestedSignaturePaddingOverhead = 11;
 
+// Determine whether the key description is for an asymmetric key.
+bool is_asymmetric(const AuthorizationSet& key_desc) {
+    auto algorithm = key_desc.GetTagValue(TAG_ALGORITHM);
+    if (algorithm && (algorithm.value() == Algorithm::RSA || algorithm.value() == Algorithm::EC)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 size_t count_tag_invalid_entries(const std::vector<KeyParameter>& authorizations) {
     return std::count_if(authorizations.begin(), authorizations.end(),
                          [](const KeyParameter& e) -> bool { return e.tag == Tag::INVALID; });
@@ -418,11 +428,14 @@ ErrorCode KeyMintAidlTestBase::GenerateKey(const AuthorizationSet& key_desc,
     vector<Certificate> attest_cert_chain;
     // If an attestation is requested, but the system is RKP-only, we need to supply an explicit
     // attestation key. Else the result is a key without an attestation.
-    // If the RKP-only value is undeterminable (i.e., when running on GSI), generate and use the
-    // attest key anyways. In the case that using an attest key is not supported
-    // (shouldSkipAttestKeyTest), assume the device has factory keys (so not RKP-only).
+    // - If the RKP-only value is undeterminable (i.e., when running on GSI), generate and use the
+    //   `ATTEST_KEY` anyways.
+    // - In the case that using an `ATTEST_KEY` is not supported
+    //   (shouldSkipAttestKeyTest), assume the device has factory keys (so not RKP-only).
+    // - If the key being generated is a symmetric key (from test cases that check that the
+    //   attestation parameters are correctly ignored), don't try to use an `ATTEST_KEY`.
     if (isRkpOnly().value_or(true) && key_desc.Contains(TAG_ATTESTATION_CHALLENGE) &&
-        !shouldSkipAttestKeyTest()) {
+        !shouldSkipAttestKeyTest() && is_asymmetric(key_desc)) {
         AuthorizationSet attest_key_desc =
                 AuthorizationSetBuilder().EcdsaKey(EcCurve::P_256).AttestKey().SetDefaultValidity();
         attest_key.emplace();
@@ -462,10 +475,7 @@ ErrorCode KeyMintAidlTestBase::GenerateKey(const AuthorizationSet& key_desc,
         *key_characteristics = std::move(creationResult.keyCharacteristics);
         *cert_chain = std::move(creationResult.certificateChain);
 
-        auto algorithm = key_desc.GetTagValue(TAG_ALGORITHM);
-        EXPECT_TRUE(algorithm);
-        if (algorithm &&
-            (algorithm.value() == Algorithm::RSA || algorithm.value() == Algorithm::EC)) {
+        if (is_asymmetric(key_desc)) {
             EXPECT_GE(cert_chain->size(), 1);
             if (key_desc.Contains(TAG_ATTESTATION_CHALLENGE)) {
                 if (attest_key) {
@@ -506,10 +516,7 @@ ErrorCode KeyMintAidlTestBase::ImportKey(const AuthorizationSet& key_desc, KeyFo
         *key_characteristics = std::move(creationResult.keyCharacteristics);
         cert_chain_ = std::move(creationResult.certificateChain);
 
-        auto algorithm = key_desc.GetTagValue(TAG_ALGORITHM);
-        EXPECT_TRUE(algorithm);
-        if (algorithm &&
-            (algorithm.value() == Algorithm::RSA || algorithm.value() == Algorithm::EC)) {
+        if (is_asymmetric(key_desc)) {
             EXPECT_GE(cert_chain_.size(), 1);
             if (key_desc.Contains(TAG_ATTESTATION_CHALLENGE)) EXPECT_GT(cert_chain_.size(), 1);
         } else {
@@ -554,10 +561,7 @@ ErrorCode KeyMintAidlTestBase::ImportWrappedKey(string wrapped_key, string wrapp
         for (auto& entry : key_characteristics_) {
             allAuths.push_back(AuthorizationSet(entry.authorizations));
         }
-        auto algorithm = allAuths.GetTagValue(TAG_ALGORITHM);
-        EXPECT_TRUE(algorithm);
-        if (algorithm &&
-            (algorithm.value() == Algorithm::RSA || algorithm.value() == Algorithm::EC)) {
+        if (is_asymmetric(allAuths)) {
             EXPECT_GE(cert_chain_.size(), 1);
         } else {
             // For symmetric keys there should be no certificates.
@@ -2228,6 +2232,33 @@ void KeyMintAidlTestBase::assert_mgf_digests_present_or_not_in_key_characteristi
 
 namespace {
 
+std::optional<std::string> validateP256Point(const std::vector<uint8_t>& x_buffer,
+                                             const std::vector<uint8_t>& y_buffer) {
+    auto group = EC_GROUP_Ptr(EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+    if (group.get() == nullptr) {
+        return "Error creating EC group by curve name for prime256v1";
+    }
+
+    auto point = EC_POINT_Ptr(EC_POINT_new(group.get()));
+    BIGNUM_Ptr x(BN_bin2bn(x_buffer.data(), x_buffer.size(), nullptr));
+    BIGNUM_Ptr y(BN_bin2bn(y_buffer.data(), y_buffer.size(), nullptr));
+    if (!EC_POINT_set_affine_coordinates_GFp(group.get(), point.get(), x.get(), y.get(), nullptr)) {
+        return "Failed to set affine coordinates.";
+    }
+    if (!EC_POINT_is_on_curve(group.get(), point.get(), nullptr)) {
+        return "Point is not on curve.";
+    }
+    if (EC_POINT_is_at_infinity(group.get(), point.get())) {
+        return "Point is at infinity.";
+    }
+    const auto* generator = EC_GROUP_get0_generator(group.get());
+    if (!EC_POINT_cmp(group.get(), generator, point.get(), nullptr)) {
+        return "Point is equal to generator.";
+    }
+
+    return std::nullopt;
+}
+
 void check_cose_key(const vector<uint8_t>& data, bool testMode) {
     auto [parsedPayload, __, payloadParseErr] = cppbor::parse(data);
     ASSERT_TRUE(parsedPayload) << "Key parse failed: " << payloadParseErr;
@@ -2261,6 +2292,24 @@ void check_cose_key(const vector<uint8_t>& data, bool testMode) {
                              "  -3 : \\{(0x[0-9a-f]{2}, ){31}0x[0-9a-f]{2}\\},\n"  // pub_y: data
                              "\\}"));
     }
+
+    ASSERT_TRUE(parsedPayload->asMap()) << "CBOR item was not a map";
+
+    ASSERT_TRUE(parsedPayload->asMap()->get(CoseKey::Label::PUBKEY_X))
+            << "CBOR map did not contain x coordinate of public key";
+    ASSERT_TRUE(parsedPayload->asMap()->get(CoseKey::Label::PUBKEY_X)->asBstr())
+            << "x coordinate of public key was not a bstr";
+    const auto& x = parsedPayload->asMap()->get(CoseKey::Label::PUBKEY_X)->asBstr()->value();
+
+    ASSERT_TRUE(parsedPayload->asMap()->get(CoseKey::Label::PUBKEY_Y))
+            << "CBOR map did not contain y coordinate of public key";
+    ASSERT_TRUE(parsedPayload->asMap()->get(CoseKey::Label::PUBKEY_Y)->asBstr())
+            << "y coordinate of public key was not a bstr";
+    const auto& y = parsedPayload->asMap()->get(CoseKey::Label::PUBKEY_Y)->asBstr()->value();
+
+    auto errorMessage = validateP256Point(x, y);
+    EXPECT_EQ(errorMessage, std::nullopt)
+            << *errorMessage << " x: " << bin2hex(x) << " y: " << bin2hex(y);
 }
 
 }  // namespace

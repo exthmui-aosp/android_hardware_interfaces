@@ -35,7 +35,10 @@ parcelable P2pUsdBasedServiceDiscoveryResultParams {
     /** Identifier to identify the peer service advertisement instance */
     int peerSessionId;
 
-    /** Service Protocol Type */
+    /**
+     * Service Protocol Type. See defined values in the Wi-Fi Direct R2 Spec, Table 129,
+     * although any value between 0-255 may be defined by the service layer and is considered valid.
+     */
     int serviceProtocolType;
 
     /** Service specific information content determined by the application */

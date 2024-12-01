@@ -22,6 +22,7 @@
 #include <aidl/android/hardware/graphics/common/PixelFormat.h>
 #include <aidl/android/hardware/graphics/common/Rect.h>
 #include <aidl/android/hardware/graphics/composer3/Composition.h>
+#include <aidl/android/hardware/graphics/composer3/OutputType.h>
 #include <aidl/android/hardware/graphics/composer3/IComposer.h>
 #include <android-base/properties.h>
 #include <android/binder_process.h>
@@ -3390,6 +3391,19 @@ TEST_P(GraphicsComposerAidlCommandV4Test, SetUnsupportedLayerLuts) {
         // change to client composition
         ASSERT_FALSE(mReader.takeChangedCompositionTypes(getPrimaryDisplayId()).empty());
         ASSERT_TRUE(mReader.takeErrors().empty());
+    }
+}
+
+TEST_P(GraphicsComposerAidlCommandV4Test, GetDisplayConfigurations_hasHdrType) {
+    for (const auto& display : mDisplays) {
+        const auto& [status, displayConfigurations] =
+                mComposerClient->getDisplayConfigurations(display.getDisplayId());
+        EXPECT_TRUE(status.isOk());
+        EXPECT_FALSE(displayConfigurations.empty());
+
+        for (const auto& displayConfig : displayConfigurations) {
+            EXPECT_NE(displayConfig.hdrOutputType, OutputType::INVALID);
+        }
     }
 }
 

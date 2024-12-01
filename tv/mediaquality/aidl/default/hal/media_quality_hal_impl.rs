@@ -20,17 +20,36 @@ use android_hardware_tv_mediaquality::aidl::android::hardware::tv::mediaquality:
     IMediaQualityCallback::IMediaQualityCallback,
     AmbientBacklightEvent::AmbientBacklightEvent,
     AmbientBacklightSettings::AmbientBacklightSettings,
+    IPictureProfileAdjustmentListener::IPictureProfileAdjustmentListener,
+    IPictureProfileChangedListener::IPictureProfileChangedListener,
+    PictureParameter::PictureParameter,
+    PictureParameters::PictureParameters,
+    ISoundProfileAdjustmentListener::ISoundProfileAdjustmentListener,
+    ISoundProfileChangedListener::ISoundProfileChangedListener,
+    SoundParameter::SoundParameter,
+    SoundParameters::SoundParameters,
 };
-use binder::Interface;
+use binder::{Interface, ParcelableHolder, Strong};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use binder::Strong;
 
 /// Defined so we can implement the IMediaQuality AIDL interface.
 pub struct MediaQualityService {
     callback: Arc<Mutex<Option<Strong<dyn IMediaQualityCallback>>>>,
     ambient_backlight_enabled: Arc<Mutex<bool>>,
-    ambient_backlight_detector_settings: Arc<Mutex<AmbientBacklightSettings>>
+    ambient_backlight_detector_settings: Arc<Mutex<AmbientBacklightSettings>>,
+    auto_pq_supported: Arc<Mutex<bool>>,
+    auto_pq_enabled: Arc<Mutex<bool>>,
+    auto_sr_supported: Arc<Mutex<bool>>,
+    auto_sr_enabled: Arc<Mutex<bool>>,
+    auto_aq_supported: Arc<Mutex<bool>>,
+    auto_aq_enabled: Arc<Mutex<bool>>,
+    picture_profile_adjustment_listener:
+            Arc<Mutex<Option<Strong<dyn IPictureProfileAdjustmentListener>>>>,
+    sound_profile_adjustment_listener:
+            Arc<Mutex<Option<Strong<dyn ISoundProfileAdjustmentListener>>>>,
+    picture_profile_changed_listener: Arc<Mutex<Option<Strong<dyn IPictureProfileChangedListener>>>>,
+    sound_profile_changed_listener: Arc<Mutex<Option<Strong<dyn ISoundProfileChangedListener>>>>,
 }
 
 impl MediaQualityService {
@@ -42,6 +61,16 @@ impl MediaQualityService {
             ambient_backlight_enabled: Arc::new(Mutex::new(true)),
             ambient_backlight_detector_settings:
                     Arc::new(Mutex::new(AmbientBacklightSettings::default())),
+            auto_pq_supported: Arc::new(Mutex::new(false)),
+            auto_pq_enabled: Arc::new(Mutex::new(false)),
+            auto_sr_supported: Arc::new(Mutex::new(false)),
+            auto_sr_enabled: Arc::new(Mutex::new(false)),
+            auto_aq_supported: Arc::new(Mutex::new(false)),
+            auto_aq_enabled: Arc::new(Mutex::new(false)),
+            picture_profile_adjustment_listener: Arc::new(Mutex::new(None)),
+            sound_profile_adjustment_listener: Arc::new(Mutex::new(None)),
+            picture_profile_changed_listener: Arc::new(Mutex::new(None)),
+            sound_profile_changed_listener: Arc::new(Mutex::new(None)),
         }
     }
 }
@@ -110,5 +139,138 @@ impl IMediaQuality for MediaQualityService {
     fn getAmbientBacklightDetectionEnabled(&self) -> binder::Result<bool> {
         let ambient_backlight_enabled = self.ambient_backlight_enabled.lock().unwrap();
         Ok(*ambient_backlight_enabled)
+    }
+
+    fn isAutoPqSupported(&self) -> binder::Result<bool> {
+        let auto_pq_supported = self.auto_pq_supported.lock().unwrap();
+        Ok(*auto_pq_supported)
+    }
+
+    fn getAutoPqEnabled(&self) -> binder::Result<bool> {
+        let auto_pq_enabled = self.auto_pq_enabled.lock().unwrap();
+        Ok(*auto_pq_enabled)
+    }
+
+    fn setAutoPqEnabled(&self, enabled: bool) -> binder::Result<()> {
+        let mut auto_pq_enabled = self.auto_pq_enabled.lock().unwrap();
+        *auto_pq_enabled = enabled;
+        if enabled {
+            println!("Enable auto picture quality");
+        } else {
+            println!("Disable auto picture quality");
+        }
+        Ok(())
+    }
+
+    fn isAutoSrSupported(&self) -> binder::Result<bool> {
+        let auto_sr_supported = self.auto_sr_supported.lock().unwrap();
+        Ok(*auto_sr_supported)
+    }
+
+    fn getAutoSrEnabled(&self) -> binder::Result<bool> {
+        let auto_sr_enabled = self.auto_sr_enabled.lock().unwrap();
+        Ok(*auto_sr_enabled)
+    }
+
+    fn setAutoSrEnabled(&self, enabled: bool) -> binder::Result<()> {
+        let mut auto_sr_enabled = self.auto_sr_enabled.lock().unwrap();
+        *auto_sr_enabled = enabled;
+        if enabled {
+            println!("Enable auto super resolution");
+        } else {
+            println!("Disable auto super resolution");
+        }
+        Ok(())
+    }
+
+    fn isAutoAqSupported(&self) -> binder::Result<bool> {
+        let auto_aq_supported = self.auto_aq_supported.lock().unwrap();
+        Ok(*auto_aq_supported)
+    }
+
+    fn getAutoAqEnabled(&self) -> binder::Result<bool> {
+        let auto_aq_enabled = self.auto_aq_enabled.lock().unwrap();
+        Ok(*auto_aq_enabled)
+    }
+
+    fn setAutoAqEnabled(&self, enabled: bool) -> binder::Result<()> {
+        let mut auto_aq_enabled = self.auto_aq_enabled.lock().unwrap();
+        *auto_aq_enabled = enabled;
+        if enabled {
+            println!("Enable auto audio quality");
+        } else {
+            println!("Disable auto audio quality");
+        }
+        Ok(())
+    }
+
+    fn getPictureProfileListener(&self) -> binder::Result<binder::Strong<dyn IPictureProfileChangedListener>> {
+        println!("getPictureProfileListener");
+        let listener = self.picture_profile_changed_listener.lock().unwrap();
+        listener.clone().ok_or(binder::StatusCode::UNKNOWN_ERROR.into())
+    }
+
+    fn setPictureProfileAdjustmentListener(
+        &self,
+        picture_profile_adjustment_listener: &Strong<dyn IPictureProfileAdjustmentListener>
+    ) -> binder::Result<()> {
+        println!("Received picture profile adjustment");
+        let mut listener = self.picture_profile_adjustment_listener.lock().unwrap();
+        *listener = Some(picture_profile_adjustment_listener.clone());
+        Ok(())
+    }
+
+    fn getPictureParameters(&self, id: i64) -> binder::Result<PictureParameters>{
+        let picture_parameters = match id {
+            1 => {
+                vec![
+                    PictureParameter::Brightness(0.5),
+                    PictureParameter::Contrast(50),
+                ]
+            },
+            _ => vec![]
+        };
+
+        let picture_params = PictureParameters {
+            pictureParameters: picture_parameters,
+            vendorPictureParameters: ParcelableHolder::default(),
+        };
+
+        Ok(picture_params)
+    }
+
+    fn getSoundProfileListener(&self) -> binder::Result<binder::Strong<dyn ISoundProfileChangedListener>> {
+        println!("getSoundProfileListener");
+        let listener = self.sound_profile_changed_listener.lock().unwrap();
+        listener.clone().ok_or(binder::StatusCode::UNKNOWN_ERROR.into())
+    }
+
+    fn setSoundProfileAdjustmentListener(
+        &self,
+        sound_profile_adjustment_listener: &Strong<dyn ISoundProfileAdjustmentListener>
+    ) -> binder::Result<()> {
+        println!("Received sound profile adjustment");
+        let mut listener = self.sound_profile_adjustment_listener.lock().unwrap();
+        *listener = Some(sound_profile_adjustment_listener.clone());
+        Ok(())
+    }
+
+    fn getSoundParameters(&self, id: i64) -> binder::Result<SoundParameters>{
+        let sound_parameters = match id {
+            1 => {
+                vec![
+                    SoundParameter::Balance(50),
+                    SoundParameter::Bass(50),
+                ]
+            },
+            _ => vec![]
+        };
+
+        let sound_params = SoundParameters {
+            soundParameters: sound_parameters,
+            vendorSoundParameters: ParcelableHolder::default(),
+        };
+
+        Ok(sound_params)
     }
 }
