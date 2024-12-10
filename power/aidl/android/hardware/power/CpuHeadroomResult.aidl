@@ -29,8 +29,4 @@ union CpuHeadroomResult {
      * If ALL selection type is requested.
      */
     float globalHeadroom;
-    /**
-     * If PER_CORE selection type is requested.
-     */
-    float[] perCoreHeadroom;
 }

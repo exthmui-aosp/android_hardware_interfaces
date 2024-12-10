@@ -27,7 +27,7 @@ parcelable BeidouSatelliteEphemeris {
   android.hardware.gnss.gnss_assistance.BeidouSatelliteEphemeris.BeidouSatelliteEphemerisTime satelliteEphemerisTime;
   @VintfStability
   parcelable BeidouSatelliteClockModel {
-    android.hardware.gnss.gnss_assistance.TimeOfClock timeOfClock;
+    long timeOfClockSeconds;
     double af0;
     double af1;
     double af2;

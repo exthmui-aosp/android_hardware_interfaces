@@ -18,7 +18,6 @@ package android.hardware.gnss.gnss_assistance;
 
 import android.hardware.gnss.gnss_assistance.KeplerianOrbitModel;
 import android.hardware.gnss.gnss_assistance.SatelliteEphemerisTime;
-import android.hardware.gnss.gnss_assistance.TimeOfClock;
 
 /**
  * Contains ephemeris parameters specific to Galileo satellites.
@@ -44,8 +43,13 @@ parcelable GalileoSatelliteEphemeris {
             GALILEO_INAV_CLOCK = 2
         }
 
-        /** Time of the clock. */
-        TimeOfClock toc;
+        /**
+         * Time of the clock in seconds since Galileo epoch.
+         *
+         * Represents the 'Epoch' field within the 'SV/EPOCH/SV CLK' record of GNSS
+         * navigation message file in RINEX 3.05 Table A8 (Galileo).
+         */
+        long timeOfClockSeconds;
 
         /** SV clock bias correction coefficient in seconds. */
         double af0;

@@ -37,5 +37,5 @@ parcelable RttSecureConfig {
   android.hardware.wifi.PasnConfig pasnConfig;
   boolean enableSecureHeLtf;
   boolean enableRangingFrameProtection;
-  byte[] pasnComebackCookie;
+  @nullable byte[] pasnComebackCookie;
 }

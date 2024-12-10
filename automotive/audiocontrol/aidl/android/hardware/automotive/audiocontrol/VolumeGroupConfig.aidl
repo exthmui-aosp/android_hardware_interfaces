@@ -33,8 +33,9 @@ parcelable VolumeGroupConfig {
     /**
      * Audio zone group name.
      *
-     * <p>Must be non-empty if using configurable audio policy engine volume management, see
-     * {@code AudioDeviceConfiguration#useCoreAudioVolume} for details.
+     * <p>Must be non-empty if using configurable audio policy engine volume management,
+     * {@see AudioDeviceConfiguration#useCoreAudioVolume} for details. For non-core volume group
+     * management this can be left empty or use for debugging purposes.
      */
     String name;
 

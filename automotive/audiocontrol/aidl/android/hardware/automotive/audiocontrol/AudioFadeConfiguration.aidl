@@ -73,6 +73,10 @@ parcelable AudioFadeConfiguration {
 
     /**
      * Fade in delayed duration for audio focus offender in milliseconds
+     *
+     * <p>Fade offender are defined as audio players that do not stop playback after audio focus
+     * lost. This timeout serves to continue to fadeout the offender until audio is stopped or the
+     * timeout expires.
      */
     long fadeInDelayedForOffendersMs = DEFAULT_DELAY_FADE_IN_OFFENDERS_MS;
 

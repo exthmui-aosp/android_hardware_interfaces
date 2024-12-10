@@ -25,15 +25,21 @@ package android.hardware.radio.modem;
 @SuppressWarnings(value={"redundant-name"})
 enum ResetNvType {
     /**
-     * Reload all NV items. This may reboot modem.
+     * Reboot modem.
+     *
+     * Historically, this has been also reloading all NV items.
      */
     RELOAD,
     /**
      * Erase NV reset (SCRTN)
+     *
+     * @deprecated NV APIs are deprecated starting from Android U.
      */
     ERASE,
     /**
      * Factory reset (RTN)
+     *
+     * @deprecated NV APIs are deprecated starting from Android U.
      */
     FACTORY_RESET,
 }

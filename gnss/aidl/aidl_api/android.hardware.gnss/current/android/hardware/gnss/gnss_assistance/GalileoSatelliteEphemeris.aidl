@@ -42,7 +42,7 @@ parcelable GalileoSatelliteEphemeris {
   android.hardware.gnss.gnss_assistance.SatelliteEphemerisTime satelliteEphemerisTime;
   @VintfStability
   parcelable GalileoSatelliteClockModel {
-    android.hardware.gnss.gnss_assistance.TimeOfClock toc;
+    long timeOfClockSeconds;
     double af0;
     double af1;
     double af2;

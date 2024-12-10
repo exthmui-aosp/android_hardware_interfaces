@@ -897,13 +897,11 @@ interface ISupplicantStaIface {
      * @param cmdId Identifier for this request. Will be returned in the callback to identify
      *              the request.
      * @param usdPublishConfig Parameters for the requested publish session.
-     * @return Publish ID identifying the publish session. This ID will also be returned in the
-               onStarted callback when the session setup is completed successfully.
      * @throws ServiceSpecificException with one of the following values:
      *         |SupplicantStatusCode.FAILURE_UNKNOWN|
      *         |SupplicantStatusCode.FAILURE_UNSUPPORTED|
      */
-    int startUsdPublish(in int cmdId, in UsdPublishConfig usdPublishConfig);
+    void startUsdPublish(in int cmdId, in UsdPublishConfig usdPublishConfig);
 
     /**
      * Start a USD subscribe session. Triggers a response via
@@ -913,13 +911,11 @@ interface ISupplicantStaIface {
      * @param cmdId Identifier for this request. Will be returned in the callback to identify
      *              the request.
      * @param usdSubscribeConfig Parameters for the requested subscribe session.
-     * @return Subscribe ID identifying the subscribe session. This ID will also be returned in the
-               onStarted callback when the session setup is completed successfully.
      * @throws ServiceSpecificException with one of the following values:
      *         |SupplicantStatusCode.FAILURE_UNKNOWN|
      *         |SupplicantStatusCode.FAILURE_UNSUPPORTED|
      */
-    int startUsdSubscribe(in int cmdId, in UsdSubscribeConfig usdSubscribeConfig);
+    void startUsdSubscribe(in int cmdId, in UsdSubscribeConfig usdSubscribeConfig);
 
     /**
      * Update the service-specific info for an active publish session.

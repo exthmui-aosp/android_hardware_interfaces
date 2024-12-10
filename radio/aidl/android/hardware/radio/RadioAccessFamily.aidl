@@ -27,7 +27,9 @@ enum RadioAccessFamily {
     GPRS = 1 << RadioTechnology.GPRS,
     EDGE = 1 << RadioTechnology.EDGE,
     UMTS = 1 << RadioTechnology.UMTS,
+    /** @deprecated Legacy CDMA is unsupported. */
     IS95A = 1 << RadioTechnology.IS95A,
+    /** @deprecated Legacy CDMA is unsupported. */
     IS95B = 1 << RadioTechnology.IS95B,
     /** @deprecated Legacy CDMA is unsupported. */
     ONE_X_RTT = 1 << RadioTechnology.ONE_X_RTT,
@@ -40,6 +42,7 @@ enum RadioAccessFamily {
     HSPA = 1 << RadioTechnology.HSPA,
     /** @deprecated Legacy CDMA is unsupported. */
     EVDO_B = 1 << RadioTechnology.EVDO_B,
+    /** @deprecated Legacy CDMA is unsupported. */
     EHRPD = 1 << RadioTechnology.EHRPD,
     LTE = 1 << RadioTechnology.LTE,
     HSPAP = 1 << RadioTechnology.HSPAP,
@@ -52,4 +55,8 @@ enum RadioAccessFamily {
      * 5G NR. This is only use in 5G Standalone mode.
      */
     NR = 1 << RadioTechnology.NR,
+    /**
+     * 3GPP NB-IOT (Narrowband Internet of Things) over Non-Terrestrial-Networks technology.
+     */
+    NB_IOT_NTN = 1 << RadioTechnology.NB_IOT_NTN,
 }

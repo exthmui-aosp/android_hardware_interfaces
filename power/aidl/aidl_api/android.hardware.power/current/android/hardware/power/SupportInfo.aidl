@@ -41,11 +41,19 @@ parcelable SupportInfo {
   long sessionModes;
   long sessionTags;
   android.hardware.power.SupportInfo.CompositionDataSupportInfo compositionData;
+  android.hardware.power.SupportInfo.HeadroomSupportInfo headroom;
   @VintfStability
   parcelable CompositionDataSupportInfo {
     boolean isSupported;
     boolean disableGpuFences;
     int maxBatchSize;
     boolean alwaysBatch;
+  }
+  @VintfStability
+  parcelable HeadroomSupportInfo {
+    boolean isCpuSupported;
+    boolean isGpuSupported;
+    int cpuMinIntervalMillis;
+    int gpuMinIntervalMillis;
   }
 }

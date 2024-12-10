@@ -63,6 +63,9 @@ class EraserSw final : public EffectImpl {
     IEffect::Status effectProcessImpl(float* in, float* out, int samples)
             REQUIRES(mImplMutex) final;
 
+    ndk::ScopedAStatus command(CommandId command) final;
+    void drainingComplete_l() REQUIRES(mImplMutex);
+
   private:
     static const std::vector<Range::SpatializerRange> kRanges;
     std::shared_ptr<EraserSwContext> mContext GUARDED_BY(mImplMutex);

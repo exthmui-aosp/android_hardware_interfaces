@@ -421,6 +421,7 @@ enum DataCallFailCause {
     TRAT_SWAP_FAILED = 0x800,
     /**
      * Device falls back from eHRPD to HRPD.
+     * @deprecated Legacy CDMA is unsupported.
      */
     EHRPD_TO_HRPD_FALLBACK = 0x801,
     /**

@@ -95,7 +95,7 @@ constexpr uint8_t kLeAudioCodecFrameDur10000us = 0x01;
 constexpr uint8_t kLeAudioCodecFrameDur20000us = 0x02;
 
 /* Audio Allocations */
-constexpr uint32_t kLeAudioLocationNotAllowed = 0x00000000;
+constexpr uint32_t kLeAudioLocationMonoAudio = 0x00000000;
 constexpr uint32_t kLeAudioLocationFrontLeft = 0x00000001;
 constexpr uint32_t kLeAudioLocationFrontRight = 0x00000002;
 constexpr uint32_t kLeAudioLocationFrontCenter = 0x00000004;
@@ -178,8 +178,8 @@ const std::map<uint8_t, CodecSpecificConfigurationLtv::FrameDuration>
 
 /* Helper map for matching various audio channel allocation notations */
 std::map<uint32_t, uint32_t> audio_channel_allocation_map = {
-    {kLeAudioLocationNotAllowed,
-     CodecSpecificConfigurationLtv::AudioChannelAllocation::NOT_ALLOWED},
+    {kLeAudioLocationMonoAudio,
+     CodecSpecificConfigurationLtv::AudioChannelAllocation::MONO},
     {kLeAudioLocationFrontLeft,
      CodecSpecificConfigurationLtv::AudioChannelAllocation::FRONT_LEFT},
     {kLeAudioLocationFrontRight,

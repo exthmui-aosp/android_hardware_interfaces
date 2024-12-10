@@ -104,8 +104,8 @@ interface ISupplicantStaIface {
   void configureMscs(in android.hardware.wifi.supplicant.MscsParams params);
   void disableMscs();
   android.hardware.wifi.supplicant.UsdCapabilities getUsdCapabilities();
-  int startUsdPublish(in int cmdId, in android.hardware.wifi.supplicant.UsdPublishConfig usdPublishConfig);
-  int startUsdSubscribe(in int cmdId, in android.hardware.wifi.supplicant.UsdSubscribeConfig usdSubscribeConfig);
+  void startUsdPublish(in int cmdId, in android.hardware.wifi.supplicant.UsdPublishConfig usdPublishConfig);
+  void startUsdSubscribe(in int cmdId, in android.hardware.wifi.supplicant.UsdSubscribeConfig usdSubscribeConfig);
   void updateUsdPublish(in int publishId, in byte[] serviceSpecificInfo);
   void cancelUsdPublish(in int publishId);
   void cancelUsdSubscribe(in int subscribeId);

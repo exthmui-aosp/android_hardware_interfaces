@@ -36,6 +36,12 @@ package android.hardware.radio.modem;
 @Backing(type="int") @JavaDerive(toString=true) @SuppressWarnings(value={"redundant-name"}) @VintfStability
 enum ResetNvType {
   RELOAD,
+  /**
+   * @deprecated NV APIs are deprecated starting from Android U.
+   */
   ERASE,
+  /**
+   * @deprecated NV APIs are deprecated starting from Android U.
+   */
   FACTORY_RESET,
 }

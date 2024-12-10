@@ -22,6 +22,7 @@ import android.hardware.graphics.common.Hdr;
 import android.hardware.graphics.common.HdrConversionCapability;
 import android.hardware.graphics.common.HdrConversionStrategy;
 import android.hardware.graphics.common.Transform;
+import android.hardware.graphics.composer3.Buffer;
 import android.hardware.graphics.composer3.ClientTargetProperty;
 import android.hardware.graphics.composer3.ClockMonotonicTimestamp;
 import android.hardware.graphics.composer3.ColorMode;
@@ -38,6 +39,7 @@ import android.hardware.graphics.composer3.DisplayIdentification;
 import android.hardware.graphics.composer3.FormatColorComponent;
 import android.hardware.graphics.composer3.HdrCapabilities;
 import android.hardware.graphics.composer3.IComposerCallback;
+import android.hardware.graphics.composer3.Luts;
 import android.hardware.graphics.composer3.OverlayProperties;
 import android.hardware.graphics.composer3.PerFrameMetadataKey;
 import android.hardware.graphics.composer3.PowerMode;
@@ -956,4 +958,12 @@ interface IComposerClient {
      *
      */
     oneway void startHdcpNegotiation(long display, in HdcpLevels levels);
+
+    /*
+     * Returns the Luts based on the buffers.
+     *
+     * @param display is the display for which the luts are requested.
+     * @param buffers is the buffer where the luts can be computed from
+     */
+    Luts[] getLuts(long display, in Buffer[] buffers);
 }

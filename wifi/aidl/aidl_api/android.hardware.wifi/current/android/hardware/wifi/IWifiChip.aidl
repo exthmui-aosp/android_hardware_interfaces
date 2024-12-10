@@ -109,6 +109,7 @@ interface IWifiChip {
     T2LM_NEGOTIATION = (1 << 8) /* 256 */,
     SET_VOIP_MODE = (1 << 9) /* 512 */,
     MLO_SAP = (1 << 10) /* 1024 */,
+    MULTIPLE_MLD_ON_SAP = (1 << 11) /* 2048 */,
   }
   @VintfStability
   parcelable ChipConcurrencyCombinationLimit {

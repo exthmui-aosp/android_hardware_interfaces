@@ -29,7 +29,7 @@ package android.hardware.gnss.gnss_assistance;
 @VintfStability
 parcelable GnssAlmanac {
     /**
-     * Almanac issue date in milliseconds since the Unix epoch.
+     * Almanac issue date in milliseconds (UTC).
      *
      * This is unused for GPS/QZSS/Baidou.
      */

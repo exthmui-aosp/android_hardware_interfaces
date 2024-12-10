@@ -95,6 +95,18 @@ TEST_P(BootloaderStateTest, VbStateIsUnverified) {
             << "Verified boot state must be \"UNVERIFIED\" aka \"orange\".";
 }
 
+// Check that the attested Verified Boot key is 32 bytes of zeroes since the bootloader is unlocked.
+TEST_P(BootloaderStateTest, VerifiedBootKeyAllZeroes) {
+    // Gate this test to avoid waiver issues.
+    if (get_vsr_api_level() <= __ANDROID_API_V__) {
+        return;
+    }
+
+    std::vector<uint8_t> expectedVbKey(32, 0);
+    ASSERT_EQ(attestedVbKey_, expectedVbKey) << "Verified Boot key digest must be 32 bytes of "
+                                                "zeroes since the bootloader is unlocked.";
+}
+
 // Following error codes from avb_slot_data() mean that slot data was loaded
 // (even if verification failed).
 static inline bool avb_slot_data_loaded(AvbSlotVerifyResult result) {

@@ -38,5 +38,5 @@ parcelable RttSecureConfig {
     /**
      * Comeback cookie is an opaque sequence of octets retrieved from |RttResult|.
      */
-    byte[] pasnComebackCookie;
+    @nullable byte[] pasnComebackCookie;
 }

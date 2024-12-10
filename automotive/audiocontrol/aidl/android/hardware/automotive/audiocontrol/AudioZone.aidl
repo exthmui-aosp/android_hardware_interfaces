@@ -18,6 +18,7 @@ package android.hardware.automotive.audiocontrol;
 
 import android.hardware.automotive.audiocontrol.AudioZoneConfig;
 import android.hardware.automotive.audiocontrol.AudioZoneContext;
+import android.media.audio.common.AudioHalProductStrategy;
 import android.media.audio.common.AudioPort;
 
 /**
@@ -26,11 +27,6 @@ import android.media.audio.common.AudioPort;
 @JavaDerive(equals=true, toString=true)
 @VintfStability
 parcelable AudioZone {
-    /**
-     * Value indicating the primary audio zone
-     */
-    const int PRIMARY_AUDIO_ZONE = 0;
-
     /**
      * Value indicating the occupant zone is not assigned.
      */
@@ -47,8 +43,11 @@ parcelable AudioZone {
     /**
      * Audio zone id use to distiguish between the different audio zones for
      * volume management, fade, and min/max activation management.
+     *
+     * <p>Value must start at {@link AudioHalProductStrategy#ZoneId#DEFAULT} for the primary zone
+     * and increase for each different zone. Zone id must also not repeat for different zones.
      */
-    int id;
+    int id = AudioHalProductStrategy.ZoneId.DEFAULT;
 
     /**
      * Occupant zone id that should be mapped to this audio zone.

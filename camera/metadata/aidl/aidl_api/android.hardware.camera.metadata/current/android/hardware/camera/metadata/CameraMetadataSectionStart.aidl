@@ -73,5 +73,6 @@ enum CameraMetadataSectionStart {
   ANDROID_EXTENSION_START = (android.hardware.camera.metadata.CameraMetadataSection.ANDROID_EXTENSION << 16) /* 2097152 */,
   ANDROID_JPEGR_START = (android.hardware.camera.metadata.CameraMetadataSection.ANDROID_JPEGR << 16) /* 2162688 */,
   ANDROID_SHARED_SESSION_START = (android.hardware.camera.metadata.CameraMetadataSection.ANDROID_SHARED_SESSION << 16) /* 2228224 */,
+  ANDROID_DESKTOP_EFFECTS_START = (android.hardware.camera.metadata.CameraMetadataSection.ANDROID_DESKTOP_EFFECTS << 16) /* 2293760 */,
   VENDOR_SECTION_START = (android.hardware.camera.metadata.CameraMetadataSection.VENDOR_SECTION << 16) /* -2147483648 */,
 }

@@ -42,21 +42,6 @@ parcelable CpuHeadroomParams {
     int calculationWindowMillis = 1000;
 
     /**
-     * Defines how to select the CPU.
-     */
-    enum SelectionType {
-        // Default to return a single value for all cores.
-        ALL,
-        // Returns per-core headroom in a list.
-        PER_CORE,
-    }
-
-    /**
-     * The CPU selection type.
-     */
-    SelectionType selectionType = SelectionType.ALL;
-
-    /**
      * The thread TIDs to track.
      *
      * If tids are not-empty, return the headrooms only for cores that are available

@@ -27,6 +27,9 @@ aidl_interface {
         ndk: {
             min_sdk_version: "34",
         },
+        rust: {
+            enabled: true,
+        },
     },
     double_loadable: true,
     versions_with_info: [

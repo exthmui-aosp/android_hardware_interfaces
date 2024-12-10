@@ -48,7 +48,7 @@ parcelable GpsSatelliteEphemeris {
   }
   @VintfStability
   parcelable GpsSatelliteClockModel {
-    android.hardware.gnss.gnss_assistance.TimeOfClock timeOfClock;
+    long timeOfClockSeconds;
     double af0;
     double af1;
     double af2;

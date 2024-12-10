@@ -66,5 +66,6 @@ enum CameraMetadataSectionStart {
     ANDROID_EXTENSION_START = CameraMetadataSection.ANDROID_EXTENSION << 16,
     ANDROID_JPEGR_START = CameraMetadataSection.ANDROID_JPEGR << 16,
     ANDROID_SHARED_SESSION_START = CameraMetadataSection.ANDROID_SHARED_SESSION << 16,
+    ANDROID_DESKTOP_EFFECTS_START = CameraMetadataSection.ANDROID_DESKTOP_EFFECTS << 16,
     VENDOR_SECTION_START = CameraMetadataSection.VENDOR_SECTION << 16,
 }

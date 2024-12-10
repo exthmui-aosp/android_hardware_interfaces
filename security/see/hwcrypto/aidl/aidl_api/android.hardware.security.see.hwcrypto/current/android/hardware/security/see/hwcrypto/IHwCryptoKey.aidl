@@ -44,7 +44,6 @@ interface IHwCryptoKey {
   android.hardware.security.see.hwcrypto.IOpaqueKey getKeyslotData(android.hardware.security.see.hwcrypto.IHwCryptoKey.KeySlot slotId);
   enum DeviceKeyId {
     DEVICE_BOUND_KEY,
-    BATCH_KEY,
   }
   enum KeySlot {
     KEYMINT_SHARED_HMAC_KEY,

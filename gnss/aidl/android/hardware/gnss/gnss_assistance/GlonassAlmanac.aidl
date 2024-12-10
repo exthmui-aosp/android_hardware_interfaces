@@ -48,8 +48,8 @@ parcelable GlonassAlmanac {
         double omega;
     }
 
-    /** Almanac reference UTC time in milliseconds. */
-    long issueDate;
+    /** Almanac issue date in milliseconds (UTC). */
+    long issueDateMs;
 
     /** Array of GlonassSatelliteAlmanac. */
     GlonassSatelliteAlmanac[] satelliteAlmanac;

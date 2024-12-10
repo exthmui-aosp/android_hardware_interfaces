@@ -77,6 +77,11 @@ parcelable SupportInfo {
      */
     CompositionDataSupportInfo compositionData;
 
+    /**
+     *  Parcel detailing support info for headroom information.
+     */
+    HeadroomSupportInfo headroom;
+
     @VintfStability
     parcelable CompositionDataSupportInfo {
         /**
@@ -105,5 +110,34 @@ parcelable SupportInfo {
          * framework will send batches early if these important events happen.
          */
         boolean alwaysBatch;
+    }
+
+    @VintfStability
+    parcelable HeadroomSupportInfo {
+        /**
+         * Whether the CPU headroom feature is supported.
+         */
+        boolean isCpuSupported;
+
+        /**
+         * Whether the GPU headroom feature is supported.
+         */
+        boolean isGpuSupported;
+
+        /**
+         * Minimum polling interval for calling getCpuHeadroom in milliseconds
+         *
+         * The getCpuHeadroom API may return cached result if called more frequent
+         * than the interval.
+         */
+        int cpuMinIntervalMillis;
+
+        /**
+         * Minimum polling interval for calling getGpuHeadroom in milliseconds.
+         *
+         * The getGpuHeadroom API may return cached result if called more frequent
+         * than the interval.
+         */
+        int gpuMinIntervalMillis;
     }
 }

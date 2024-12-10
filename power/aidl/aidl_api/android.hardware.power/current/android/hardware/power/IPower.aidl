@@ -46,8 +46,6 @@ interface IPower {
   android.hardware.power.SupportInfo getSupportInfo();
   android.hardware.power.CpuHeadroomResult getCpuHeadroom(in android.hardware.power.CpuHeadroomParams params);
   android.hardware.power.GpuHeadroomResult getGpuHeadroom(in android.hardware.power.GpuHeadroomParams params);
-  long getCpuHeadroomMinIntervalMillis();
-  long getGpuHeadroomMinIntervalMillis();
   oneway void sendCompositionData(in android.hardware.power.CompositionData[] data);
   oneway void sendCompositionUpdate(in android.hardware.power.CompositionUpdate update);
 }

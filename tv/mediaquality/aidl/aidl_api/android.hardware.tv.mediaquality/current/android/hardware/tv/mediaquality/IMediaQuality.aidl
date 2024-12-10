@@ -49,8 +49,12 @@ interface IMediaQuality {
   void setAutoAqEnabled(boolean enable);
   android.hardware.tv.mediaquality.IPictureProfileChangedListener getPictureProfileListener();
   void setPictureProfileAdjustmentListener(android.hardware.tv.mediaquality.IPictureProfileAdjustmentListener listener);
-  android.hardware.tv.mediaquality.PictureParameters getPictureParameters(long pictureProfileId);
+  void sendDefaultPictureParameters(in android.hardware.tv.mediaquality.PictureParameters pictureParameters);
   android.hardware.tv.mediaquality.ISoundProfileChangedListener getSoundProfileListener();
   void setSoundProfileAdjustmentListener(android.hardware.tv.mediaquality.ISoundProfileAdjustmentListener listener);
-  android.hardware.tv.mediaquality.SoundParameters getSoundParameters(long soundProfileId);
+  void sendDefaultSoundParameters(in android.hardware.tv.mediaquality.SoundParameters soundParameters);
+  void getParamCaps(in android.hardware.tv.mediaquality.ParameterName[] paramNames, out android.hardware.tv.mediaquality.ParamCapability[] caps);
+  void getVendorParamCaps(in android.hardware.tv.mediaquality.VendorParameterIdentifier[] names, out android.hardware.tv.mediaquality.VendorParamCapability[] caps);
+  void sendPictureParameters(in android.hardware.tv.mediaquality.PictureParameters pictureParameters);
+  void sendSoundParameters(in android.hardware.tv.mediaquality.SoundParameters soundParameters);
 }

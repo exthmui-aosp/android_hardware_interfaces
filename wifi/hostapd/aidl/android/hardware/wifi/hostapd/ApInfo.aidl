@@ -67,5 +67,5 @@ parcelable ApInfo {
     /**
      * MAC Address of the multiple link device (MLD) which apIfaceInstance is associated with.
      */
-    @nullable byte[] mldMacAddress;
+    @nullable byte[6] mldMacAddress;
 }

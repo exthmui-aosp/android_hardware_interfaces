@@ -16,7 +16,9 @@
 
 package android.hardware.tv.mediaquality;
 
+import android.hardware.tv.mediaquality.ParamCapability;
 import android.hardware.tv.mediaquality.SoundProfile;
+import android.hardware.tv.mediaquality.VendorParamCapability;
 
 @VintfStability
 oneway interface ISoundProfileAdjustmentListener {
@@ -26,4 +28,36 @@ oneway interface ISoundProfileAdjustmentListener {
      * @param soundProfile Sound profile.
      */
     void onSoundProfileAdjusted(in SoundProfile soundProfile);
+
+    /**
+     * Notifies Media Quality Manager when parameter capabilities changed.
+     *
+     * @param soundProfileId the ID of the profile used by the media content. -1 if there
+     *                         is no associated profile.
+     * @param caps the updated capabilities.
+     */
+    void onParamCapabilityChanged(long soundProfileId, in ParamCapability[] caps);
+
+    /**
+     * Notifies Media Quality Manager when vendor parameter capabilities changed.
+     *
+     * <p>This should be also called when the listener is registered to let the client know
+     * what vendor parameters are supported.
+     *
+     * @param soundProfileId the ID of the profile used by the media content. -1 if there
+     *                         is no associated profile.
+     * @param caps the updated vendor capabilities.
+     */
+    void onVendorParamCapabilityChanged(long soundProfileId, in VendorParamCapability[] caps);
+
+    /**
+     * Request the sound parameters by sound profile id. Check SoundParameters for its detail.
+     * This is called from the HAL to media quality framework.
+     *
+     * The requested sound parameters will get from IMediaQuality::sendSoundParameters called
+     * by the framework.
+     *
+     * @param SoundProfileId The SoundProfile id that associate with the SoundProfile.
+     */
+    void onRequestSoundParameters(long SoundProfileId);
 }

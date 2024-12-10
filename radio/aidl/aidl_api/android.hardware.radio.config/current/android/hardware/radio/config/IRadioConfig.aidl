@@ -53,4 +53,6 @@ interface IRadioConfig {
   oneway void setResponseFunctions(in android.hardware.radio.config.IRadioConfigResponse radioConfigResponse, in android.hardware.radio.config.IRadioConfigIndication radioConfigIndication);
   oneway void setSimSlotsMapping(in int serial, in android.hardware.radio.config.SlotPortMapping[] slotMap);
   oneway void getSimultaneousCallingSupport(in int serial);
+  oneway void getSimTypeInfo(in int serial);
+  oneway void setSimType(in int serial, in android.hardware.radio.config.SimType[] simTypes);
 }

@@ -63,6 +63,7 @@ using ::NAN_DP_REQUEST_ACCEPT;
 using ::NAN_DP_REQUEST_CHANNEL_SETUP;
 using ::NAN_DP_REQUEST_REJECT;
 using ::NAN_DP_RESPONDER_RESPONSE;
+using ::NAN_ENABLE_RANGE_REPORT;
 using ::NAN_GET_CAPABILITIES;
 using ::NAN_MATCH_ALG_MATCH_CONTINUOUS;
 using ::NAN_MATCH_ALG_MATCH_NEVER;
@@ -488,6 +489,8 @@ struct NanCallbackHandlers {
     std::function<void(const NanBootstrappingRequestInd&)> on_event_bootstrapping_request;
     std::function<void(const NanBootstrappingConfirmInd&)> on_event_bootstrapping_confirm;
     std::function<void(const NanSuspensionModeChangeInd&)> on_event_suspension_mode_change;
+    std::function<void(wifi_rtt_result* rtt_results[], uint32_t num_results, uint16_t session_id)>
+            on_ranging_results;
 };
 
 // Full scan results contain IE info and are hence passed by reference, to

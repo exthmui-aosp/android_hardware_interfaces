@@ -20,7 +20,7 @@ package android.hardware.gnss.gnss_assistance;
 /* @hide */
 @VintfStability
 parcelable GlonassAlmanac {
-  long issueDate;
+  long issueDateMs;
   android.hardware.gnss.gnss_assistance.GlonassAlmanac.GlonassSatelliteAlmanac[] satelliteAlmanac;
   @VintfStability
   parcelable GlonassSatelliteAlmanac {

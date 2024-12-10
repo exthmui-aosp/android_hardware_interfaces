@@ -71,33 +71,12 @@ ScopedAStatus Power::isBoostSupported(Boost type, bool* _aidl_return) {
     return ScopedAStatus::ok();
 }
 
-ndk::ScopedAStatus Power::getCpuHeadroom(const CpuHeadroomParams& params,
-                                         CpuHeadroomResult* _aidl_return) {
-    if (params.selectionType == CpuHeadroomParams::SelectionType::ALL) {
-        _aidl_return->set<CpuHeadroomResult::globalHeadroom>(100.0f);
-        return ndk::ScopedAStatus::ok();
-    } else if (params.selectionType == CpuHeadroomParams::SelectionType::PER_CORE) {
-        std::vector<float> headroom = {50.0f, 100.0f};
-        _aidl_return->set<CpuHeadroomResult::perCoreHeadroom>(headroom);
-        return ndk::ScopedAStatus::ok();
-    }
+ndk::ScopedAStatus Power::getCpuHeadroom(const CpuHeadroomParams&, CpuHeadroomResult*) {
     return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
 
-ndk::ScopedAStatus Power::getGpuHeadroom(const GpuHeadroomParams& _,
-                                         GpuHeadroomResult* _aidl_return) {
-    _aidl_return->set<GpuHeadroomResult::globalHeadroom>(100.0f);
-    return ndk::ScopedAStatus::ok();
-}
-
-ndk::ScopedAStatus Power::getCpuHeadroomMinIntervalMillis(int64_t* _aidl_return) {
-    *_aidl_return = 1000;
-    return ndk::ScopedAStatus::ok();
-}
-
-ndk::ScopedAStatus Power::getGpuHeadroomMinIntervalMillis(int64_t* _aidl_return) {
-    *_aidl_return = 1000;
-    return ndk::ScopedAStatus::ok();
+ndk::ScopedAStatus Power::getGpuHeadroom(const GpuHeadroomParams&, GpuHeadroomResult*) {
+    return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
 
 ScopedAStatus Power::createHintSession(int32_t, int32_t, const std::vector<int32_t>& tids, int64_t,
@@ -163,6 +142,12 @@ ndk::ScopedAStatus Power::getSupportInfo(SupportInfo* _aidl_return) {
                                               .disableGpuFences = false,
                                               .maxBatchSize = 1,
                                               .alwaysBatch = false,
+                                      },
+                                      .headroom = {
+                                              .isCpuSupported = false,
+                                              .isGpuSupported = false,
+                                              .cpuMinIntervalMillis = 0,
+                                              .gpuMinIntervalMillis = 0,
                                       }};
     // Copy the support object into the binder
     *_aidl_return = supportInfo;

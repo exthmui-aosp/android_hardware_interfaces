@@ -27,7 +27,9 @@ parcelable HingeInfo {
     /**
      * returns count of times a given hinge has been folded.
      *
-     * opening fully counts as 1 fold and closing fully counts as another
+     * opening fully counts as 1 fold and closing fully counts as another.
+     * The hinge has to engage in its full range of motion to be considered
+     * a fold. Partial folds must not be counted.
      */
     int numTimesFolded;
     /**

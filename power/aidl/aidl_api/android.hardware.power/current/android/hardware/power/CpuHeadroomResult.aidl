@@ -35,5 +35,4 @@ package android.hardware.power;
 @JavaDerive(equals=true, toString=true) @VintfStability
 union CpuHeadroomResult {
   float globalHeadroom;
-  float[] perCoreHeadroom;
 }

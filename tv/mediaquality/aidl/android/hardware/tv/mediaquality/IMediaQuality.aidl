@@ -22,8 +22,12 @@ import android.hardware.tv.mediaquality.IPictureProfileAdjustmentListener;
 import android.hardware.tv.mediaquality.IPictureProfileChangedListener;
 import android.hardware.tv.mediaquality.ISoundProfileAdjustmentListener;
 import android.hardware.tv.mediaquality.ISoundProfileChangedListener;
+import android.hardware.tv.mediaquality.ParamCapability;
+import android.hardware.tv.mediaquality.ParameterName;
 import android.hardware.tv.mediaquality.PictureParameters;
 import android.hardware.tv.mediaquality.SoundParameters;
+import android.hardware.tv.mediaquality.VendorParamCapability;
+import android.hardware.tv.mediaquality.VendorParameterIdentifier;
 
 /**
  * Interface for the media quality service
@@ -145,17 +149,25 @@ interface IMediaQuality {
     /**
      * Sets the listener for picture adjustment from the HAL.
      *
-     * @param IPictureProfileAdjustmentListener listener object to pass picture profile.
+     * When the same client registers this listener multiple times, only the most recent
+     * registration will be active. The previous listener will be overwritten.
+     *
+     * When different client registers this listener, it will overwrite the previous registered
+     * client. Only one listener can be active.
+     *
+     * @param IPictureProfileAdjustmentListener listener object to pass picture profile, profile
+     *        id and hardware capability.
      */
     void setPictureProfileAdjustmentListener(IPictureProfileAdjustmentListener listener);
 
     /**
-     * Get the picture parameters by PictureProfile id. Check PictureParameters for its' detail.
+     * Send the default picture parameters to the vendor code or HAL to apply the picture
+     * parameters.
      *
-     * @param pictureProfileId The PictureProfile id that associate with the PictureProfile.
-     * @return PictureParameters with all the pre-defined parameters and vendor defined parameters.
+     * @param pictureParameters PictureParameters with pre-defined parameters and vendor defined
+     * parameters.
      */
-    PictureParameters getPictureParameters(long pictureProfileId);
+    void sendDefaultPictureParameters(in PictureParameters pictureParameters);
 
     /**
      * Get sound profile changed listener.
@@ -167,15 +179,48 @@ interface IMediaQuality {
     /**
      * Sets the listener for sound adjustment from the HAL.
      *
-     * @param ISoundProfileAdjustmentListener listener object to pass sound profile.
+     * When the same client registers this listener multiple times, only the most recent
+     * registration will be active. The previous listener will be overwritten.
+     *
+     * When different client registers this listener, it will overwrite the previous registered
+     * client. Only one listener can be active.
+     *
+     * @param ISoundProfileAdjustmentListener listener object to pass sound profile, profile id
+     *        and hardware capability.
      */
     void setSoundProfileAdjustmentListener(ISoundProfileAdjustmentListener listener);
 
     /**
-     * Get the sound parameters by SoundProfile id. Check SoundParameters for its' detail.
+     * Send the default sound parameters to the vendor code or HAL to apply the sound parameters.
      *
-     * @param soundProfileId The SoundProfile id that associate with a SoundProfile.
-     * @return SoundParameters with all the pre-defined parameters and vendor defined parameters.
+     * @param soundParameters SoundParameters with pre-defined parameters and vendor defined
+     * parameters.
      */
-    SoundParameters getSoundParameters(long soundProfileId);
+    void sendDefaultSoundParameters(in SoundParameters soundParameters);
+
+    /**
+     * Gets capability information of the given parameters.
+     */
+    void getParamCaps(in ParameterName[] paramNames, out ParamCapability[] caps);
+
+    /**
+     * Gets vendor capability information of the given parameters.
+     */
+    void getVendorParamCaps(in VendorParameterIdentifier[] names, out VendorParamCapability[] caps);
+
+    /**
+     * When HAL request picture parameters by picture profile id, the framework will use this to
+     * send the picture parameters associate with the profile id.
+     *
+     * @param pictureParameters pictureParameters that associate with the profile id HAL provided.
+     */
+    void sendPictureParameters(in PictureParameters pictureParameters);
+
+    /**
+     * When HAL request sound parameters by sound profile id, the framework will use this to
+     * send the sound parameters associate with the profile id.
+     *
+     * @param soundParameters soundParameters that associate with the profile id HAL provided.
+     */
+    void sendSoundParameters(in SoundParameters soundParameters);
 }

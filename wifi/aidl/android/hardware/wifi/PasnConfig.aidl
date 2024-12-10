@@ -22,12 +22,13 @@ package android.hardware.wifi;
 @VintfStability
 parcelable PasnConfig {
     /**
-     * Base Authentication and Key Management (AKM) protocol used for PASN as defined in |Akm|.
+     * Base Authentication and Key Management (AKM) protocol used for PASN. Represented as
+     * at bitmap of |Akm|.
      */
     long baseAkm;
     /**
-     * Pairwise cipher suite used for the PTKSA (Pairwise Transient Key Security Association)
-     * as defined in |CipherSuite|
+     * Pairwise cipher suite used for the PTKSA (Pairwise Transient Key Security Association).
+     * Represented as a bitmap of |CipherSuite|.
      */
     long cipherSuite;
     /**

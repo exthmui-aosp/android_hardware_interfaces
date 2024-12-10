@@ -124,7 +124,7 @@ class EffectHelper {
             return;
         }
 
-        ASSERT_NO_FATAL_FAILURE(expectState(effect, State::IDLE));
+        ASSERT_TRUE(expectState(effect, State::IDLE));
         updateFrameSize(common);
     }
 
@@ -155,7 +155,7 @@ class EffectHelper {
         if (effect) {
             ASSERT_STATUS(status, effect->close());
             if (status == EX_NONE) {
-                ASSERT_NO_FATAL_FAILURE(expectState(effect, State::INIT));
+                ASSERT_TRUE(expectState(effect, State::INIT));
             }
         }
     }
@@ -166,12 +166,14 @@ class EffectHelper {
         ASSERT_STATUS(status, effect->getDescriptor(&desc));
     }
 
-    static void expectState(std::shared_ptr<IEffect> effect, State expectState,
-                            binder_status_t status = EX_NONE) {
-        ASSERT_NE(effect, nullptr);
-        State state;
-        ASSERT_STATUS(status, effect->getState(&state));
-        ASSERT_EQ(expectState, state);
+    static bool expectState(std::shared_ptr<IEffect> effect, State expectState) {
+        if (effect == nullptr) return false;
+
+        if (State state; EX_NONE != effect->getState(&state).getStatus() || expectState != state) {
+            return false;
+        }
+
+        return true;
     }
 
     static void commandIgnoreRet(std::shared_ptr<IEffect> effect, CommandId command) {
@@ -190,12 +192,14 @@ class EffectHelper {
 
         switch (command) {
             case CommandId::START:
-                ASSERT_NO_FATAL_FAILURE(expectState(effect, State::PROCESSING));
+                ASSERT_TRUE(expectState(effect, State::PROCESSING));
                 break;
             case CommandId::STOP:
-                FALLTHROUGH_INTENDED;
+                ASSERT_TRUE(expectState(effect, State::IDLE) ||
+                            expectState(effect, State::DRAINING));
+                break;
             case CommandId::RESET:
-                ASSERT_NO_FATAL_FAILURE(expectState(effect, State::IDLE));
+                ASSERT_TRUE(expectState(effect, State::IDLE));
                 break;
             default:
                 return;
@@ -371,6 +375,24 @@ class EffectHelper {
         return functor(result);
     }
 
+    // keep writing data to the FMQ until effect transit from DRAINING to IDLE
+    static void waitForDrain(std::vector<float>& inputBuffer, std::vector<float>& outputBuffer,
+                             const std::shared_ptr<IEffect>& effect,
+                             std::unique_ptr<EffectHelper::StatusMQ>& statusMQ,
+                             std::unique_ptr<EffectHelper::DataMQ>& inputMQ,
+                             std::unique_ptr<EffectHelper::DataMQ>& outputMQ, int version) {
+        State state;
+        while (effect->getState(&state).getStatus() == EX_NONE && state == State::DRAINING) {
+            EXPECT_NO_FATAL_FAILURE(
+                    EffectHelper::writeToFmq(statusMQ, inputMQ, inputBuffer, version));
+            EXPECT_NO_FATAL_FAILURE(EffectHelper::readFromFmq(
+                    statusMQ, 1, outputMQ, outputBuffer.size(), outputBuffer, std::nullopt));
+        }
+        ASSERT_TRUE(State::IDLE == state);
+        EXPECT_NO_FATAL_FAILURE(EffectHelper::readFromFmq(statusMQ, 0, outputMQ, 0, outputBuffer));
+        return;
+    }
+
     static void processAndWriteToOutput(std::vector<float>& inputBuffer,
                                         std::vector<float>& outputBuffer,
                                         const std::shared_ptr<IEffect>& effect,
@@ -404,8 +426,9 @@ class EffectHelper {
         // Disable the process
         if (callStopReset) {
             ASSERT_NO_FATAL_FAILURE(command(effect, CommandId::STOP));
+            EXPECT_NO_FATAL_FAILURE(waitForDrain(inputBuffer, outputBuffer, effect, statusMQ,
+                                                 inputMQ, outputMQ, version));
         }
-        EXPECT_NO_FATAL_FAILURE(EffectHelper::readFromFmq(statusMQ, 0, outputMQ, 0, outputBuffer));
 
         if (callStopReset) {
             ASSERT_NO_FATAL_FAILURE(command(effect, CommandId::RESET));

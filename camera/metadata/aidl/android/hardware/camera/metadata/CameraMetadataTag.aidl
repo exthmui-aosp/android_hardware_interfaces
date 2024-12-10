@@ -2536,4 +2536,50 @@ enum CameraMetadataTag {
      * @see ANDROID_SENSOR_PIXEL_MODE
      */
     ANDROID_JPEGR_AVAILABLE_JPEG_R_STALL_DURATIONS_MAXIMUM_RESOLUTION,
+    /**
+     * android.desktopEffects.capabilities [static, enum[], system]
+     *
+     * <p>List of special effects supported by the camera device.</p>
+     */
+    ANDROID_DESKTOP_EFFECTS_CAPABILITIES = CameraMetadataSectionStart.ANDROID_DESKTOP_EFFECTS_START,
+    /**
+     * android.desktopEffects.backgroundBlurModes [static, byte[], system]
+     *
+     * <p>List of background blur modes supported by the camera device. The key will only exist
+     * if BACKGROUND_BLUR is listed by ANDROID_DESKTOP_EFFECTS_CAPABILITIES.</p>
+     *
+     * @see ANDROID_DESKTOP_EFFECTS_CAPABILITIES
+     */
+    ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODES,
+    /**
+     * android.desktopEffects.backgroundBlurMode [controls, enum, system]
+     *
+     * <p>Control how the background should be blurred. Supported modes are listed in
+     * ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODES by the camera device.</p>
+     *
+     * @see ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODES
+     */
+    ANDROID_DESKTOP_EFFECTS_BACKGROUND_BLUR_MODE,
+    /**
+     * android.desktopEffects.faceRetouchMode [controls, enum, system]
+     *
+     * <p>Whether to enable face retouch effect.</p>
+     */
+    ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE,
+    /**
+     * android.desktopEffects.faceRetouchStrength [controls, byte, system]
+     *
+     * <p>Control the strength of face retouch applied to the frames. If
+     * ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE in ON without a faceRetouchStrength,
+     * a default will be set by the camera device.</p>
+     *
+     * @see ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_MODE
+     */
+    ANDROID_DESKTOP_EFFECTS_FACE_RETOUCH_STRENGTH,
+    /**
+     * android.desktopEffects.portraitRelightMode [controls, enum, system]
+     *
+     * <p>Whether to enable portrait relighting effect.</p>
+     */
+    ANDROID_DESKTOP_EFFECTS_PORTRAIT_RELIGHT_MODE,
 }

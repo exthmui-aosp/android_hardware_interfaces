@@ -35,11 +35,10 @@ package android.hardware.automotive.audiocontrol;
 @JavaDerive(equals=true, toString=true) @VintfStability
 parcelable AudioZone {
   String name;
-  int id;
+  int id = android.media.audio.common.AudioHalProductStrategy.ZoneId.DEFAULT /* 0 */;
   int occupantZoneId = UNASSIGNED_OCCUPANT /* -1 */;
   android.hardware.automotive.audiocontrol.AudioZoneContext audioZoneContext;
   List<android.hardware.automotive.audiocontrol.AudioZoneConfig> audioZoneConfigs;
   List<android.media.audio.common.AudioPort> inputAudioDevices;
-  const int PRIMARY_AUDIO_ZONE = 0;
   const int UNASSIGNED_OCCUPANT = (-1) /* -1 */;
 }

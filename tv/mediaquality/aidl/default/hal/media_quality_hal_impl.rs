@@ -22,14 +22,16 @@ use android_hardware_tv_mediaquality::aidl::android::hardware::tv::mediaquality:
     AmbientBacklightSettings::AmbientBacklightSettings,
     IPictureProfileAdjustmentListener::IPictureProfileAdjustmentListener,
     IPictureProfileChangedListener::IPictureProfileChangedListener,
-    PictureParameter::PictureParameter,
+    ParamCapability::ParamCapability,
+    ParameterName::ParameterName,
     PictureParameters::PictureParameters,
     ISoundProfileAdjustmentListener::ISoundProfileAdjustmentListener,
     ISoundProfileChangedListener::ISoundProfileChangedListener,
-    SoundParameter::SoundParameter,
     SoundParameters::SoundParameters,
+    VendorParamCapability::VendorParamCapability,
+    VendorParameterIdentifier::VendorParameterIdentifier,
 };
-use binder::{Interface, ParcelableHolder, Strong};
+use binder::{Interface, Strong};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
@@ -220,23 +222,9 @@ impl IMediaQuality for MediaQualityService {
         Ok(())
     }
 
-    fn getPictureParameters(&self, id: i64) -> binder::Result<PictureParameters>{
-        let picture_parameters = match id {
-            1 => {
-                vec![
-                    PictureParameter::Brightness(0.5),
-                    PictureParameter::Contrast(50),
-                ]
-            },
-            _ => vec![]
-        };
-
-        let picture_params = PictureParameters {
-            pictureParameters: picture_parameters,
-            vendorPictureParameters: ParcelableHolder::default(),
-        };
-
-        Ok(picture_params)
+    fn sendDefaultPictureParameters(&self, _picture_parameters: &PictureParameters) -> binder::Result<()>{
+        println!("Received picture parameters");
+        Ok(())
     }
 
     fn getSoundProfileListener(&self) -> binder::Result<binder::Strong<dyn ISoundProfileChangedListener>> {
@@ -255,22 +243,36 @@ impl IMediaQuality for MediaQualityService {
         Ok(())
     }
 
-    fn getSoundParameters(&self, id: i64) -> binder::Result<SoundParameters>{
-        let sound_parameters = match id {
-            1 => {
-                vec![
-                    SoundParameter::Balance(50),
-                    SoundParameter::Bass(50),
-                ]
-            },
-            _ => vec![]
-        };
+    fn sendDefaultSoundParameters(&self, _sound_parameters: &SoundParameters) -> binder::Result<()>{
+        println!("Received sound parameters");
+        Ok(())
+    }
 
-        let sound_params = SoundParameters {
-            soundParameters: sound_parameters,
-            vendorSoundParameters: ParcelableHolder::default(),
-        };
+    fn getParamCaps(
+            &self,
+            param_names: &[ParameterName],
+            _caps: &mut Vec<ParamCapability>
+    ) -> binder::Result<()> {
+        println!("getParamCaps. len= {}", param_names.len());
+        Ok(())
+    }
 
-        Ok(sound_params)
+    fn getVendorParamCaps(
+            &self,
+            param_names: &[VendorParameterIdentifier],
+            _caps: &mut Vec<VendorParamCapability>
+    ) -> binder::Result<()> {
+        println!("getVendorParamCaps. len= {}", param_names.len());
+        Ok(())
+    }
+
+    fn sendPictureParameters(&self, _picture_parameters: &PictureParameters) -> binder::Result<()>{
+        println!("Received picture parameters");
+        Ok(())
+    }
+
+    fn sendSoundParameters(&self, _sound_parameters: &SoundParameters) -> binder::Result<()>{
+        println!("Received sound parameters");
+        Ok(())
     }
 }

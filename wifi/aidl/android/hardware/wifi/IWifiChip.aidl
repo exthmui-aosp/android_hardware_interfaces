@@ -91,6 +91,14 @@ interface IWifiChip {
          * Chip supports Wi-Fi 7 MLO SoftAp.
          */
         MLO_SAP = 1 << 10,
+        /**
+         * Chip supports multiple Wi-Fi 7 multi-link devices (MLD) on SoftAp.
+         * When this feature flag is enabled, it is an indication that the chip can
+         * support Bridged-SoftAp in 11be with separate MLD MAC addresses.
+         * When this feature is disabled, then only one MLD address can be used in 11be mode
+         * (if supported), this includes use of MLO if MLO_SAP flag is set to True.
+         */
+        MULTIPLE_MLD_ON_SAP = 1 << 11,
     }
 
     /**

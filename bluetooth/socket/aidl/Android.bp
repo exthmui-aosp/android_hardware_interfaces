@@ -26,8 +26,14 @@ aidl_interface {
     vendor_available: true,
     host_supported: true,
     srcs: ["android/hardware/bluetooth/socket/*.aidl"],
+    imports: [
+        "android.hardware.contexthub-V4",
+    ],
     stability: "vintf",
     backend: {
+        java: {
+            enabled: false,
+        },
         ndk: {
             apex_available: [
                 "//apex_available:platform",

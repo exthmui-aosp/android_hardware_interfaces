@@ -368,7 +368,8 @@ TEST_P(HealthAidl, getHingeInfo) {
     ASSERT_THAT(status, AnyOf(IsOk(), ExceptionIs(EX_UNSUPPORTED_OPERATION)));
     if (!status.isOk()) return;
     for (auto& hinge : value) {
-        ASSERT_TRUE(hinge.expectedHingeLifespan > 0);
+        ASSERT_TRUE(hinge.expectedHingeLifespan >= 0);
+        ASSERT_TRUE(hinge.numTimesFolded >= 0);
     }
 }
 

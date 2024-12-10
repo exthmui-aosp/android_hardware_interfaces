@@ -1,7 +1,6 @@
 package android.hardware.gnss.gnss_assistance;
 
 import android.hardware.gnss.gnss_assistance.KeplerianOrbitModel;
-import android.hardware.gnss.gnss_assistance.TimeOfClock;
 
 /**
  * Contains ephemeris parameters specific to Beidou satellites.
@@ -17,8 +16,13 @@ parcelable BeidouSatelliteEphemeris {
      */
     @VintfStability
     parcelable BeidouSatelliteClockModel {
-        /** Time of the clock. */
-        TimeOfClock timeOfClock;
+        /**
+         * Time of the clock in seconds since Beidou epoch.
+         *
+         * Represents the 'Epoch' field within the 'SV/EPOCH/SV CLK' record of GNSS
+         * navigation message file in RINEX 3.05 Table A14.
+         */
+        long timeOfClockSeconds;
 
         /** SV clock bias in seconds. */
         double af0;

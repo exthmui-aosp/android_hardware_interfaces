@@ -21,7 +21,6 @@ import android.hardware.gnss.gnss_assistance.GpsSatelliteEphemeris.GpsSatelliteC
 import android.hardware.gnss.gnss_assistance.GpsSatelliteEphemeris.GpsSatelliteHealth;
 import android.hardware.gnss.gnss_assistance.KeplerianOrbitModel;
 import android.hardware.gnss.gnss_assistance.SatelliteEphemerisTime;
-import android.hardware.gnss.gnss_assistance.TimeOfClock;
 
 /**
  * Contains ephemeris parameters specific to QZSS satellites.

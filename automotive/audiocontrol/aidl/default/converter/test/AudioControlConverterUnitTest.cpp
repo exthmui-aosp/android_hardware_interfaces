@@ -38,6 +38,7 @@ using ::aidl::android::media::audio::common::AudioDevice;
 using ::aidl::android::media::audio::common::AudioDeviceAddress;
 using ::aidl::android::media::audio::common::AudioDeviceDescription;
 using ::aidl::android::media::audio::common::AudioDeviceType;
+using ::aidl::android::media::audio::common::AudioHalProductStrategy;
 using ::aidl::android::media::audio::common::AudioPort;
 using ::aidl::android::media::audio::common::AudioPortDeviceExt;
 using ::aidl::android::media::audio::common::AudioPortExt;
@@ -476,7 +477,7 @@ const api::AudioZoneConfig kDriverZoneConfig = createAudioZoneConfig(
         {kBusMediaVolumeGroup, kBusNavVolumeGroup, kBusCallVolumeGroup, kBusSysVolumeGroup}, true);
 
 const api::AudioZone kDriverZone =
-        createAudioZone("driver zone", api::AudioZone::PRIMARY_AUDIO_ZONE,
+        createAudioZone("driver zone", static_cast<int>(AudioHalProductStrategy::ZoneId::DEFAULT),
                         kSimpleCarAudioConfigurationContext, {kDriverZoneConfig});
 
 const api::AudioZoneFadeConfiguration kZoneAudioConfigFading = createAudioZoneFadeConfiguration(
@@ -491,9 +492,9 @@ const api::VolumeGroupConfig kFrontVolumeGroup = createVolumeGroup(
                        "oem_system_sound", "oem_notification"})});
 const api::AudioZoneConfig kFrontZoneConfig = createAudioZoneConfig(
         "front passenger config 0", kZoneAudioConfigFading, {kFrontVolumeGroup}, true);
-const api::AudioZone kFrontZone =
-        createAudioZone("front passenger zone", api::AudioZone::PRIMARY_AUDIO_ZONE + 1,
-                        kSimpleCarAudioConfigurationContext, {kFrontZoneConfig});
+const api::AudioZone kFrontZone = createAudioZone(
+        "front passenger zone", static_cast<int>(AudioHalProductStrategy::ZoneId::DEFAULT) + 1,
+        kSimpleCarAudioConfigurationContext, {kFrontZoneConfig});
 
 const AudioPort kBusRearDevice = createAudioPort("BUS_REAR", AudioDeviceType::OUT_BUS);
 const api::VolumeGroupConfig kRearVolumeGroup =
@@ -503,9 +504,9 @@ const api::VolumeGroupConfig kRearVolumeGroup =
                                                          "oem_system_sound", "oem_notification"})});
 const api::AudioZoneConfig kRearZoneConfig = createAudioZoneConfig(
         "rear seat config 0", kZoneAudioConfigFading, {kRearVolumeGroup}, true);
-const api::AudioZone kRearZone =
-        createAudioZone("rear seat zone", api::AudioZone::PRIMARY_AUDIO_ZONE + 2,
-                        kSimpleCarAudioConfigurationContext, {kRearZoneConfig});
+const api::AudioZone kRearZone = createAudioZone(
+        "rear seat zone", static_cast<int>(AudioHalProductStrategy::ZoneId::DEFAULT) + 2,
+        kSimpleCarAudioConfigurationContext, {kRearZoneConfig});
 
 std::vector<api::AudioZone> kMultiZones = {kDriverZone, kFrontZone, kRearZone};
 
@@ -624,7 +625,7 @@ TEST_F(SimpleCarAudioConfigurationTest, TestLoadSimpleConfiguration) {
     EXPECT_EQ(zones.size(), 1);
 
     const auto& zone = zones.front();
-    EXPECT_EQ(zone.id, api::AudioZone::PRIMARY_AUDIO_ZONE);
+    EXPECT_EQ(zone.id, static_cast<int>(AudioHalProductStrategy::ZoneId::DEFAULT));
     EXPECT_EQ(zone.occupantZoneId, 0);
     EXPECT_EQ(zone.name, "primary zone");
 
@@ -685,7 +686,7 @@ TEST_F(TypeDeviceCarAudioConfigurationTest, TestLoadConfigurationWithDeviceType)
     EXPECT_EQ(zones.size(), 1);
 
     const auto& zone = zones.front();
-    EXPECT_EQ(zone.id, api::AudioZone::PRIMARY_AUDIO_ZONE);
+    EXPECT_EQ(zone.id, static_cast<int>(AudioHalProductStrategy::ZoneId::DEFAULT));
     EXPECT_EQ(zone.occupantZoneId, 0);
     EXPECT_EQ(zone.name, "primary zone");
 

@@ -41,7 +41,9 @@ aidl_interface {
             ],
             min_sdk_version: "30",
             lint: {
-                baseline_filename: "lint-baseline.xml",
+                // Disable linter to avoid error about fixed size arrays.
+                // Interface will only be accessed on devices >= T.
+                enabled: false,
             },
         },
         ndk: {

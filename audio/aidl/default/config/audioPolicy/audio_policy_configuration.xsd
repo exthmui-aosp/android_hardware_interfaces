@@ -417,6 +417,18 @@
             <xs:enumeration value="AUDIO_FORMAT_APTX_ADAPTIVE_R4"/>
             <xs:enumeration value="AUDIO_FORMAT_DTS_HD_MA"/>
             <xs:enumeration value="AUDIO_FORMAT_DTS_UHD_P2"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_SIMPLE_OPUS"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_SIMPLE_AAC"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_SIMPLE_PCM"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_SIMPLE_FLAC"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_BASE_OPUS"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_BASE_AAC"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_BASE_PCM"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_BASE_FLAC"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_BASE_ENHANCED_OPUS"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_BASE_ENHANCED_AAC"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_BASE_ENHANCED_PCM"/>
+            <xs:enumeration value="AUDIO_FORMAT_IAMF_BASE_ENHANCED_FLAC"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="extendableAudioFormat">

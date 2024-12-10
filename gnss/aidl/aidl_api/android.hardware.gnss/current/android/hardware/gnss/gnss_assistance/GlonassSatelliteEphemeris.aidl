@@ -43,7 +43,7 @@ parcelable GlonassSatelliteEphemeris {
   android.hardware.gnss.gnss_assistance.GlonassSatelliteEphemeris.GlonassSatelliteOrbitModel satelliteOrbitModel;
   @VintfStability
   parcelable GlonassSatelliteClockModel {
-    android.hardware.gnss.gnss_assistance.TimeOfClock timeOfClock;
+    long timeOfClockSeconds;
     double clockBias;
     double freqBias;
     int freqNumber;

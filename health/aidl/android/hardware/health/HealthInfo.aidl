@@ -151,5 +151,5 @@ parcelable HealthInfo {
     /**
      * Information about foldable hinge health. Will be an empty vector if no hinges present
      */
-    @nullable HingeInfo[] foldInfos;
+    @nullable HingeInfo[] hingeInfos;
 }

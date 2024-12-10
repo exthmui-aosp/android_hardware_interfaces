@@ -18,7 +18,6 @@ package android.hardware.gnss.gnss_assistance;
 
 import android.hardware.gnss.gnss_assistance.KeplerianOrbitModel;
 import android.hardware.gnss.gnss_assistance.SatelliteEphemerisTime;
-import android.hardware.gnss.gnss_assistance.TimeOfClock;
 
 /**
  * Contains ephemeris parameters specific to GPS satellites.
@@ -47,8 +46,13 @@ parcelable GpsSatelliteEphemeris {
     /** Contains the set of parameters needed for GPS satellite clock correction. */
     @VintfStability
     parcelable GpsSatelliteClockModel {
-        /** Time of the clock. */
-        TimeOfClock timeOfClock;
+        /**
+         * Time of the clock in seconds since GPS epoch.
+         *
+         * Represents the 'Epoch' field within the 'SV/EPOCH/SV CLK' record of GNSS
+         * navigation message file in RINEX 3.05 Table A6.
+         */
+        long timeOfClockSeconds;
 
         /** SV clock bias in seconds. */
         double af0;

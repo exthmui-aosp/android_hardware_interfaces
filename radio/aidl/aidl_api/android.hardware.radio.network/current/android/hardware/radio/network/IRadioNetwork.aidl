@@ -92,4 +92,7 @@ interface IRadioNetwork {
   oneway void setCellularIdentifierTransparencyEnabled(in int serial, in boolean enabled);
   oneway void setSecurityAlgorithmsUpdatedEnabled(in int serial, boolean enable);
   oneway void isSecurityAlgorithmsUpdatedEnabled(in int serial);
+  oneway void setSatellitePlmn(in int serial, in int simSlot, in String[] carrierPlmnArray, in String[] allSatellitePlmnArray);
+  oneway void setSatelliteEnabledForCarrier(in int serial, in int simSlot, boolean satelliteEnabled);
+  oneway void isSatelliteEnabledForCarrier(in int serial, in int simSlot);
 }

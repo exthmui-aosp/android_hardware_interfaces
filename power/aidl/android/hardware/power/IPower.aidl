@@ -181,26 +181,6 @@ interface IPower {
     GpuHeadroomResult getGpuHeadroom(in GpuHeadroomParams params);
 
     /**
-     * Minimum polling interval for calling getCpuHeadroom in milliseconds.
-     *
-     * The getCpuHeadroom API may return cached result if called more frequent
-     * than the interval.
-     *
-     * @throws EX_UNSUPPORTED_OPERATION if the API is unsupported.
-     */
-    long getCpuHeadroomMinIntervalMillis();
-
-    /**
-     * Minimum polling interval for calling getGpuHeadroom in milliseconds.
-     *
-     * The getGpuHeadroom API may return cached result if called more frequent
-     * than the interval.
-     *
-     * @throws EX_UNSUPPORTED_OPERATION if the API is unsupported.
-     */
-    long getGpuHeadroomMinIntervalMillis();
-
-    /**
      * Sent to PowerHAL when there are surface-attached sessions being composed,
      * providing FPS and frame timing data that can be used to supplement
      * and validate timing sent via reportActual. This call can be batched,

@@ -35,10 +35,6 @@ interface IHwCryptoKey {
          * This is a key unique to the device.
          */
         DEVICE_BOUND_KEY,
-        /*
-         * This is a shared by a set of devices.
-         */
-        BATCH_KEY,
     }
 
     /*

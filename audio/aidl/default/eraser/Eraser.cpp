@@ -133,10 +133,70 @@ EraserSw::~EraserSw() {
     LOG(DEBUG) << __func__;
 }
 
+ndk::ScopedAStatus EraserSw::command(CommandId command) {
+    std::lock_guard lg(mImplMutex);
+    RETURN_IF(mState == State::INIT, EX_ILLEGAL_STATE, "instanceNotOpen");
+
+    switch (command) {
+        case CommandId::START:
+            RETURN_OK_IF(mState == State::PROCESSING);
+            mState = State::PROCESSING;
+            mContext->enable();
+            startThread();
+            RETURN_IF(notifyEventFlag(mDataMqNotEmptyEf) != RetCode::SUCCESS, EX_ILLEGAL_STATE,
+                      "notifyEventFlagNotEmptyFailed");
+            break;
+        case CommandId::STOP:
+            RETURN_OK_IF(mState == State::IDLE || mState == State::DRAINING);
+            if (mVersion < kDrainSupportedVersion) {
+                mState = State::IDLE;
+                stopThread();
+                mContext->disable();
+            } else {
+                mState = State::DRAINING;
+                startDraining();
+                mContext->startDraining();
+            }
+            RETURN_IF(notifyEventFlag(mDataMqNotEmptyEf) != RetCode::SUCCESS, EX_ILLEGAL_STATE,
+                      "notifyEventFlagNotEmptyFailed");
+            break;
+        case CommandId::RESET:
+            mState = State::IDLE;
+            RETURN_IF(notifyEventFlag(mDataMqNotEmptyEf) != RetCode::SUCCESS, EX_ILLEGAL_STATE,
+                      "notifyEventFlagNotEmptyFailed");
+            stopThread();
+            mImplContext->disable();
+            mImplContext->reset();
+            mImplContext->resetBuffer();
+            break;
+        default:
+            LOG(ERROR) << getEffectNameWithVersion() << __func__ << " instance still processing";
+            return ndk::ScopedAStatus::fromExceptionCodeWithMessage(EX_ILLEGAL_ARGUMENT,
+                                                                    "CommandIdNotSupported");
+    }
+    LOG(VERBOSE) << getEffectNameWithVersion() << __func__
+                 << " transfer to state: " << toString(mState);
+    return ndk::ScopedAStatus::ok();
+}
+
 // Processing method running in EffectWorker thread.
 IEffect::Status EraserSw::effectProcessImpl(float* in, float* out, int samples) {
     RETURN_VALUE_IF(!mContext, (IEffect::Status{EX_NULL_POINTER, 0, 0}), "nullContext");
-    return mContext->process(in, out, samples);
+    IEffect::Status procStatus{STATUS_NOT_ENOUGH_DATA, 0, 0};
+    procStatus = mContext->process(in, out, samples);
+    if (mState == State::DRAINING && procStatus.status == STATUS_NOT_ENOUGH_DATA) {
+        drainingComplete_l();
+    }
+
+    return procStatus;
+}
+
+void EraserSw::drainingComplete_l() {
+    if (mState != State::DRAINING) return;
+
+    LOG(DEBUG) << getEffectNameWithVersion() << __func__;
+    finishDraining();
+    mState = State::IDLE;
 }
 
 EraserSwContext::EraserSwContext(int statusDepth, const Parameter::Common& common)
@@ -164,24 +224,47 @@ ndk::ScopedAStatus EraserSwContext::setParam(TAG tag, Eraser eraser) {
 
 IEffect::Status EraserSwContext::process(float* in, float* out, int samples) {
     LOG(DEBUG) << __func__ << " in " << in << " out " << out << " samples " << samples;
-    IEffect::Status status = {EX_ILLEGAL_ARGUMENT, 0, 0};
-
+    IEffect::Status procStatus = {EX_ILLEGAL_ARGUMENT, 0, 0};
     const auto inputChannelCount = getChannelCount(mCommon.input.base.channelMask);
     const auto outputChannelCount = getChannelCount(mCommon.output.base.channelMask);
     if (inputChannelCount < outputChannelCount) {
         LOG(ERROR) << __func__ << " invalid channel count, in: " << inputChannelCount
                    << " out: " << outputChannelCount;
-        return status;
+        return procStatus;
     }
 
-    int iFrames = samples / inputChannelCount;
+    if (samples <= 0 || 0 != samples % inputChannelCount) {
+        LOG(ERROR) << __func__ << " invalid samples: " << samples;
+        return procStatus;
+    }
+
+    const int iFrames = samples / inputChannelCount;
+    const float gainPerSample = 1.f / iFrames;
     for (int i = 0; i < iFrames; i++) {
-        std::memcpy(out, in, outputChannelCount);
+        if (isDraining()) {
+            const float gain = (iFrames - i - 1) * gainPerSample;
+            for (size_t c = 0; c < outputChannelCount; c++) {
+                out[c] = in[c] * gain;
+            }
+        } else {
+            std::memcpy(out, in, outputChannelCount * sizeof(float));
+        }
+
         in += inputChannelCount;
         out += outputChannelCount;
     }
-    return {STATUS_OK, static_cast<int32_t>(iFrames * inputChannelCount),
-            static_cast<int32_t>(iFrames * outputChannelCount)};
+
+    // drain for one cycle
+    if (isDraining()) {
+        procStatus.status = STATUS_NOT_ENOUGH_DATA;
+        finishDraining();
+    } else {
+        procStatus.status = STATUS_OK;
+    }
+    procStatus.fmqConsumed = static_cast<int32_t>(iFrames * inputChannelCount);
+    procStatus.fmqProduced = static_cast<int32_t>(iFrames * outputChannelCount);
+
+    return procStatus;
 }
 
 }  // namespace aidl::android::hardware::audio::effect
