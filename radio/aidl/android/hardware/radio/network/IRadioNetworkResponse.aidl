@@ -80,6 +80,8 @@ oneway interface IRadioNetworkResponse {
      *   RadioError:MODEM_ERR
      *   RadioError:NO_RESOURCES
      *   RadioError:CANCELLED
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void getAvailableBandModesResponse(in RadioResponseInfo info, in RadioBandMode[] bandModes);
 
@@ -332,6 +334,8 @@ oneway interface IRadioNetworkResponse {
      *   RadioError:MODEM_ERR
      *   RadioError:NO_RESOURCES
      *   RadioError:CANCELLED
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void setBandModeResponse(in RadioResponseInfo info);
 
@@ -437,6 +441,8 @@ oneway interface IRadioNetworkResponse {
      *   RadioError:NO_RESOURCES
      *   RadioError:CANCELLED
      *   RadioError:SIM_ABSENT
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void setLocationUpdatesResponse(in RadioResponseInfo info);
 
@@ -528,6 +534,8 @@ oneway interface IRadioNetworkResponse {
      *   RadioError:NO_RESOURCES
      *   RadioError:CANCELLED
      *   RadioError:SIM_ABSENT
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void setSuppServiceNotificationsResponse(in RadioResponseInfo info);
 

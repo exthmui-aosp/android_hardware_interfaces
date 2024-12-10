@@ -47,11 +47,9 @@ pub fn attestation_id_info() -> kmr_wire::AttestationIdInfo {
 
 /// Get boot information based on system properties.
 pub fn get_boot_info() -> kmr_wire::SetBootInfoRequest {
-    // No access to a verified boot key.
-    let verified_boot_key = vec![0; 32];
     let vbmeta_digest = get_property("ro.boot.vbmeta.digest").unwrap_or_else(|_| "00".repeat(32));
     let verified_boot_hash = hex::decode(&vbmeta_digest).unwrap_or_else(|_e| {
-        error!("failed to parse hex data in '{}'", vbmeta_digest);
+        error!("failed to parse VBMeta digest hex data in '{vbmeta_digest}': {_e:?}");
         vec![0; 32]
     });
     let device_boot_locked = match get_property("ro.boot.vbmeta.device_state")
@@ -64,6 +62,18 @@ pub fn get_boot_info() -> kmr_wire::SetBootInfoRequest {
             error!("Unknown device_state '{}', treating as unlocked", v);
             false
         }
+    };
+    let verified_boot_key_digest =
+        get_property("ro.boot.vbmeta.public_key_digest").unwrap_or_else(|_| "00".repeat(32));
+    let verified_boot_key = match device_boot_locked {
+        true => hex::decode(&verified_boot_key_digest).unwrap_or_else(|_e| {
+            error!("Failed to parse Verified Boot key hex data in '{verified_boot_key_digest}': {_e:?}");
+            vec![0; 32]
+        }),
+        // VTS-16+ requires the attested Verified Boot key to be 32 bytes of zeroes when the
+        // bootloader is unlocked, so we ignore the property's value in that case. Behaviour
+        // prior to VTS-16 is unspecified, so it's fine to return the same.
+        false => vec![0; 32],
     };
     let verified_boot_state = match get_property("ro.boot.verifiedbootstate")
         .unwrap_or_else(|_| "no-prop".to_string())

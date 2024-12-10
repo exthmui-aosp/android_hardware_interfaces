@@ -76,6 +76,9 @@ interface IRadioSim {
   oneway void setFacilityLockForApp(in int serial, in String facility, in boolean lockState, in String password, in int serviceClass, in String appId);
   oneway void setResponseFunctions(in android.hardware.radio.sim.IRadioSimResponse radioSimResponse, in android.hardware.radio.sim.IRadioSimIndication radioSimIndication);
   oneway void setSimCardPower(in int serial, in android.hardware.radio.sim.CardPowerState powerUp);
+  /**
+   * @deprecated Android Telephony framework doesn't use this.
+   */
   oneway void setUiccSubscription(in int serial, in android.hardware.radio.sim.SelectUiccSub uiccSub);
   oneway void supplyIccPin2ForApp(in int serial, in String pin2, in String aid);
   oneway void supplyIccPinForApp(in int serial, in String pin, in String aid);

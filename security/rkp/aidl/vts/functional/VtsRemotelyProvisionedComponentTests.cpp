@@ -999,6 +999,7 @@ TEST_P(CertificateRequestV2Test, DeviceInfo) {
 
     std::unique_ptr<cppbor::Array> csrPayload = std::move(*result);
     ASSERT_TRUE(csrPayload);
+    ASSERT_TRUE(csrPayload->size() > 2);
 
     auto deviceInfo = csrPayload->get(2)->asMap();
     ASSERT_TRUE(deviceInfo);

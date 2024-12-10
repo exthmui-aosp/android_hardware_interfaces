@@ -75,6 +75,9 @@ interface IRadioSimResponse {
   oneway void setCdmaSubscriptionSourceResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void setFacilityLockForAppResponse(in android.hardware.radio.RadioResponseInfo info, in int retry);
   oneway void setSimCardPowerResponse(in android.hardware.radio.RadioResponseInfo info);
+  /**
+   * @deprecated Android Telephony framework doesn't use this.
+   */
   oneway void setUiccSubscriptionResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void supplyIccPin2ForAppResponse(in android.hardware.radio.RadioResponseInfo info, in int remainingRetries);
   oneway void supplyIccPinForAppResponse(in android.hardware.radio.RadioResponseInfo info, in int remainingRetries);

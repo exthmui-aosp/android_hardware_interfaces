@@ -61,6 +61,8 @@ oneway interface IRadioNetwork {
      * Response function is IRadioNetworkResponse.getAvailableBandModesResponse()
      *
      * This is available when android.hardware.telephony.radio.access is defined.
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void getAvailableBandModes(in int serial);
 
@@ -247,6 +249,8 @@ oneway interface IRadioNetwork {
      * Response function is IRadioNetworkResponse.setBandModeResponse()
      *
      * This is available when android.hardware.telephony.radio.access is defined.
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void setBandMode(in int serial, in RadioBandMode mode);
 
@@ -348,6 +352,8 @@ oneway interface IRadioNetwork {
      * Response function is IRadioNetworkResponse.setLocationUpdatesResponse()
      *
      * This is available when android.hardware.telephony.radio.access is defined.
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void setLocationUpdates(in int serial, in boolean enable);
 
@@ -441,6 +447,8 @@ oneway interface IRadioNetwork {
      * Response function is IRadioNetworkResponse.setSuppServiceNotificationsResponse()
      *
      * This is available when android.hardware.telephony.calling is defined.
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void setSuppServiceNotifications(in int serial, in boolean enable);
 

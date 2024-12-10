@@ -32,9 +32,12 @@ parcelable HardwareConfigModem {
      */
     int rilModel;
     /**
-     * Bitset value, based on RadioTechnology.
+     * All supported radio technologies.
+     *
+     * Despite the stated type, this is an int bitset: a mask where each bit position represents a
+     * radio technology.
      */
-    RadioTechnology rat = RadioTechnology.UNKNOWN;
+    RadioTechnology rat = RadioTechnology.UNKNOWN; // it's really an empty bitmask
     /**
      * Maximum number of concurrent active voice calls.
      */

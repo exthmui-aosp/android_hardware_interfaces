@@ -544,6 +544,8 @@ oneway interface IRadioSimResponse {
      *   RadioError:INVALID_ARGUMENTS
      *   RadioError:NO_RESOURCES
      *   RadioError:CANCELLED
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void setUiccSubscriptionResponse(in RadioResponseInfo info);
 

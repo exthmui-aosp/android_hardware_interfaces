@@ -37,6 +37,9 @@ package android.hardware.radio.network;
 interface IRadioNetworkResponse {
   oneway void acknowledgeRequest(in int serial);
   oneway void getAllowedNetworkTypesBitmapResponse(in android.hardware.radio.RadioResponseInfo info, in int networkTypeBitmap);
+  /**
+   * @deprecated Android Telephony framework doesn't use this.
+   */
   oneway void getAvailableBandModesResponse(in android.hardware.radio.RadioResponseInfo info, in android.hardware.radio.network.RadioBandMode[] bandModes);
   oneway void getAvailableNetworksResponse(in android.hardware.radio.RadioResponseInfo info, in android.hardware.radio.network.OperatorInfo[] networkInfos);
   oneway void getBarringInfoResponse(in android.hardware.radio.RadioResponseInfo info, in android.hardware.radio.network.CellIdentity cellIdentity, in android.hardware.radio.network.BarringInfo[] barringInfos);
@@ -58,6 +61,9 @@ interface IRadioNetworkResponse {
   oneway void getVoiceRegistrationStateResponse(in android.hardware.radio.RadioResponseInfo info, in android.hardware.radio.network.RegStateResult voiceRegResponse);
   oneway void isNrDualConnectivityEnabledResponse(in android.hardware.radio.RadioResponseInfo info, in boolean isEnabled);
   oneway void setAllowedNetworkTypesBitmapResponse(in android.hardware.radio.RadioResponseInfo info);
+  /**
+   * @deprecated Android Telephony framework doesn't use this.
+   */
   oneway void setBandModeResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void setBarringPasswordResponse(in android.hardware.radio.RadioResponseInfo info);
   /**
@@ -67,11 +73,17 @@ interface IRadioNetworkResponse {
   oneway void setCellInfoListRateResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void setIndicationFilterResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void setLinkCapacityReportingCriteriaResponse(in android.hardware.radio.RadioResponseInfo info);
+  /**
+   * @deprecated Android Telephony framework doesn't use this.
+   */
   oneway void setLocationUpdatesResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void setNetworkSelectionModeAutomaticResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void setNetworkSelectionModeManualResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void setNrDualConnectivityStateResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void setSignalStrengthReportingCriteriaResponse(in android.hardware.radio.RadioResponseInfo info);
+  /**
+   * @deprecated Android Telephony framework doesn't use this.
+   */
   oneway void setSuppServiceNotificationsResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void setSystemSelectionChannelsResponse(in android.hardware.radio.RadioResponseInfo info);
   oneway void startNetworkScanResponse(in android.hardware.radio.RadioResponseInfo info);

@@ -485,6 +485,8 @@ oneway interface IRadioSim {
      * Response function is IRadioSimResponse.setUiccSubscriptionResponse()
      *
      * This is available when android.hardware.telephony.subscription is defined.
+     *
+     * @deprecated Android Telephony framework doesn't use this.
      */
     void setUiccSubscription(in int serial, in SelectUiccSub uiccSub);
 
