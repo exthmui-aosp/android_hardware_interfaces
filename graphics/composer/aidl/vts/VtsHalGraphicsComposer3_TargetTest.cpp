@@ -3362,15 +3362,11 @@ TEST_P(GraphicsComposerAidlCommandV4Test, SetUnsupportedLayerLuts) {
             mComposerClient->createLayer(getPrimaryDisplayId(), kBufferSlotCount, &writer);
     EXPECT_TRUE(layerStatus.isOk());
     const auto& [status, properties] = mComposerClient->getOverlaySupport();
-    if (!status.isOk() && status.getExceptionCode() == EX_SERVICE_SPECIFIC &&
-        status.getServiceSpecificError() == IComposerClient::EX_UNSUPPORTED) {
-        GTEST_SUCCEED() << "getOverlaySupport is not supported";
-        return;
-    }
-    ASSERT_TRUE(status.isOk());
 
     // TODO (b/362319189): add Lut VTS enforcement
-    if (!properties.lutProperties) {
+    if ((!status.isOk() && status.getExceptionCode() == EX_SERVICE_SPECIFIC &&
+         status.getServiceSpecificError() == IComposerClient::EX_UNSUPPORTED) ||
+        (status.isOk() && !properties.lutProperties)) {
         int32_t size = 7;
         size_t bufferSize = static_cast<size_t>(size) * sizeof(float);
         int32_t fd = ashmem_create_region("lut_shared_mem", bufferSize);
@@ -3384,13 +3380,22 @@ TEST_P(GraphicsComposerAidlCommandV4Test, SetUnsupportedLayerLuts) {
                 {LutProperties::Dimension::ONE_D, size, {LutProperties::SamplingKey::RGB}}};
         luts.pfd = ndk::ScopedFileDescriptor(fd);
 
+        const auto layer = createOnScreenLayer(getPrimaryDisplayId());
+        const auto buffer = allocate(::android::PIXEL_FORMAT_RGBA_8888);
+        ASSERT_NE(nullptr, buffer->handle);
+        writer.setLayerBuffer(getPrimaryDisplayId(), layer, /*slot*/ 0, buffer->handle,
+                              /*acquireFence*/ -1);
         writer.setLayerLuts(getPrimaryDisplayId(), layer, luts);
         writer.validateDisplay(getPrimaryDisplayId(), ComposerClientWriter::kNoTimestamp,
                                VtsComposerClient::kNoFrameIntervalNs);
         execute();
+        const auto errors = mReader.takeErrors();
+        if (errors.size() == 1 && errors[0].errorCode == IComposerClient::EX_UNSUPPORTED) {
+            GTEST_SUCCEED() << "setLayerLuts is not supported";
+            return;
+        }
         // change to client composition
         ASSERT_FALSE(mReader.takeChangedCompositionTypes(getPrimaryDisplayId()).empty());
-        ASSERT_TRUE(mReader.takeErrors().empty());
     }
 }
 

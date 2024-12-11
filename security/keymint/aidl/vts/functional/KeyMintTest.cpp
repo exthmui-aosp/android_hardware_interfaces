@@ -8305,21 +8305,15 @@ TEST_P(KeyDeletionTest, DeleteAllKeys) {
         GTEST_SKIP() << "Option --arm_deleteAllKeys not set";
         return;
     }
+    // This test was introduced in API level 36, but is not version guarded because it requires a
+    // manual opt-in anyway. This makes it easier to run on older devices.
     auto error = GenerateKey(AuthorizationSetBuilder()
                                      .RsaSigningKey(2048, 65537)
                                      .Digest(Digest::NONE)
                                      .Padding(PaddingMode::NONE)
                                      .Authorization(TAG_NO_AUTH_REQUIRED)
-                                     .Authorization(TAG_ROLLBACK_RESISTANCE)
                                      .SetDefaultValidity());
-    if (error == ErrorCode::ROLLBACK_RESISTANCE_UNAVAILABLE) {
-        GTEST_SKIP() << "Rollback resistance not supported";
-    }
-
-    // Delete must work if rollback protection is implemented
     ASSERT_EQ(ErrorCode::OK, error);
-    AuthorizationSet hardwareEnforced(SecLevelAuthorizations());
-    ASSERT_TRUE(hardwareEnforced.Contains(TAG_ROLLBACK_RESISTANCE));
 
     ASSERT_EQ(ErrorCode::OK, DeleteAllKeys());
 

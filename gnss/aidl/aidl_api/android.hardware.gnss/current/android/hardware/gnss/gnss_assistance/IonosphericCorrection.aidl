@@ -36,5 +36,5 @@ package android.hardware.gnss.gnss_assistance;
 @VintfStability
 parcelable IonosphericCorrection {
   long carrierFrequencyHz;
-  android.hardware.gnss.gnss_assistance.GnssCorrectionComponent ionosphericCorrection;
+  android.hardware.gnss.gnss_assistance.GnssCorrectionComponent ionosphericCorrectionComponent;
 }

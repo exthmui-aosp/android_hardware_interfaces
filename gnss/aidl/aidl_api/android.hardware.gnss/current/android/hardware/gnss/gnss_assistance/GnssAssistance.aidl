@@ -43,7 +43,7 @@ parcelable GnssAssistance {
   @VintfStability
   parcelable GnssSatelliteCorrections {
     int svid;
-    android.hardware.gnss.gnss_assistance.IonosphericCorrection[] inonosphericCorrections;
+    android.hardware.gnss.gnss_assistance.IonosphericCorrection[] ionosphericCorrections;
   }
   @VintfStability
   parcelable GpsAssistance {

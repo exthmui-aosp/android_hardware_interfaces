@@ -46,7 +46,7 @@ parcelable GnssAssistance {
          * OSN number for Glonass. The distinction is made by looking at the constellation field.
          * Values must be in the range of:
          *
-         * - GNSS:    1-32
+         * - GPS:    1-32
          * - GLONASS: 1-25
          * - QZSS:    183-206
          * - Galileo: 1-36
@@ -55,7 +55,7 @@ parcelable GnssAssistance {
         int svid;
 
         /** Ionospheric corrections */
-        IonosphericCorrection[] inonosphericCorrections;
+        IonosphericCorrection[] ionosphericCorrections;
     }
 
     /** Contains GPS assistance. */
