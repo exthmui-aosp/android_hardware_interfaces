@@ -303,7 +303,7 @@ interface IContextHub {
      * @throws EX_ILLEGAL_ARGUMENT if the size is invalid.
      * @throws EX_SERVICE_SPECIFIC if the id range requested cannot be allocated.
      */
-    int[] requestSessionIdRange(int size);
+    int[2] requestSessionIdRange(int size);
 
     /**
      * Request to open a session for communication between an endpoint previously registered by the

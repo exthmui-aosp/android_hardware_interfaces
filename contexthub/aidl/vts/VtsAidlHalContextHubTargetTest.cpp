@@ -684,7 +684,7 @@ TEST_P(ContextHubAidl, OpenEndpointSessionInvalidRange) {
 
     // Request the range
     constexpr int32_t requestedRange = 100;
-    std::vector<int32_t> range;
+    std::array<int32_t, 2> range;
     ASSERT_TRUE(contextHub->requestSessionIdRange(requestedRange, &range).isOk());
     EXPECT_EQ(range.size(), 2);
     EXPECT_GE(range[1] - range[0] + 1, requestedRange);
@@ -737,7 +737,7 @@ TEST_P(ContextHubAidl, OpenEndpointSessionAndSendMessageEchoesBack) {
 
     // Request the range
     constexpr int32_t requestedRange = 100;
-    std::vector<int32_t> range;
+    std::array<int32_t, 2> range;
     ASSERT_TRUE(contextHub->requestSessionIdRange(requestedRange, &range).isOk());
     EXPECT_EQ(range.size(), 2);
     EXPECT_GE(range[1] - range[0] + 1, requestedRange);

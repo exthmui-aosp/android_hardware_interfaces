@@ -882,4 +882,66 @@ ErrMsgOr<bool> isCsrWithProperDiceChain(const std::vector<uint8_t>& encodedCsr,
     return diceChain->IsProper();
 }
 
+std::string hexlify(const std::vector<unsigned char>& bytes) {
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+
+    for (const auto& byte : bytes) {
+        ss << std::setw(2) << static_cast<int>(byte);
+    }
+
+    return ss.str();
+}
+
+ErrMsgOr<bool> compareRootPublicKeysInDiceChains(const std::vector<uint8_t>& encodedCsr1,
+                                                 std::string_view instanceName1,
+                                                 const std::vector<uint8_t>& encodedCsr2,
+                                                 std::string_view instanceName2) {
+    auto diceChainKind = getDiceChainKind();
+    if (!diceChainKind) {
+        return diceChainKind.message();
+    }
+
+    auto csr1 = hwtrust::Csr::validate(encodedCsr1, *diceChainKind, false /*isFactory*/,
+                                       false /*allowAnyMode*/, deviceSuffix(instanceName1));
+    if (!csr1.ok()) {
+        return csr1.error().message();
+    }
+
+    auto diceChain1 = csr1->getDiceChain();
+    if (!diceChain1.ok()) {
+        return diceChain1.error().message();
+    }
+
+    auto proper1 = diceChain1->IsProper();
+    if (!proper1) {
+        return std::string(instanceName1) + " has a degenerate DICE chain:\n" +
+               hexlify(encodedCsr1);
+    }
+
+    auto csr2 = hwtrust::Csr::validate(encodedCsr2, *diceChainKind, false /*isFactory*/,
+                                       false /*allowAnyMode*/, deviceSuffix(instanceName2));
+    if (!csr2.ok()) {
+        return csr2.error().message();
+    }
+
+    auto diceChain2 = csr2->getDiceChain();
+    if (!diceChain2.ok()) {
+        return diceChain2.error().message();
+    }
+
+    auto proper2 = diceChain2->IsProper();
+    if (!proper2) {
+        return std::string(instanceName2) + " has a degenerate DICE chain:\n" +
+               hexlify(encodedCsr2);
+    }
+
+    auto result = diceChain1->compareRootPublicKey(*diceChain2);
+    if (!result.ok()) {
+        return result.error().message();
+    }
+
+    return *result;
+}
+
 }  // namespace aidl::android::hardware::security::keymint::remote_prov

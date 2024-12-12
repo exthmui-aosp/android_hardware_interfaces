@@ -54,7 +54,7 @@ interface IContextHub {
   void registerEndpoint(in android.hardware.contexthub.EndpointInfo endpoint);
   void unregisterEndpoint(in android.hardware.contexthub.EndpointInfo endpoint);
   void registerEndpointCallback(in android.hardware.contexthub.IEndpointCallback callback);
-  int[] requestSessionIdRange(int size);
+  int[2] requestSessionIdRange(int size);
   void openEndpointSession(int sessionId, in android.hardware.contexthub.EndpointId destination, in android.hardware.contexthub.EndpointId initiator, in @nullable String serviceDescriptor);
   void sendMessageToEndpoint(int sessionId, in android.hardware.contexthub.Message msg);
   void sendMessageDeliveryStatusToEndpoint(int sessionId, in android.hardware.contexthub.MessageDeliveryStatus msgStatus);

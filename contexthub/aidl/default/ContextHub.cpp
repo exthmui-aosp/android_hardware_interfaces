@@ -286,7 +286,7 @@ ScopedAStatus ContextHub::registerEndpointCallback(
 };
 
 ScopedAStatus ContextHub::requestSessionIdRange(int32_t in_size,
-                                                std::vector<int32_t>* _aidl_return) {
+                                                std::array<int32_t, 2>* _aidl_return) {
     constexpr int32_t kMaxSize = 1024;
     if (in_size > kMaxSize || _aidl_return == nullptr) {
         return ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
@@ -297,8 +297,8 @@ ScopedAStatus ContextHub::requestSessionIdRange(int32_t in_size,
         mMaxValidSessionId = in_size;
     }
 
-    _aidl_return->push_back(0);
-    _aidl_return->push_back(in_size);
+    _aidl_return->at(0) = 0;
+    _aidl_return->at(1) = in_size;
     return ScopedAStatus::ok();
 };
 
