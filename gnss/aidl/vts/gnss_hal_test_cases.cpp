@@ -615,7 +615,7 @@ TEST_P(GnssHalTest, TestGnssPowerIndication) {
  * BlocklistIndividualSatellites:
  *
  * 1) Turns on location, waits for 3 locations, ensuring they are valid, and checks corresponding
- * GnssStatus for common satellites (strongest and one other.)
+ * GnssStatus for common satellites (strongest one in each constellation.)
  * 2a & b) Turns off location, and blocklists common satellites.
  * 3) Restart location, wait for 3 locations, ensuring they are valid, and checks corresponding
  * GnssStatus does not use those satellites.
@@ -633,6 +633,7 @@ TEST_P(GnssHalTest, BlocklistIndividualSatellites) {
         return;
     }
 
+    const int kWarmUpLocations = 3;
     const int kLocationsToAwait = 3;
     const int kRetriesToUnBlocklist = 10;
 
@@ -641,7 +642,7 @@ TEST_P(GnssHalTest, BlocklistIndividualSatellites) {
     } else {
         aidl_gnss_cb_->location_cbq_.reset();
     }
-    StartAndCheckLocations(kLocationsToAwait);
+    StartAndCheckLocations(kLocationsToAwait + kWarmUpLocations);
     int location_called_count = (aidl_gnss_hal_->getInterfaceVersion() <= 1)
                                         ? gnss_cb_->location_cbq_.calledCount()
                                         : aidl_gnss_cb_->location_cbq_.calledCount();
@@ -650,37 +651,50 @@ TEST_P(GnssHalTest, BlocklistIndividualSatellites) {
     int sv_info_list_cbq_size = (aidl_gnss_hal_->getInterfaceVersion() <= 1)
                                         ? gnss_cb_->sv_info_list_cbq_.size()
                                         : aidl_gnss_cb_->sv_info_list_cbq_.size();
-    EXPECT_GE(sv_info_list_cbq_size + 1, kLocationsToAwait);
+    EXPECT_GE(sv_info_list_cbq_size + 1, kLocationsToAwait + kWarmUpLocations);
     ALOGD("Observed %d GnssSvInfo, while awaiting %d Locations (%d received)",
-          sv_info_list_cbq_size, kLocationsToAwait, location_called_count);
+          sv_info_list_cbq_size, kLocationsToAwait + kWarmUpLocations, location_called_count);
 
     /*
-     * Identify strongest SV seen at least kLocationsToAwait -1 times
-     * Why -1?  To avoid test flakiness in case of (plausible) slight flakiness in strongest signal
-     * observability (one epoch RF null)
+     * Identify strongest SV per constellation seen seen at least kLocationsToAwait -1 times.
+     *
+     * Why not (kLocationsToAwait + kWarmUpLocations)?  To avoid test flakiness in case of
+     * (plausible) slight flakiness in strongest signal observability (one epoch RF null)
      */
 
     const int kGnssSvInfoListTimeout = 2;
-    BlocklistedSource source_to_blocklist;
+    std::vector<BlocklistedSource> sources_to_blocklist;
     if (aidl_gnss_hal_->getInterfaceVersion() <= 1) {
+        // Discard kWarmUpLocations sv_info_vec
+        std::list<hidl_vec<IGnssCallback_2_1::GnssSvInfo>> tmp;
+        int count =
+                gnss_cb_->sv_info_list_cbq_.retrieve(tmp, kWarmUpLocations, kGnssSvInfoListTimeout);
+        ASSERT_EQ(count, kWarmUpLocations);
+
+        // Retrieve (sv_info_list_cbq_size - kWarmUpLocations) sv_info_vec
         std::list<hidl_vec<IGnssCallback_2_1::GnssSvInfo>> sv_info_vec_list;
-        int count = gnss_cb_->sv_info_list_cbq_.retrieve(sv_info_vec_list, sv_info_list_cbq_size,
-                                                         kGnssSvInfoListTimeout);
-        ASSERT_EQ(count, sv_info_list_cbq_size);
-        source_to_blocklist =
-                FindStrongFrequentBlockableSource(sv_info_vec_list, kLocationsToAwait - 1);
+        count = gnss_cb_->sv_info_list_cbq_.retrieve(
+                sv_info_vec_list, sv_info_list_cbq_size - kWarmUpLocations, kGnssSvInfoListTimeout);
+        ASSERT_EQ(count, sv_info_list_cbq_size - kWarmUpLocations);
+        sources_to_blocklist = FindStrongFrequentSources(sv_info_vec_list, kLocationsToAwait - 1);
     } else {
+        // Discard kWarmUpLocations sv_info_vec
+        std::list<std::vector<IGnssCallback::GnssSvInfo>> tmp;
+        int count = aidl_gnss_cb_->sv_info_list_cbq_.retrieve(tmp, kWarmUpLocations,
+                                                              kGnssSvInfoListTimeout);
+        ASSERT_EQ(count, kWarmUpLocations);
+
+        // Retrieve (sv_info_list_cbq_size - kWarmUpLocations) sv_info_vec
         std::list<std::vector<IGnssCallback::GnssSvInfo>> sv_info_vec_list;
-        int count = aidl_gnss_cb_->sv_info_list_cbq_.retrieve(
-                sv_info_vec_list, sv_info_list_cbq_size, kGnssSvInfoListTimeout);
-        ASSERT_EQ(count, sv_info_list_cbq_size);
-        source_to_blocklist =
-                FindStrongFrequentBlockableSource(sv_info_vec_list, kLocationsToAwait - 1);
+        count = aidl_gnss_cb_->sv_info_list_cbq_.retrieve(
+                sv_info_vec_list, sv_info_list_cbq_size - kWarmUpLocations, kGnssSvInfoListTimeout);
+        ASSERT_EQ(count, sv_info_list_cbq_size - kWarmUpLocations);
+        sources_to_blocklist = FindStrongFrequentSources(sv_info_vec_list, kLocationsToAwait - 1);
     }
 
-    if (source_to_blocklist.constellation == GnssConstellationType::UNKNOWN) {
-        // Cannot find a blockable satellite. Let the test pass.
-        ALOGD("Cannot find a blockable satellite. Letting the test pass.");
+    if (sources_to_blocklist.empty()) {
+        // Cannot find a satellite to blocklist. Let the test pass.
+        ALOGD("Cannot find a satellite to blocklist. Letting the test pass.");
         return;
     }
 
@@ -693,9 +707,7 @@ TEST_P(GnssHalTest, BlocklistIndividualSatellites) {
     ASSERT_NE(gnss_configuration_hal, nullptr);
 
     std::vector<BlocklistedSource> sources;
-    sources.resize(1);
-    sources[0] = source_to_blocklist;
-
+    sources = sources_to_blocklist;
     status = gnss_configuration_hal->setBlocklist(sources);
     ASSERT_TRUE(status.isOk());
 
@@ -726,26 +738,47 @@ TEST_P(GnssHalTest, BlocklistIndividualSatellites) {
     EXPECT_GE(sv_info_list_cbq_size + 1, kLocationsToAwait);
     ALOGD("Observed %d GnssSvInfo, while awaiting %d Locations (%d received)",
           sv_info_list_cbq_size, kLocationsToAwait, location_called_count);
+    bool isCnBuild = Utils::isCnBuild();
     for (int i = 0; i < sv_info_list_cbq_size; ++i) {
         if (aidl_gnss_hal_->getInterfaceVersion() <= 1) {
             hidl_vec<IGnssCallback_2_1::GnssSvInfo> sv_info_vec;
             gnss_cb_->sv_info_list_cbq_.retrieve(sv_info_vec, kGnssSvInfoListTimeout);
             for (uint32_t iSv = 0; iSv < sv_info_vec.size(); iSv++) {
                 auto& gnss_sv = sv_info_vec[iSv];
-                EXPECT_FALSE(
-                        (gnss_sv.v2_0.v1_0.svid == source_to_blocklist.svid) &&
-                        (static_cast<GnssConstellationType>(gnss_sv.v2_0.constellation) ==
-                         source_to_blocklist.constellation) &&
-                        (gnss_sv.v2_0.v1_0.svFlag & IGnssCallback_1_0::GnssSvFlags::USED_IN_FIX));
+                if (!(gnss_sv.v2_0.v1_0.svFlag & IGnssCallback_1_0::GnssSvFlags::USED_IN_FIX)) {
+                    continue;
+                }
+                for (auto const& source : sources_to_blocklist) {
+                    if (isBlockableConstellation(source.constellation, isCnBuild)) {
+                        EXPECT_FALSE((gnss_sv.v2_0.v1_0.svid == source.svid) &&
+                                     (static_cast<GnssConstellationType>(
+                                              gnss_sv.v2_0.constellation) == source.constellation));
+                    } else if ((gnss_sv.v2_0.v1_0.svid == source.svid) &&
+                               (static_cast<GnssConstellationType>(gnss_sv.v2_0.constellation) ==
+                                source.constellation)) {
+                        ALOGW("Found constellation %d, svid %d blocklisted but still used-in-fix.",
+                              source.constellation, source.svid);
+                    }
+                }
             }
         } else {
             std::vector<IGnssCallback::GnssSvInfo> sv_info_vec;
             aidl_gnss_cb_->sv_info_list_cbq_.retrieve(sv_info_vec, kGnssSvInfoListTimeout);
             for (uint32_t iSv = 0; iSv < sv_info_vec.size(); iSv++) {
                 auto& gnss_sv = sv_info_vec[iSv];
-                EXPECT_FALSE((gnss_sv.svid == source_to_blocklist.svid) &&
-                             (gnss_sv.constellation == source_to_blocklist.constellation) &&
-                             (gnss_sv.svFlag & (int)IGnssCallback::GnssSvFlags::USED_IN_FIX));
+                if (!(gnss_sv.svFlag & (int)IGnssCallback::GnssSvFlags::USED_IN_FIX)) {
+                    continue;
+                }
+                for (auto const& source : sources_to_blocklist) {
+                    if (isBlockableConstellation(source.constellation, isCnBuild)) {
+                        EXPECT_FALSE((gnss_sv.svid == source.svid) &&
+                                     (gnss_sv.constellation == source.constellation));
+                    } else if ((gnss_sv.svid == source.svid) &&
+                               (gnss_sv.constellation == source.constellation)) {
+                        ALOGW("Found constellation %d, svid %d blocklisted but still used-in-fix.",
+                              gnss_sv.constellation, gnss_sv.svid);
+                    }
+                }
             }
         }
     }
@@ -795,12 +828,15 @@ TEST_P(GnssHalTest, BlocklistIndividualSatellites) {
                 gnss_cb_->sv_info_list_cbq_.retrieve(sv_info_vec, kGnssSvInfoListTimeout);
                 for (uint32_t iSv = 0; iSv < sv_info_vec.size(); iSv++) {
                     auto& gnss_sv = sv_info_vec[iSv];
-                    if ((gnss_sv.v2_0.v1_0.svid == source_to_blocklist.svid) &&
-                        (static_cast<GnssConstellationType>(gnss_sv.v2_0.constellation) ==
-                         source_to_blocklist.constellation) &&
-                        (gnss_sv.v2_0.v1_0.svFlag & IGnssCallback_1_0::GnssSvFlags::USED_IN_FIX)) {
-                        strongest_sv_is_reobserved = true;
-                        break;
+                    for (auto const& source : sources_to_blocklist) {
+                        if ((gnss_sv.v2_0.v1_0.svid == source.svid) &&
+                            (static_cast<GnssConstellationType>(gnss_sv.v2_0.constellation) ==
+                             source.constellation) &&
+                            (gnss_sv.v2_0.v1_0.svFlag &
+                             IGnssCallback_1_0::GnssSvFlags::USED_IN_FIX)) {
+                            strongest_sv_is_reobserved = true;
+                            break;
+                        }
                     }
                 }
             } else {
@@ -808,11 +844,13 @@ TEST_P(GnssHalTest, BlocklistIndividualSatellites) {
                 aidl_gnss_cb_->sv_info_list_cbq_.retrieve(sv_info_vec, kGnssSvInfoListTimeout);
                 for (uint32_t iSv = 0; iSv < sv_info_vec.size(); iSv++) {
                     auto& gnss_sv = sv_info_vec[iSv];
-                    if ((gnss_sv.svid == source_to_blocklist.svid) &&
-                        (gnss_sv.constellation == source_to_blocklist.constellation) &&
-                        (gnss_sv.svFlag & (int)IGnssCallback::GnssSvFlags::USED_IN_FIX)) {
-                        strongest_sv_is_reobserved = true;
-                        break;
+                    for (auto const& source : sources_to_blocklist) {
+                        if ((gnss_sv.svid == source.svid) &&
+                            (gnss_sv.constellation == source.constellation) &&
+                            (gnss_sv.svFlag & (int)IGnssCallback::GnssSvFlags::USED_IN_FIX)) {
+                            strongest_sv_is_reobserved = true;
+                            break;
+                        }
                     }
                 }
             }

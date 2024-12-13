@@ -338,16 +338,25 @@ GnssSvInfo getMockSvInfo(int svid, GnssConstellationType type, float cN0DbHz, fl
 
 std::vector<GnssSvInfo> Utils::getMockSvInfoList() {
     std::vector<GnssSvInfo> gnssSvInfoList = {
+            // svid in [1, 32] for GPS
             getMockSvInfo(3, GnssConstellationType::GPS, 32.5, 27.5, 59.1, 166.5, kGpsL1FreqHz),
             getMockSvInfo(5, GnssConstellationType::GPS, 27.0, 22.0, 29.0, 56.5, kGpsL1FreqHz),
             getMockSvInfo(17, GnssConstellationType::GPS, 30.5, 25.5, 71.0, 77.0, kGpsL5FreqHz),
             getMockSvInfo(26, GnssConstellationType::GPS, 24.1, 19.1, 28.0, 253.0, kGpsL5FreqHz),
+            // svid in [1, 36] for GAL
+            getMockSvInfo(2, GnssConstellationType::GALILEO, 33.5, 27.5, 59.1, 166.5, kGalE1FreqHz),
+            getMockSvInfo(4, GnssConstellationType::GALILEO, 28.0, 22.0, 29.0, 56.5, kGalE1FreqHz),
+            getMockSvInfo(10, GnssConstellationType::GALILEO, 35.5, 25.5, 71.0, 77.0, kGalE1FreqHz),
+            getMockSvInfo(29, GnssConstellationType::GALILEO, 34.1, 19.1, 28.0, 253.0,
+                          kGalE1FreqHz),
+            // "1 <= svid <= 25 || 93 <= svid <= 106" for GLO
             getMockSvInfo(5, GnssConstellationType::GLONASS, 20.5, 15.5, 11.5, 116.0, kGloG1FreqHz),
             getMockSvInfo(17, GnssConstellationType::GLONASS, 21.5, 16.5, 28.5, 186.0,
                           kGloG1FreqHz),
             getMockSvInfo(18, GnssConstellationType::GLONASS, 28.3, 25.3, 38.8, 69.0, kGloG1FreqHz),
             getMockSvInfo(10, GnssConstellationType::GLONASS, 25.0, 20.0, 66.0, 247.0,
                           kGloG1FreqHz),
+            // "1 <= X <= 14" for IRNSS
             getMockSvInfo(3, GnssConstellationType::IRNSS, 22.0, 19.7, 35.0, 112.0, kIrnssL5FreqHz),
     };
     return gnssSvInfoList;

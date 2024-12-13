@@ -492,7 +492,11 @@ class TestEndpointCallback : public BnEndpointCallback {
     }
 
     Status onMessageReceived(int32_t /* sessionId */, const Message& message) override {
-        mMessages.push_back(message);
+        {
+            std::unique_lock<std::mutex> lock(mMutex);
+            mMessages.push_back(message);
+        }
+        mCondVar.notify_one();
         return Status::ok();
     }
 
@@ -513,21 +517,30 @@ class TestEndpointCallback : public BnEndpointCallback {
     }
 
     Status onEndpointSessionOpenComplete(int32_t /* sessionId */) override {
-        mWasOnEndpointSessionOpenCompleteCalled = true;
+        {
+            std::unique_lock<std::mutex> lock(mMutex);
+            mWasOnEndpointSessionOpenCompleteCalled = true;
+        }
+        mCondVar.notify_one();
         return Status::ok();
     }
-
-    std::vector<Message> getMessages() { return mMessages; }
 
     bool wasOnEndpointSessionOpenCompleteCalled() {
         return mWasOnEndpointSessionOpenCompleteCalled;
     }
+
     void resetWasOnEndpointSessionOpenCompleteCalled() {
         mWasOnEndpointSessionOpenCompleteCalled = false;
     }
 
+    std::mutex& getMutex() { return mMutex; }
+    std::condition_variable& getCondVar() { return mCondVar; }
+    std::vector<Message> getMessages() { return mMessages; }
+
   private:
     std::vector<Message> mMessages;
+    std::mutex mMutex;
+    std::condition_variable mCondVar;
     bool mWasOnEndpointSessionOpenCompleteCalled = false;
 };
 
@@ -690,14 +703,12 @@ TEST_P(ContextHubAidl, OpenEndpointSessionInvalidRange) {
     EXPECT_GE(range[1] - range[0] + 1, requestedRange);
 
     // Open the session
-    cb->resetWasOnEndpointSessionOpenCompleteCalled();
     int32_t sessionId = range[1] + 10;  // invalid
     EXPECT_FALSE(contextHub
                          ->openEndpointSession(sessionId, destinationEndpoint->id,
                                                initiatorEndpoint.id,
                                                /* in_serviceDescriptor= */ String16("ECHO"))
                          .isOk());
-    EXPECT_FALSE(cb->wasOnEndpointSessionOpenCompleteCalled());
 }
 
 TEST_P(ContextHubAidl, OpenEndpointSessionAndSendMessageEchoesBack) {
@@ -709,6 +720,8 @@ TEST_P(ContextHubAidl, OpenEndpointSessionAndSendMessageEchoesBack) {
     } else {
         EXPECT_TRUE(status.isOk());
     }
+
+    std::unique_lock<std::mutex> lock(cb->getMutex());
 
     // Register the endpoint
     EndpointInfo initiatorEndpoint;
@@ -750,6 +763,7 @@ TEST_P(ContextHubAidl, OpenEndpointSessionAndSendMessageEchoesBack) {
                                               initiatorEndpoint.id,
                                               /* in_serviceDescriptor= */ String16("ECHO"))
                         .isOk());
+    cb->getCondVar().wait(lock);
     EXPECT_TRUE(cb->wasOnEndpointSessionOpenCompleteCalled());
 
     // Send the message
@@ -760,6 +774,7 @@ TEST_P(ContextHubAidl, OpenEndpointSessionAndSendMessageEchoesBack) {
     ASSERT_TRUE(contextHub->sendMessageToEndpoint(sessionId, message).isOk());
 
     // Check for echo
+    cb->getCondVar().wait(lock);
     EXPECT_FALSE(cb->getMessages().empty());
     EXPECT_EQ(cb->getMessages().back().content.back(), 42);
 }

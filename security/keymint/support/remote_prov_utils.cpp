@@ -45,6 +45,7 @@ constexpr int32_t kBccPayloadSubjPubKey = -4670552;
 constexpr int32_t kBccPayloadKeyUsage = -4670553;
 constexpr int kP256AffinePointSize = 32;
 constexpr uint32_t kNumTeeDeviceInfoEntries = 14;
+constexpr std::string_view kKeyMintComponentName = "keymint";
 
 using EC_KEY_Ptr = bssl::UniquePtr<EC_KEY>;
 using EVP_PKEY_Ptr = bssl::UniquePtr<EVP_PKEY>;
@@ -882,7 +883,7 @@ ErrMsgOr<bool> isCsrWithProperDiceChain(const std::vector<uint8_t>& encodedCsr,
     return diceChain->IsProper();
 }
 
-std::string hexlify(const std::vector<unsigned char>& bytes) {
+std::string hexlify(const std::vector<uint8_t>& bytes) {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
 
@@ -942,6 +943,31 @@ ErrMsgOr<bool> compareRootPublicKeysInDiceChains(const std::vector<uint8_t>& enc
     }
 
     return *result;
+}
+
+ErrMsgOr<bool> verifyComponentNameInKeyMintDiceChain(const std::vector<uint8_t>& encodedCsr) {
+    auto diceChainKind = getDiceChainKind();
+    if (!diceChainKind) {
+        return diceChainKind.message();
+    }
+
+    auto csr = hwtrust::Csr::validate(encodedCsr, *diceChainKind, false /*isFactory*/,
+                                      false /*allowAnyMode*/, deviceSuffix(DEFAULT_INSTANCE_NAME));
+    if (!csr.ok()) {
+        return csr.error().message();
+    }
+
+    auto diceChain = csr->getDiceChain();
+    if (!diceChain.ok()) {
+        return diceChain.error().message();
+    }
+
+    auto satisfied = diceChain->componentNameContains(kKeyMintComponentName);
+    if (!satisfied.ok()) {
+        return satisfied.error().message();
+    }
+
+    return *satisfied;
 }
 
 }  // namespace aidl::android::hardware::security::keymint::remote_prov
