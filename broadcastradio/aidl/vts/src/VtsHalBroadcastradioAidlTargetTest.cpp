@@ -767,6 +767,7 @@ TEST_P(BroadcastRadioHalTest, HdTune) {
     }
 
     // try tuning
+    mCallback->reset();
     auto result = mModule->tune(hdSel);
 
     // expect a failure if it's not supported
@@ -843,7 +844,7 @@ TEST_P(BroadcastRadioHalTest, DabTune) {
     }
 
     // try tuning
-
+    mCallback->reset();
     auto result = mModule->tune(sel);
 
     // expect a failure if it's not supported
