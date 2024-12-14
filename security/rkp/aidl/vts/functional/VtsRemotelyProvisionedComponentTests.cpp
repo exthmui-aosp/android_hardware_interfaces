@@ -849,6 +849,37 @@ class CertificateRequestV2Test : public CertificateRequestTestBase {
 };
 
 /**
+ * Check that ro.boot.vbmeta.device_state is not "locked" or ro.boot.verifiedbootstate
+ * is not "green" if and only if the mode on at least one certificate in the DICE chain
+ * is non-normal.
+ */
+TEST_P(CertificateRequestV2Test, unlockedBootloaderStatesImpliesNonnormalDiceChain) {
+    auto challenge = randomBytes(MAX_CHALLENGE_SIZE);
+    bytevec csr;
+    auto status =
+            provisionable_->generateCertificateRequestV2({} /* keysToSign */, challenge, &csr);
+    ASSERT_TRUE(status.isOk()) << status.getDescription();
+
+    auto isProper = isCsrWithProperDiceChain(csr, GetParam());
+    ASSERT_TRUE(isProper) << isProper.message();
+    if (!*isProper) {
+        GTEST_SKIP() << "Skipping test: Only a proper DICE chain has a mode set.";
+    }
+
+    auto nonNormalMode = hasNonNormalModeInDiceChain(csr, GetParam());
+    ASSERT_TRUE(nonNormalMode) << nonNormalMode.message();
+
+    auto deviceState = ::android::base::GetProperty("ro.boot.vbmeta.device_state", "");
+    auto verifiedBootState = ::android::base::GetProperty("ro.boot.verifiedbootstate", "");
+
+    ASSERT_EQ(deviceState != "locked" || verifiedBootState != "green", *nonNormalMode)
+            << "ro.boot.vbmeta.device_state = '" << deviceState
+            << "' and ro.boot.verifiedbootstate = '" << verifiedBootState << "', but it is "
+            << *nonNormalMode
+            << " that the DICE chain has a certificate with a non-normal mode set.";
+}
+
+/**
  * Generate an empty certificate request with all possible length of challenge, and decrypt and
  * verify the structure and content.
  */

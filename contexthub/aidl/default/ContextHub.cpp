@@ -245,7 +245,7 @@ ScopedAStatus ContextHub::getEndpoints(std::vector<EndpointInfo>* _aidl_return) 
 
     Service echoService;
     echoService.format = Service::RpcFormat::CUSTOM;
-    echoService.serviceDescriptor = "ECHO";
+    echoService.serviceDescriptor = "android.hardware.contexthub.test.EchoService";
     echoService.majorVersion = 1;
     echoService.minorVersion = 0;
 

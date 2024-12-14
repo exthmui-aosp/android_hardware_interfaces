@@ -970,4 +970,30 @@ ErrMsgOr<bool> verifyComponentNameInKeyMintDiceChain(const std::vector<uint8_t>&
     return *satisfied;
 }
 
+ErrMsgOr<bool> hasNonNormalModeInDiceChain(const std::vector<uint8_t>& encodedCsr,
+                                           std::string_view instanceName) {
+    auto diceChainKind = getDiceChainKind();
+    if (!diceChainKind) {
+        return diceChainKind.message();
+    }
+
+    auto csr = hwtrust::Csr::validate(encodedCsr, *diceChainKind, false /*isFactory*/,
+                                      true /*allowAnyMode*/, deviceSuffix(instanceName));
+    if (!csr.ok()) {
+        return csr.error().message();
+    }
+
+    auto diceChain = csr->getDiceChain();
+    if (!diceChain.ok()) {
+        return diceChain.error().message();
+    }
+
+    auto hasNonNormalModeInDiceChain = diceChain->hasNonNormalMode();
+    if (!hasNonNormalModeInDiceChain.ok()) {
+        return hasNonNormalModeInDiceChain.error().message();
+    }
+
+    return *hasNonNormalModeInDiceChain;
+}
+
 }  // namespace aidl::android::hardware::security::keymint::remote_prov
