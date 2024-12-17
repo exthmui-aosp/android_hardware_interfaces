@@ -38,7 +38,7 @@ parcelable UsdBaseConfig {
   android.hardware.wifi.supplicant.UsdServiceProtoType serviceProtoType;
   byte[] serviceSpecificInfo;
   @nullable byte[] txMatchFilter;
-  @nullable byte[] rxMatchfilter;
+  @nullable byte[] rxMatchFilter;
   int ttlSec;
   int defaultFreqMhz;
   int[] freqsMhz;

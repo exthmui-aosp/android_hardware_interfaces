@@ -64,6 +64,8 @@ constexpr std::array<uint8_t, 16> kUuid = {0x66, 0x12, 0xb5, 0x22, 0xb7, 0x17, 0
                                            0xb4, 0x8d, 0xc0, 0xb1, 0xcc, 0x64, 0xe1, 0x42};
 const String16 kName{"VtsAidlHalContextHubTargetTest"};
 
+const String16 kEchoServiceName{"android.hardware.contexthub.test.EchoService"};
+
 class ContextHubAidl : public testing::TestWithParam<std::tuple<std::string, int32_t>> {
   public:
     virtual void SetUp() override {
@@ -685,7 +687,7 @@ TEST_P(ContextHubAidl, OpenEndpointSessionInvalidRange) {
     const EndpointInfo* destinationEndpoint = nullptr;
     for (const EndpointInfo& endpoint : endpoints) {
         for (const Service& service : endpoint.services) {
-            if (service.serviceDescriptor == String16("ECHO")) {
+            if (service.serviceDescriptor == kEchoServiceName) {
                 destinationEndpoint = &endpoint;
                 break;
             }
@@ -707,7 +709,7 @@ TEST_P(ContextHubAidl, OpenEndpointSessionInvalidRange) {
     EXPECT_FALSE(contextHub
                          ->openEndpointSession(sessionId, destinationEndpoint->id,
                                                initiatorEndpoint.id,
-                                               /* in_serviceDescriptor= */ String16("ECHO"))
+                                               /* in_serviceDescriptor= */ kEchoServiceName)
                          .isOk());
 }
 
@@ -738,7 +740,7 @@ TEST_P(ContextHubAidl, OpenEndpointSessionAndSendMessageEchoesBack) {
     const EndpointInfo* destinationEndpoint = nullptr;
     for (const EndpointInfo& endpoint : endpoints) {
         for (const Service& service : endpoint.services) {
-            if (service.serviceDescriptor == String16("ECHO")) {
+            if (service.serviceDescriptor == kEchoServiceName) {
                 destinationEndpoint = &endpoint;
                 break;
             }
@@ -761,7 +763,7 @@ TEST_P(ContextHubAidl, OpenEndpointSessionAndSendMessageEchoesBack) {
     ASSERT_TRUE(contextHub
                         ->openEndpointSession(sessionId, destinationEndpoint->id,
                                               initiatorEndpoint.id,
-                                              /* in_serviceDescriptor= */ String16("ECHO"))
+                                              /* in_serviceDescriptor= */ kEchoServiceName)
                         .isOk());
     cb->getCondVar().wait(lock);
     EXPECT_TRUE(cb->wasOnEndpointSessionOpenCompleteCalled());

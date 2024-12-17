@@ -35,6 +35,7 @@
 #include <openssl/evp.h>
 #include <openssl/mem.h>
 #include <remote_prov/remote_prov_utils.h>
+#include <vendorsupport/api_level.h>
 
 #include <keymaster/cppcose/cppcose.h>
 #include <keymint_support/key_param_output.h>
@@ -1908,13 +1909,13 @@ void verify_root_of_trust(const vector<uint8_t>& verified_boot_key, bool device_
         }
     }
 
-    if (get_vsr_api_level() > __ANDROID_API_V__) {
+    if (get_vsr_api_level() > AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
         // The Verified Boot key field should be exactly 32 bytes since it
         // contains the SHA-256 hash of the key on locked devices or 32 bytes
         // of zeroes on unlocked devices. This wasn't checked for earlier
         // versions of the KeyMint HAL, so only only be strict for VSR-16+.
         EXPECT_EQ(verified_boot_key.size(), 32);
-    } else if (get_vsr_api_level() == __ANDROID_API_V__) {
+    } else if (get_vsr_api_level() == AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
         // The Verified Boot key field should be:
         //   - Exactly 32 bytes on locked devices since it should contain
         //     the SHA-256 hash of the key, or

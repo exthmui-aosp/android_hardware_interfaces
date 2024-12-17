@@ -37,6 +37,7 @@ cc_defaults {
         "libcrypto",
         "libbase",
         "libgatekeeper",
+        "libvendorsupport",
         "packagemanager_aidl-cpp",
     ],
     static_libs: [

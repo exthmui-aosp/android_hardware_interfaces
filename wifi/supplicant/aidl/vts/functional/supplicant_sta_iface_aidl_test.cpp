@@ -48,8 +48,8 @@ using aidl::android::hardware::wifi::supplicant::QosCharacteristics;
 using aidl::android::hardware::wifi::supplicant::QosPolicyScsData;
 using aidl::android::hardware::wifi::supplicant::QosPolicyScsRequestStatus;
 using aidl::android::hardware::wifi::supplicant::UsdMessageInfo;
-using aidl::android::hardware::wifi::supplicant::UsdReasonCode;
 using aidl::android::hardware::wifi::supplicant::UsdServiceDiscoveryInfo;
+using aidl::android::hardware::wifi::supplicant::UsdTerminateReasonCode;
 using aidl::android::hardware::wifi::supplicant::WpaDriverCapabilitiesMask;
 using aidl::android::hardware::wifi::supplicant::WpsConfigMethods;
 using android::ProcessState;
@@ -261,11 +261,11 @@ class SupplicantStaIfaceCallback : public BnSupplicantStaIfaceCallback {
         return ndk::ScopedAStatus::ok();
     }
     ::ndk::ScopedAStatus onUsdPublishTerminated(int32_t /* publishId */,
-                                                UsdReasonCode /* reasonCode */) override {
+                                                UsdTerminateReasonCode /* reasonCode */) override {
         return ndk::ScopedAStatus::ok();
     }
-    ::ndk::ScopedAStatus onUsdSubscribeTerminated(int32_t /* subscribeId */,
-                                                  UsdReasonCode /* reasonCode */) override {
+    ::ndk::ScopedAStatus onUsdSubscribeTerminated(
+            int32_t /* subscribeId */, UsdTerminateReasonCode /* reasonCode */) override {
         return ndk::ScopedAStatus::ok();
     }
     ::ndk::ScopedAStatus onUsdPublishReplied(const UsdServiceDiscoveryInfo& /* info */) override {

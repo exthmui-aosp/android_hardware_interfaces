@@ -86,8 +86,8 @@ interface ISupplicantStaIfaceCallback {
   oneway void onUsdSubscribeStarted(in int cmdId, in int subscribeId);
   oneway void onUsdPublishConfigFailed(in int cmdId);
   oneway void onUsdSubscribeConfigFailed(in int cmdId);
-  oneway void onUsdPublishTerminated(in int publishId, in android.hardware.wifi.supplicant.UsdReasonCode reasonCode);
-  oneway void onUsdSubscribeTerminated(in int subscribeId, in android.hardware.wifi.supplicant.UsdReasonCode reasonCode);
+  oneway void onUsdPublishTerminated(in int publishId, in android.hardware.wifi.supplicant.UsdTerminateReasonCode reasonCode);
+  oneway void onUsdSubscribeTerminated(in int subscribeId, in android.hardware.wifi.supplicant.UsdTerminateReasonCode reasonCode);
   oneway void onUsdPublishReplied(in android.hardware.wifi.supplicant.UsdServiceDiscoveryInfo info);
   oneway void onUsdServiceDiscovered(in android.hardware.wifi.supplicant.UsdServiceDiscoveryInfo info);
   oneway void onUsdMessageReceived(in android.hardware.wifi.supplicant.UsdMessageInfo messageInfo);

@@ -121,7 +121,8 @@ bool convertLegacyChipFeaturesToAidl(uint64_t legacy_feature_set, uint32_t* aidl
                                       WIFI_FEATURE_SET_LATENCY_MODE,
                                       WIFI_FEATURE_P2P_RAND_MAC,
                                       WIFI_FEATURE_AFC_CHANNEL,
-                                      WIFI_FEATURE_SET_VOIP_MODE};
+                                      WIFI_FEATURE_SET_VOIP_MODE,
+                                      WIFI_FEATURE_MLO_SAP};
     for (const auto feature : features) {
         if (feature & legacy_feature_set) {
             *aidl_feature_set |= static_cast<uint32_t>(convertLegacyChipFeatureToAidl(feature));

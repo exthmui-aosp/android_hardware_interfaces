@@ -52,7 +52,7 @@ static const std::vector<int32_t> kLayoutValues = {
         AudioChannelLayout::LAYOUT_5POINT1POINT4, AudioChannelLayout::LAYOUT_6POINT1,
         AudioChannelLayout::LAYOUT_7POINT1,       AudioChannelLayout::LAYOUT_7POINT1POINT2,
         AudioChannelLayout::LAYOUT_7POINT1POINT4, AudioChannelLayout::LAYOUT_9POINT1POINT4,
-        AudioChannelLayout::LAYOUT_9POINT1POINT6, AudioChannelLayout::LAYOUT_13POINT_360RA,
+        AudioChannelLayout::LAYOUT_9POINT1POINT6, AudioChannelLayout::LAYOUT_13POINT0,
         AudioChannelLayout::LAYOUT_22POINT2};
 
 static const std::vector<int32_t> kChannels = {

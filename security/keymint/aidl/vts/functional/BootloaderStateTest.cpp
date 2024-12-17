@@ -27,6 +27,7 @@
 #include <libavb/libavb.h>
 #include <libavb_user/avb_ops_user.h>
 #include <remote_prov/remote_prov_utils.h>
+#include <vendorsupport/api_level.h>
 
 #include "KeyMintAidlTestBase.h"
 
@@ -98,7 +99,7 @@ TEST_P(BootloaderStateTest, VbStateIsUnverified) {
 // Check that the attested Verified Boot key is 32 bytes of zeroes since the bootloader is unlocked.
 TEST_P(BootloaderStateTest, VerifiedBootKeyAllZeroes) {
     // Gate this test to avoid waiver issues.
-    if (get_vsr_api_level() <= __ANDROID_API_V__) {
+    if (get_vsr_api_level() <= AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
         return;
     }
 
@@ -141,7 +142,7 @@ TEST_P(BootloaderStateTest, VbmetaDigest) {
     avb_slot_verify_data_calculate_vbmeta_digest(avbSlotData, AVB_DIGEST_TYPE_SHA256,
                                                  sha256Digest.data());
 
-    if (get_vsr_api_level() >= __ANDROID_API_V__) {
+    if (get_vsr_api_level() >= AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
         ASSERT_TRUE(attestedVbmetaDigest_ == sha256Digest)
                 << "Attested VBMeta digest (" << bin2hex(attestedVbmetaDigest_)
                 << ") does not match the expected SHA-256 digest (" << bin2hex(sha256Digest)
