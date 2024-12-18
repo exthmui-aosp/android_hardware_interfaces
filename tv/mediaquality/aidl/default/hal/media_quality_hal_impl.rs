@@ -81,7 +81,7 @@ impl Interface for MediaQualityService {}
 
 impl IMediaQuality for MediaQualityService {
 
-    fn setCallback(
+    fn setAmbientBacklightCallback(
         &self,
         callback: &Strong<dyn IMediaQualityCallback>
     ) -> binder::Result<()> {

@@ -81,8 +81,8 @@ parcelable BeidouSatelliteEphemeris {
         int toeSeconds;
     }
 
-    /** The PRN number of the Beidou satellite. */
-    int prn;
+    /** PRN or satellite ID number for the Beidou satellite. */
+    int svid;
 
     /** Satellite clock model. */
     BeidouSatelliteClockModel satelliteClockModel;

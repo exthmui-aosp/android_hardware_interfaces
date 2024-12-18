@@ -2,7 +2,7 @@ package android.hardware.gnss.gnss_assistance;
 
 /**
  * Contains Glonass almanac data.
- * This is defined in Glonass ICD v5.1, Section 4.5.
+ * This is defined in Glonass ICD v5.1, section 4.5.
  *
  * @hide
  */
@@ -10,18 +10,31 @@ package android.hardware.gnss.gnss_assistance;
 parcelable GlonassAlmanac {
     /**
      * Contains Glonass satellite almanac data.
-     * This is defined in Glonass ICD v5.1, Section 4.5.
+     * This is defined in Glonass ICD v5.1, section 4.5.
      */
     @VintfStability
     parcelable GlonassSatelliteAlmanac {
         /** Slot number. */
         int slotNumber;
 
-        /** Satellite health (0=healthy, 1=unhealthy). */
+        /**
+         * Satellite health which is set with the GLONASS_HEALTH_STATUS_*
+         * constants in GlonassSatelliteEphemeris.
+         */
         int svHealth;
 
-        /** Frequency channel number. */
-        int frequencyChannel;
+        /**
+         * Frequency channel number.
+         *
+         * This is defined in Glonass ICD v5.1 section 3.3.1.1.
+         */
+        int frequencyChannelNumber;
+
+        /** Calendar day number within the four-year period beginning since the leap year. */
+        int calendarDayNumber;
+
+        /** Flag to indicates if the satellite is a GLONASS-M satellitee. */
+        boolean isGlonassM;
 
         /** Coarse value of satellite time correction to GLONASS time in seconds. */
         double tau;
@@ -44,7 +57,7 @@ parcelable GlonassAlmanac {
         /** Eccentricity. */
         double eccentricity;
 
-        /** Argument of perigee in radians. */
+        /** Argument of perigee in semi-circles. */
         double omega;
     }
 
@@ -52,5 +65,5 @@ parcelable GlonassAlmanac {
     long issueDateMs;
 
     /** Array of GlonassSatelliteAlmanac. */
-    GlonassSatelliteAlmanac[] satelliteAlmanac;
+    GlonassSatelliteAlmanac[] satelliteAlmanacs;
 }

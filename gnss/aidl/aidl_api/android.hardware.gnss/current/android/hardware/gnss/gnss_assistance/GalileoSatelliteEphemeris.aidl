@@ -35,7 +35,7 @@ package android.hardware.gnss.gnss_assistance;
 /* @hide */
 @VintfStability
 parcelable GalileoSatelliteEphemeris {
-  int satelliteCodeNumber;
+  int svid;
   android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris.GalileoSatelliteClockModel[] satelliteClockModel;
   android.hardware.gnss.gnss_assistance.KeplerianOrbitModel satelliteOrbitModel;
   android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris.GalileoSvHealth svHealth;
@@ -58,11 +58,23 @@ parcelable GalileoSatelliteEphemeris {
   }
   @VintfStability
   parcelable GalileoSvHealth {
-    int dataValidityStatusE1b;
-    int signalHealthStatusE1b;
-    int dataValidityStatusE5a;
-    int signalHealthStatusE5a;
-    int dataValidityStatusE5b;
-    int signalHealthStatusE5b;
+    android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris.GalileoSvHealth.GalileoHealthDataVaidityType dataValidityStatusE1b;
+    android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris.GalileoSvHealth.GalileoHealthStatusType signalHealthStatusE1b;
+    android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris.GalileoSvHealth.GalileoHealthDataVaidityType dataValidityStatusE5a;
+    android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris.GalileoSvHealth.GalileoHealthStatusType signalHealthStatusE5a;
+    android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris.GalileoSvHealth.GalileoHealthDataVaidityType dataValidityStatusE5b;
+    android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris.GalileoSvHealth.GalileoHealthStatusType signalHealthStatusE5b;
+    @Backing(type="int") @VintfStability
+    enum GalileoHealthDataVaidityType {
+      DATA_VALID = 0,
+      WORKING_WITHOUT_GUARANTEE = 1,
+    }
+    @Backing(type="int") @VintfStability
+    enum GalileoHealthStatusType {
+      OK = 0,
+      OUT_OF_SERVICE = 1,
+      EXTENDED_OPERATION_MODE = 2,
+      IN_TEST = 3,
+    }
   }
 }

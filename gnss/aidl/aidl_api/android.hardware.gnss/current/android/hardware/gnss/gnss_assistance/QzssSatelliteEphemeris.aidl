@@ -35,7 +35,7 @@ package android.hardware.gnss.gnss_assistance;
 /* @hide */
 @VintfStability
 parcelable QzssSatelliteEphemeris {
-  int prn;
+  int svid;
   android.hardware.gnss.gnss_assistance.GpsSatelliteEphemeris.GpsL2Params gpsL2Params;
   android.hardware.gnss.gnss_assistance.GpsSatelliteEphemeris.GpsSatelliteClockModel satelliteClockModel;
   android.hardware.gnss.gnss_assistance.KeplerianOrbitModel satelliteOrbitModel;

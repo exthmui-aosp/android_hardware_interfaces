@@ -39,7 +39,7 @@ interface IMediaQuality {
      *
      * @param callback Callback object to pass events.
      */
-    void setCallback(in IMediaQualityCallback callback);
+    void setAmbientBacklightCallback(in IMediaQualityCallback callback);
 
     /**
      * Sets the ambient backlight detector settings.

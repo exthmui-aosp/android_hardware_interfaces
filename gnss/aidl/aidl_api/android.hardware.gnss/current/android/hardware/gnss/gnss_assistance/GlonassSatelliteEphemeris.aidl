@@ -39,14 +39,20 @@ parcelable GlonassSatelliteEphemeris {
   int svHealth;
   double frameTimeSeconds;
   int ageInDays;
+  int updateIntervalMinutes;
+  boolean isOddUpdateInterval;
+  boolean isGlonassM;
   android.hardware.gnss.gnss_assistance.GlonassSatelliteEphemeris.GlonassSatelliteClockModel satelliteClockModel;
   android.hardware.gnss.gnss_assistance.GlonassSatelliteEphemeris.GlonassSatelliteOrbitModel satelliteOrbitModel;
+  const int GLONASS_HEALTH_STATUS_HEALTHY = 0;
+  const int GLONASS_HEALTH_STATUS_UNHEALTHY = 1;
   @VintfStability
   parcelable GlonassSatelliteClockModel {
     long timeOfClockSeconds;
     double clockBias;
-    double freqBias;
-    int freqNumber;
+    double frequencyBias;
+    int frequencyChannelNumber;
+    double groupDelayDiffSeconds;
   }
   @VintfStability
   parcelable GlonassSatelliteOrbitModel {

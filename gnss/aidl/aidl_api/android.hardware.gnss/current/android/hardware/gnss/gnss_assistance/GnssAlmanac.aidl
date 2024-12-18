@@ -36,10 +36,11 @@ package android.hardware.gnss.gnss_assistance;
 @VintfStability
 parcelable GnssAlmanac {
   long issueDateMs;
-  int iod;
+  int ioda;
   int weekNumber;
   int toaSeconds;
-  android.hardware.gnss.gnss_assistance.GnssAlmanac.GnssSatelliteAlmanac[] satelliteAlmanac;
+  boolean isCompleteAlmanacProvided;
+  android.hardware.gnss.gnss_assistance.GnssAlmanac.GnssSatelliteAlmanac[] satelliteAlmanacs;
   @VintfStability
   parcelable GnssSatelliteAlmanac {
     int svid;

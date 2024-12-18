@@ -147,7 +147,7 @@ TEST_P(MediaQualityAidl, TestSetAmbientBacklightDetectionEnabled) {
                 open_cb_promise.set_value();
                 return ScopedAStatus::ok();
             });
-    ASSERT_OK(mediaquality->setCallback(callback));
+    ASSERT_OK(mediaquality->setAmbientBacklightCallback(callback));
     ASSERT_OK(mediaquality->setAmbientBacklightDetectionEnabled(true));
     std::chrono::milliseconds timeout{10000};
     EXPECT_EQ(open_cb_future.wait_for(timeout), std::future_status::ready);
@@ -161,7 +161,7 @@ TEST_P(MediaQualityAidl, TestGetAmbientBacklightDetectionEnabled) {
 TEST_P(MediaQualityAidl, TestSetMediaQualityCallback) {
     std::shared_ptr<MediaQualityCallback> callback = ndk::SharedRefBase::make<MediaQualityCallback>(
             [](auto /* event */) { return ScopedAStatus::ok(); });
-    ASSERT_OK(mediaquality->setCallback(callback));
+    ASSERT_OK(mediaquality->setAmbientBacklightCallback(callback));
 }
 
 TEST_P(MediaQualityAidl, TestSetPictureProfileAdjustmentListener) {

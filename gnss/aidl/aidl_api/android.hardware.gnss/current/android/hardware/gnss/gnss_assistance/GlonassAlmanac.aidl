@@ -21,12 +21,14 @@ package android.hardware.gnss.gnss_assistance;
 @VintfStability
 parcelable GlonassAlmanac {
   long issueDateMs;
-  android.hardware.gnss.gnss_assistance.GlonassAlmanac.GlonassSatelliteAlmanac[] satelliteAlmanac;
+  android.hardware.gnss.gnss_assistance.GlonassAlmanac.GlonassSatelliteAlmanac[] satelliteAlmanacs;
   @VintfStability
   parcelable GlonassSatelliteAlmanac {
     int slotNumber;
     int svHealth;
-    int frequencyChannel;
+    int frequencyChannelNumber;
+    int calendarDayNumber;
+    boolean isGlonassM;
     double tau;
     double tLambda;
     double lambda;

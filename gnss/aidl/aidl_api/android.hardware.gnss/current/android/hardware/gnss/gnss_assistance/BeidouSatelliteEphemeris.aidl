@@ -20,7 +20,7 @@ package android.hardware.gnss.gnss_assistance;
 /* @hide */
 @VintfStability
 parcelable BeidouSatelliteEphemeris {
-  int prn;
+  int svid;
   android.hardware.gnss.gnss_assistance.BeidouSatelliteEphemeris.BeidouSatelliteClockModel satelliteClockModel;
   android.hardware.gnss.gnss_assistance.KeplerianOrbitModel satelliteOrbitModel;
   android.hardware.gnss.gnss_assistance.BeidouSatelliteEphemeris.BeidouSatelliteHealth satelliteHealth;
