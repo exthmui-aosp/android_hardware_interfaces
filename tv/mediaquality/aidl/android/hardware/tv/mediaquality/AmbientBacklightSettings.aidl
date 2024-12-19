@@ -24,7 +24,7 @@ parcelable AmbientBacklightSettings {
     /**
      * The package name of the ambient backlight control application.
      */
-    String packageName;
+    int uid;
 
     /**
      * The source of the ambient backlight.
@@ -66,5 +66,5 @@ parcelable AmbientBacklightSettings {
      * the colorFormat. For example, RGB888, where the values of R/G/B range from 0 to 255,
      * and the threshold is a positive number within the same range.
      */
-    int threshold;
+    int colorThreshold;
 }

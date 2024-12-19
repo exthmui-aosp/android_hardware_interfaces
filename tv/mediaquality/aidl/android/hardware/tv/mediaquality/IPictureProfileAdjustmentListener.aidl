@@ -59,5 +59,5 @@ oneway interface IPictureProfileAdjustmentListener {
      *
      * @param pictureProfileId The PictureProfile id that associate with the PictureProfile.
      */
-    void onRequestPictureParameters(long pictureProfileId);
+    void requestPictureParameters(long pictureProfileId);
 }

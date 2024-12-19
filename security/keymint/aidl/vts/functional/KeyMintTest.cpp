@@ -4158,13 +4158,15 @@ TEST_P(ImportKeyTest, EcdsaSuccess) {
  * when the EC_CURVE is not explicitly specified.
  */
 TEST_P(ImportKeyTest, EcdsaSuccessCurveNotSpecified) {
-    if (get_vsr_api_level() < AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
+    int vendor_api_level = get_vendor_api_level();
+    if (vendor_api_level < AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
         /*
          * The KeyMint spec was previously not clear as to whether EC_CURVE was optional on import
-         * of EC keys. However, this was not checked at the time so we can only be strict about
-         * checking this for implementations at VSR-V or later.
+         * of EC keys. However, this was not checked at the time, so we version-gate the strict
+         * check.
          */
-        GTEST_SKIP() << "Skipping EC_CURVE on import only strict >= VSR-V";
+        GTEST_SKIP() << "Applies only to vendor API level >= 202404, but this device is: "
+                     << vendor_api_level;
     }
 
     ASSERT_EQ(ErrorCode::OK, ImportKey(AuthorizationSetBuilder()
@@ -5316,15 +5318,15 @@ auto wrapping_key_for_asym_keys = hex2str(
         "8564");
 
 TEST_P(ImportWrappedKeyTest, RsaKey) {
-    int vsr_api_level = get_vsr_api_level();
-    if (vsr_api_level < AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
+    int vendor_api_level = get_vendor_api_level();
+    if (vendor_api_level < AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
         /*
          * The Keymaster v4 spec introduced `importWrappedKey()` and did not restrict it to
          * just symmetric keys.  However, the import of asymmetric wrapped keys was not tested
-         * at the time, so we can only be strict about checking this for implementations claiming
-         * support for VSR API level 35 and above.
+         * at the time, so we version-gate the strict check.
          */
-        GTEST_SKIP() << "Applies only to VSR API level 35, this device is: " << vsr_api_level;
+        GTEST_SKIP() << "Applies only to vendor API level >= 202404, but this device is: "
+                     << vendor_api_level;
     }
 
     auto wrapping_key_desc = AuthorizationSetBuilder()
@@ -5347,15 +5349,15 @@ TEST_P(ImportWrappedKeyTest, RsaKey) {
 }
 
 TEST_P(ImportWrappedKeyTest, EcKey) {
-    int vsr_api_level = get_vsr_api_level();
-    if (vsr_api_level < AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
+    int vendor_api_level = get_vendor_api_level();
+    if (vendor_api_level < AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
         /*
          * The Keymaster v4 spec introduced `importWrappedKey()` and did not restrict it to
          * just symmetric keys.  However, the import of asymmetric wrapped keys was not tested
-         * at the time, so we can only be strict about checking this for implementations claiming
-         * support for VSR API level 35 and above.
+         * at the time, so we version-gate the strict check.
          */
-        GTEST_SKIP() << "Applies only to VSR API level 35, this device is: " << vsr_api_level;
+        GTEST_SKIP() << "Applies only to vendor API level >= 202404, but this device is: "
+                     << vendor_api_level;
     }
 
     auto wrapping_key_desc = AuthorizationSetBuilder()
@@ -8945,27 +8947,30 @@ using VsrRequirementTest = KeyMintAidlTestBase;
 
 // @VsrTest = VSR-3.10-008
 TEST_P(VsrRequirementTest, Vsr13Test) {
-    int vsr_api_level = get_vsr_api_level();
-    if (vsr_api_level < __ANDROID_API_T__) {
-        GTEST_SKIP() << "Applies only to VSR API level 33, this device is: " << vsr_api_level;
+    int vendor_api_level = get_vendor_api_level();
+    if (vendor_api_level < __ANDROID_API_T__) {
+        GTEST_SKIP() << "Applies only to vendor API level >= 33, but this device is: "
+                     << vendor_api_level;
     }
     EXPECT_GE(AidlVersion(), 2) << "VSR 13+ requires KeyMint version 2";
 }
 
 // @VsrTest = VSR-3.10-013.001
 TEST_P(VsrRequirementTest, Vsr14Test) {
-    int vsr_api_level = get_vsr_api_level();
-    if (vsr_api_level < __ANDROID_API_U__) {
-        GTEST_SKIP() << "Applies only to VSR API level 34, this device is: " << vsr_api_level;
+    int vendor_api_level = get_vendor_api_level();
+    if (vendor_api_level < __ANDROID_API_U__) {
+        GTEST_SKIP() << "Applies only to vendor API level >= 34, but this device is: "
+                     << vendor_api_level;
     }
     EXPECT_GE(AidlVersion(), 3) << "VSR 14+ requires KeyMint version 3";
 }
 
 // @VsrTest = GMS-VSR-3.10-019
 TEST_P(VsrRequirementTest, Vsr16Test) {
-    int vsr_api_level = get_vsr_api_level();
-    if (vsr_api_level <= AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
-        GTEST_SKIP() << "Applies only to VSR API level > 35, this device is: " << vsr_api_level;
+    int vendor_api_level = get_vendor_api_level();
+    if (vendor_api_level <= AVendorSupport_getVendorApiLevelOf(__ANDROID_API_V__)) {
+        GTEST_SKIP() << "Applies only to vendor API level > 202404, but this device is: "
+                     << vendor_api_level;
     }
     if (SecLevel() == SecurityLevel::STRONGBOX) {
         GTEST_SKIP() << "Applies only to TEE KeyMint, not StrongBox KeyMint";

@@ -34,12 +34,12 @@
 package android.hardware.tv.mediaquality;
 @VintfStability
 parcelable AmbientBacklightSettings {
-  String packageName;
+  int uid;
   android.hardware.tv.mediaquality.AmbientBacklightSource source;
   int maxFramerate;
   android.hardware.graphics.common.PixelFormat colorFormat;
   int hZonesNumber;
   int vZonesNumber;
   boolean hasLetterbox;
-  int threshold;
+  int colorThreshold;
 }

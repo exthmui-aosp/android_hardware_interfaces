@@ -95,7 +95,7 @@ class PictureProfileAdjustmentListener : public BnPictureProfileAdjustmentListen
         return ScopedAStatus::ok();
     }
 
-    ScopedAStatus onRequestPictureParameters(int64_t) { return ScopedAStatus::ok(); }
+    ScopedAStatus requestPictureParameters(int64_t) { return ScopedAStatus::ok(); }
 
   private:
     std::function<void(const PictureProfile& pictureProfile)> on_hal_picture_profile_adjust_;
@@ -121,7 +121,7 @@ class SoundProfileAdjustmentListener : public BnSoundProfileAdjustmentListener {
         return ScopedAStatus::ok();
     }
 
-    ScopedAStatus onRequestSoundParameters(int64_t) { return ScopedAStatus::ok(); }
+    ScopedAStatus requestSoundParameters(int64_t) { return ScopedAStatus::ok(); }
 
   private:
     std::function<void(const SoundProfile& soundProfile)> on_hal_sound_profile_adjust_;
@@ -212,13 +212,13 @@ TEST_P(MediaQualityAidl, TestSendDefaultSoundParameters) {
 
 TEST_P(MediaQualityAidl, TestSetAmbientBacklightDetector) {
     AmbientBacklightSettings in_settings = {
-            .packageName = "com.android.mediaquality",
+            .uid = 1,
             .source = AmbientBacklightSource::VIDEO,
             .colorFormat = PixelFormat::RGB_888,
             .hZonesNumber = 32,
             .vZonesNumber = 20,
             .hasLetterbox = true,
-            .threshold = 0,
+            .colorThreshold = 0,
     };
     ASSERT_OK(mediaquality->setAmbientBacklightDetector(in_settings));
 }

@@ -40,4 +40,5 @@ enum SessionTag {
   GAME,
   APP,
   SYSUI,
+  WEB,
 }
