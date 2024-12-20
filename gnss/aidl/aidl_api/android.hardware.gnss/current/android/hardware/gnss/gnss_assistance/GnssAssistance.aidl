@@ -55,6 +55,7 @@ parcelable GnssAssistance {
     android.hardware.gnss.gnss_assistance.GpsSatelliteEphemeris[] satelliteEphemeris;
     android.hardware.gnss.gnss_assistance.RealTimeIntegrityModel[] realTimeIntegrityModels;
     android.hardware.gnss.gnss_assistance.GnssAssistance.GnssSatelliteCorrections[] satelliteCorrections;
+    android.hardware.gnss.gnss_assistance.AuxiliaryInformation auxiliaryInformation;
   }
   @VintfStability
   parcelable GalileoAssistance {
@@ -66,6 +67,7 @@ parcelable GnssAssistance {
     android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris[] satelliteEphemeris;
     android.hardware.gnss.gnss_assistance.RealTimeIntegrityModel[] realTimeIntegrityModels;
     android.hardware.gnss.gnss_assistance.GnssAssistance.GnssSatelliteCorrections[] satelliteCorrections;
+    android.hardware.gnss.gnss_assistance.AuxiliaryInformation auxiliaryInformation;
   }
   @VintfStability
   parcelable GlonassAssistance {
@@ -74,6 +76,7 @@ parcelable GnssAssistance {
     android.hardware.gnss.gnss_assistance.TimeModel[] timeModels;
     android.hardware.gnss.gnss_assistance.GlonassSatelliteEphemeris[] satelliteEphemeris;
     android.hardware.gnss.gnss_assistance.GnssAssistance.GnssSatelliteCorrections[] satelliteCorrections;
+    android.hardware.gnss.gnss_assistance.AuxiliaryInformation auxiliaryInformation;
   }
   @VintfStability
   parcelable QzssAssistance {
@@ -85,6 +88,7 @@ parcelable GnssAssistance {
     android.hardware.gnss.gnss_assistance.QzssSatelliteEphemeris[] satelliteEphemeris;
     android.hardware.gnss.gnss_assistance.RealTimeIntegrityModel[] realTimeIntegrityModels;
     android.hardware.gnss.gnss_assistance.GnssAssistance.GnssSatelliteCorrections[] satelliteCorrections;
+    android.hardware.gnss.gnss_assistance.AuxiliaryInformation auxiliaryInformation;
   }
   @VintfStability
   parcelable BeidouAssistance {
@@ -96,5 +100,6 @@ parcelable GnssAssistance {
     android.hardware.gnss.gnss_assistance.BeidouSatelliteEphemeris[] satelliteEphemeris;
     android.hardware.gnss.gnss_assistance.RealTimeIntegrityModel[] realTimeIntegrityModels;
     android.hardware.gnss.gnss_assistance.GnssAssistance.GnssSatelliteCorrections[] satelliteCorrections;
+    android.hardware.gnss.gnss_assistance.AuxiliaryInformation auxiliaryInformation;
   }
 }

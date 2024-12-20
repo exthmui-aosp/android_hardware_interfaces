@@ -34,23 +34,16 @@
 package android.hardware.gnss.gnss_assistance;
 /* @hide */
 @VintfStability
-parcelable GlonassAlmanac {
-  long issueDateMs;
-  android.hardware.gnss.gnss_assistance.GlonassAlmanac.GlonassSatelliteAlmanac[] satelliteAlmanacs;
-  @VintfStability
-  parcelable GlonassSatelliteAlmanac {
-    int slotNumber;
-    int svHealth;
-    int frequencyChannelNumber;
-    int calendarDayNumber;
-    boolean isGlonassM;
-    double tau;
-    double tLambda;
-    double lambda;
-    double deltaI;
-    double deltaT;
-    double deltaTDot;
-    double eccentricity;
-    double omega;
+parcelable AuxiliaryInformation {
+  int svid;
+  android.hardware.gnss.GnssSignalType[] availableSignalTypes;
+  int frequencyChannelNumber;
+  android.hardware.gnss.gnss_assistance.AuxiliaryInformation.BeidouB1CSatelliteOrbitType satType;
+  @Backing(type="int") @VintfStability
+  enum BeidouB1CSatelliteOrbitType {
+    UNDEFINED = 0,
+    GEO = 1,
+    IGSO = 2,
+    MEO = 3,
   }
 }

@@ -35,8 +35,8 @@ package android.hardware.gnss.gnss_assistance;
 /* @hide */
 @VintfStability
 parcelable RealTimeIntegrityModel {
-  int svid;
-  boolean usable;
+  int badSvid;
+  android.hardware.gnss.GnssSignalType[] badSignalTypes;
   long publishDateSeconds;
   long startDateSeconds;
   long endDateSeconds;

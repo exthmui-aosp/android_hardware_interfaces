@@ -116,6 +116,10 @@ class DynamicsProcessingTestHelper : public EffectHelper {
 
     bool isAllParamsValid();
 
+    void setParamsAndProcess(std::vector<float>& input, std::vector<float>& output);
+
+    float calculateDb(const std::vector<float>& input, size_t startSamplePos);
+
     // enqueue test parameters
     void addEngineConfig(const DynamicsProcessing::EngineArchitecture& cfg);
     void addPreEqChannelConfig(const std::vector<DynamicsProcessing::ChannelConfig>& cfg);
@@ -131,6 +135,9 @@ class DynamicsProcessingTestHelper : public EffectHelper {
     static constexpr int kBandCount = 5;
     static constexpr int kSamplingFrequency = 44100;
     static constexpr int kFrameCount = 2048;
+    static constexpr int kInputFrequency = 1000;
+    static constexpr size_t kStartIndex = 15 * kSamplingFrequency / 1000;  // skip 15ms
+    static constexpr float kToleranceDb = 0.05;
     std::shared_ptr<IFactory> mFactory;
     std::shared_ptr<IEffect> mEffect;
     Descriptor mDescriptor;
@@ -390,6 +397,22 @@ bool DynamicsProcessingTestHelper::isAllParamsValid() {
     return true;
 }
 
+float DynamicsProcessingTestHelper::calculateDb(const std::vector<float>& input,
+                                                size_t startSamplePos = 0) {
+    return audio_utils_compute_power_mono(input.data() + startSamplePos, AUDIO_FORMAT_PCM_FLOAT,
+                                          input.size() - startSamplePos);
+}
+
+void DynamicsProcessingTestHelper::setParamsAndProcess(std::vector<float>& input,
+                                                       std::vector<float>& output) {
+    ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
+    if (isAllParamsValid()) {
+        ASSERT_NO_FATAL_FAILURE(
+                processAndWriteToOutput(input, output, mEffect, &mOpenEffectReturn));
+        ASSERT_GT(output.size(), kStartIndex);
+    }
+}
+
 void DynamicsProcessingTestHelper::addEngineConfig(
         const DynamicsProcessing::EngineArchitecture& cfg) {
     DynamicsProcessing dp;
@@ -593,6 +616,66 @@ INSTANTIATE_TEST_SUITE_P(
         });
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(DynamicsProcessingTestInputGain);
 
+class DynamicsProcessingInputGainDataTest
+    : public ::testing::TestWithParam<std::pair<std::shared_ptr<IFactory>, Descriptor>>,
+      public DynamicsProcessingTestHelper {
+  public:
+    DynamicsProcessingInputGainDataTest()
+        : DynamicsProcessingTestHelper((GetParam()), AudioChannelLayout::LAYOUT_MONO) {
+        mInput.resize(kFrameCount * mChannelCount);
+        generateSineWave(kInputFrequency /*Input Frequency*/, mInput);
+        mInputDb = calculateDb(mInput);
+    }
+
+    void SetUp() override {
+        SetUpDynamicsProcessingEffect();
+        SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
+    }
+
+    void TearDown() override { TearDownDynamicsProcessingEffect(); }
+
+    void cleanUpInputGainConfig() {
+        CleanUp();
+        mInputGain.clear();
+    }
+
+    std::vector<DynamicsProcessing::InputGain> mInputGain;
+    std::vector<float> mInput;
+    float mInputDb;
+};
+
+TEST_P(DynamicsProcessingInputGainDataTest, SetAndGetInputGain) {
+    std::vector<float> gainDbValues = {-85, -40, 0, 40, 85};
+    for (float gainDb : gainDbValues) {
+        cleanUpInputGainConfig();
+        for (int i = 0; i < mChannelCount; i++) {
+            mInputGain.push_back(DynamicsProcessing::InputGain(i, gainDb));
+        }
+        std::vector<float> output(mInput.size());
+        EXPECT_NO_FATAL_FAILURE(addInputGain(mInputGain));
+        EXPECT_NO_FATAL_FAILURE(setParamsAndProcess(mInput, output));
+        if (!isAllParamsValid()) {
+            continue;
+        }
+        float outputDb = calculateDb(output, kStartIndex);
+        EXPECT_NEAR(outputDb, mInputDb + gainDb, kToleranceDb)
+                << "InputGain: " << gainDb << ", OutputDb: " << outputDb;
+    }
+}
+
+INSTANTIATE_TEST_SUITE_P(DynamicsProcessingTest, DynamicsProcessingInputGainDataTest,
+                         testing::ValuesIn(EffectFactoryHelper::getAllEffectDescriptors(
+                                 IFactory::descriptor, getEffectTypeUuidDynamicsProcessing())),
+                         [](const auto& info) {
+                             auto descriptor = info.param;
+                             std::string name = getPrefix(descriptor.second);
+                             std::replace_if(
+                                     name.begin(), name.end(),
+                                     [](const char c) { return !std::isalnum(c); }, '_');
+                             return name;
+                         });
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(DynamicsProcessingInputGainDataTest);
+
 /**
  * Test DynamicsProcessing Limiter Config
  */
@@ -686,11 +769,6 @@ class DynamicsProcessingLimiterConfigDataTest
 
     void TearDown() override { TearDownDynamicsProcessingEffect(); }
 
-    float calculateDb(std::vector<float> input, size_t start = 0) {
-        return audio_utils_compute_power_mono(input.data() + start, AUDIO_FORMAT_PCM_FLOAT,
-                                              input.size() - start);
-    }
-
     void computeThreshold(float ratio, float outputDb, float& threshold) {
         EXPECT_NE(ratio, 0);
         threshold = (mInputDb - (ratio * outputDb)) / (1 - ratio);
@@ -703,16 +781,10 @@ class DynamicsProcessingLimiterConfigDataTest
         ratio = inputOverThreshold / outputOverThreshold;
     }
 
-    void setParamsAndProcess(std::vector<float>& output) {
+    void setLimiterParamsAndProcess(std::vector<float>& input, std::vector<float>& output) {
         EXPECT_NO_FATAL_FAILURE(addEngineConfig(mEngineConfigPreset));
         EXPECT_NO_FATAL_FAILURE(addLimiterConfig(mLimiterConfigList));
-        ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
-        if (isAllParamsValid()) {
-            ASSERT_NO_FATAL_FAILURE(
-                    processAndWriteToOutput(mInput, output, mEffect, &mOpenEffectReturn));
-            EXPECT_GT(output.size(), kStartIndex);
-        }
-        cleanUpLimiterConfig();
+        EXPECT_NO_FATAL_FAILURE(setParamsAndProcess(input, output));
     }
 
     void cleanUpLimiterConfig() {
@@ -723,10 +795,8 @@ class DynamicsProcessingLimiterConfigDataTest
     static constexpr float kDefaultAttackTime = 0;
     static constexpr float kDefaultReleaseTime = 0;
     static constexpr float kDefaultRatio = 4;
-    static constexpr float kDefaultThreshold = 0;
+    static constexpr float kDefaultThreshold = -10;
     static constexpr float kDefaultPostGain = 0;
-    static constexpr int kInputFrequency = 1000;
-    static constexpr size_t kStartIndex = 15 * kSamplingFrequency / 1000;  // skip 15ms
     std::vector<DynamicsProcessing::LimiterConfig> mLimiterConfigList;
     std::vector<float> mInput;
     float mInputDb;
@@ -738,17 +808,18 @@ TEST_P(DynamicsProcessingLimiterConfigDataTest, IncreasingThresholdDb) {
     std::vector<float> output(mInput.size());
     float previousThreshold = -FLT_MAX;
     for (float threshold : thresholdValues) {
+        cleanUpLimiterConfig();
         for (int i = 0; i < mChannelCount; i++) {
             fillLimiterConfig(mLimiterConfigList, i, true, kDefaultLinkerGroup, kDefaultAttackTime,
                               kDefaultReleaseTime, kDefaultRatio, threshold, kDefaultPostGain);
         }
-        EXPECT_NO_FATAL_FAILURE(setParamsAndProcess(output));
+        EXPECT_NO_FATAL_FAILURE(setLimiterParamsAndProcess(mInput, output));
         if (!isAllParamsValid()) {
             continue;
         }
         float outputDb = calculateDb(output, kStartIndex);
         if (threshold >= mInputDb || kDefaultRatio == 1) {
-            EXPECT_EQ(std::round(mInputDb), std::round(outputDb));
+            EXPECT_NEAR(mInputDb, outputDb, kToleranceDb);
         } else {
             float calculatedThreshold = 0;
             EXPECT_NO_FATAL_FAILURE(computeThreshold(kDefaultRatio, outputDb, calculatedThreshold));
@@ -761,27 +832,46 @@ TEST_P(DynamicsProcessingLimiterConfigDataTest, IncreasingThresholdDb) {
 TEST_P(DynamicsProcessingLimiterConfigDataTest, IncreasingRatio) {
     std::vector<float> ratioValues = {1, 10, 20, 30, 40, 50};
     std::vector<float> output(mInput.size());
-    float threshold = -10;
     float previousRatio = 0;
     for (float ratio : ratioValues) {
+        cleanUpLimiterConfig();
         for (int i = 0; i < mChannelCount; i++) {
             fillLimiterConfig(mLimiterConfigList, i, true, kDefaultLinkerGroup, kDefaultAttackTime,
-                              kDefaultReleaseTime, ratio, threshold, kDefaultPostGain);
+                              kDefaultReleaseTime, ratio, kDefaultThreshold, kDefaultPostGain);
         }
-        EXPECT_NO_FATAL_FAILURE(setParamsAndProcess(output));
+        EXPECT_NO_FATAL_FAILURE(setLimiterParamsAndProcess(mInput, output));
         if (!isAllParamsValid()) {
             continue;
         }
         float outputDb = calculateDb(output, kStartIndex);
 
-        if (threshold >= mInputDb) {
-            EXPECT_EQ(std::round(mInputDb), std::round(outputDb));
+        if (kDefaultThreshold >= mInputDb) {
+            EXPECT_NEAR(mInputDb, outputDb, kToleranceDb);
         } else {
             float calculatedRatio = 0;
-            EXPECT_NO_FATAL_FAILURE(computeRatio(threshold, outputDb, calculatedRatio));
+            EXPECT_NO_FATAL_FAILURE(computeRatio(kDefaultThreshold, outputDb, calculatedRatio));
             ASSERT_GT(calculatedRatio, previousRatio);
             previousRatio = calculatedRatio;
         }
+    }
+}
+
+TEST_P(DynamicsProcessingLimiterConfigDataTest, IncreasingPostGain) {
+    std::vector<float> postGainDbValues = {-85, -40, 0, 40, 85};
+    std::vector<float> output(mInput.size());
+    for (float postGainDb : postGainDbValues) {
+        cleanUpLimiterConfig();
+        for (int i = 0; i < mChannelCount; i++) {
+            fillLimiterConfig(mLimiterConfigList, i, true, kDefaultLinkerGroup, kDefaultAttackTime,
+                              kDefaultReleaseTime, kDefaultRatio, -1, postGainDb);
+        }
+        EXPECT_NO_FATAL_FAILURE(setLimiterParamsAndProcess(mInput, output));
+        if (!isAllParamsValid()) {
+            continue;
+        }
+        float outputDb = calculateDb(output, kStartIndex);
+        EXPECT_NEAR(outputDb, mInputDb + postGainDb, kToleranceDb)
+                << "PostGain: " << postGainDb << ", OutputDb: " << outputDb;
     }
 }
 
@@ -789,20 +879,21 @@ TEST_P(DynamicsProcessingLimiterConfigDataTest, LimiterEnableDisable) {
     std::vector<bool> limiterEnableValues = {false, true};
     std::vector<float> output(mInput.size());
     for (bool isEnabled : limiterEnableValues) {
+        cleanUpLimiterConfig();
         for (int i = 0; i < mChannelCount; i++) {
             // Set non-default values
             fillLimiterConfig(mLimiterConfigList, i, isEnabled, kDefaultLinkerGroup,
                               5 /*attack time*/, 5 /*release time*/, 10 /*ratio*/,
                               -10 /*threshold*/, 5 /*postgain*/);
         }
-        EXPECT_NO_FATAL_FAILURE(setParamsAndProcess(output));
+        EXPECT_NO_FATAL_FAILURE(setLimiterParamsAndProcess(mInput, output));
         if (!isAllParamsValid()) {
             continue;
         }
         if (isEnabled) {
             EXPECT_NE(mInputDb, calculateDb(output, kStartIndex));
         } else {
-            EXPECT_NEAR(mInputDb, calculateDb(output, kStartIndex), 0.05);
+            EXPECT_NEAR(mInputDb, calculateDb(output, kStartIndex), kToleranceDb);
         }
     }
 }

@@ -16,6 +16,7 @@
 
 package android.hardware.gnss.gnss_assistance;
 
+import android.hardware.gnss.gnss_assistance.AuxiliaryInformation;
 import android.hardware.gnss.gnss_assistance.BeidouSatelliteEphemeris;
 import android.hardware.gnss.gnss_assistance.GalileoIonosphericModel;
 import android.hardware.gnss.gnss_assistance.GalileoSatelliteEphemeris;
@@ -84,6 +85,9 @@ parcelable GnssAssistance {
 
         /** The array of GPS satellite corrections. */
         GnssSatelliteCorrections[] satelliteCorrections;
+
+        /** The auxiliary information. */
+        AuxiliaryInformation auxiliaryInformation;
     }
 
     /** Contains Galileo assistance. */
@@ -112,6 +116,9 @@ parcelable GnssAssistance {
 
         /** The array of Galileo satellite corrections. */
         GnssSatelliteCorrections[] satelliteCorrections;
+
+        /** The auxiliary information. */
+        AuxiliaryInformation auxiliaryInformation;
     }
 
     /** Contains Glonass assistance. */
@@ -131,6 +138,9 @@ parcelable GnssAssistance {
 
         /** The array of Glonass satellite corrections. */
         GnssSatelliteCorrections[] satelliteCorrections;
+
+        /** The auxiliary information. */
+        AuxiliaryInformation auxiliaryInformation;
     }
 
     /** Contains QZSS assistance. */
@@ -159,6 +169,9 @@ parcelable GnssAssistance {
 
         /** The array of QZSS satellite corrections. */
         GnssSatelliteCorrections[] satelliteCorrections;
+
+        /** The auxiliary information. */
+        AuxiliaryInformation auxiliaryInformation;
     }
 
     /** Contains Beidou assistance. */
@@ -187,6 +200,9 @@ parcelable GnssAssistance {
 
         /** The array of Beidou satellite corrections. */
         GnssSatelliteCorrections[] satelliteCorrections;
+
+        /** The auxiliary information. */
+        AuxiliaryInformation auxiliaryInformation;
     }
 
     /** GPS assistance. */

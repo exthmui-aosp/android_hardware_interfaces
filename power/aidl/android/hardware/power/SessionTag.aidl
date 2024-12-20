@@ -51,9 +51,4 @@ enum SessionTag {
      * This tag is used to mark hint sessions created by the system UI.
      */
     SYSUI,
-
-    /**
-     * This tag is used to mark hint sessions created by the web browers.
-     */
-    WEB,
 }

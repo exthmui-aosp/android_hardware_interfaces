@@ -376,7 +376,8 @@ void GenerateTestArrays(size_t validElementCount, T validMin, T validMax,
 template <typename PropType, class Instance, typename Getter, typename Setter>
 void TestAccessors(Instance* inst, Getter getter, Setter setter,
                    const std::vector<PropType>& validValues,
-                   const std::vector<PropType>& invalidValues, bool* isSupported) {
+                   const std::vector<PropType>& invalidValues, bool* isSupported,
+                   const std::vector<PropType>* ambivalentValues = nullptr) {
     PropType initialValue{};
     ScopedAStatus status = (inst->*getter)(&initialValue);
     if (status.getExceptionCode() == EX_UNSUPPORTED_OPERATION) {
@@ -394,6 +395,15 @@ void TestAccessors(Instance* inst, Getter getter, Setter setter,
     for (const auto v : invalidValues) {
         EXPECT_STATUS(EX_ILLEGAL_ARGUMENT, (inst->*setter)(v))
                 << "for an invalid value: " << ::testing::PrintToString(v);
+    }
+    if (ambivalentValues != nullptr) {
+        for (const auto v : *ambivalentValues) {
+            const auto status = (inst->*setter)(v);
+            if (!status.isOk()) {
+                EXPECT_STATUS(EX_ILLEGAL_ARGUMENT, status)
+                        << "for an ambivalent value: " << ::testing::PrintToString(v);
+            }
+        }
     }
     EXPECT_IS_OK((inst->*setter)(initialValue)) << "Failed to restore the initial value";
 }
@@ -3936,11 +3946,6 @@ TEST_P(AudioStreamOut, PlaybackRate) {
             AudioPlaybackRate{1.0f, 1.0f, tsVoice, fbFail},
             AudioPlaybackRate{factors.maxSpeed, factors.maxPitch, tsVoice, fbMute},
             AudioPlaybackRate{factors.minSpeed, factors.minPitch, tsVoice, fbMute},
-            // Out of range speed / pitch values must not be rejected if the fallback mode is "mute"
-            AudioPlaybackRate{factors.maxSpeed * 2, factors.maxPitch * 2, tsDefault, fbMute},
-            AudioPlaybackRate{factors.minSpeed / 2, factors.minPitch / 2, tsDefault, fbMute},
-            AudioPlaybackRate{factors.maxSpeed * 2, factors.maxPitch * 2, tsVoice, fbMute},
-            AudioPlaybackRate{factors.minSpeed / 2, factors.minPitch / 2, tsVoice, fbMute},
     };
     const std::vector<AudioPlaybackRate> invalidValues = {
             AudioPlaybackRate{factors.maxSpeed, factors.maxPitch * 2, tsDefault, fbFail},
@@ -3956,6 +3961,14 @@ TEST_P(AudioStreamOut, PlaybackRate) {
             AudioPlaybackRate{1.0f, 1.0f, tsDefault,
                               AudioPlaybackRate::TimestretchFallbackMode::SYS_RESERVED_DEFAULT},
     };
+    const std::vector<AudioPlaybackRate> ambivalentValues = {
+            // Out of range speed / pitch values may optionally be rejected if the fallback mode
+            // is "mute".
+            AudioPlaybackRate{factors.maxSpeed * 2, factors.maxPitch * 2, tsDefault, fbMute},
+            AudioPlaybackRate{factors.minSpeed / 2, factors.minPitch / 2, tsDefault, fbMute},
+            AudioPlaybackRate{factors.maxSpeed * 2, factors.maxPitch * 2, tsVoice, fbMute},
+            AudioPlaybackRate{factors.minSpeed / 2, factors.minPitch / 2, tsVoice, fbMute},
+    };
     bool atLeastOneSupports = false;
     for (const auto& port : offloadMixPorts) {
         const auto portConfig = moduleConfig->getSingleConfigForMixPort(false, port);
@@ -3965,7 +3978,8 @@ TEST_P(AudioStreamOut, PlaybackRate) {
         bool isSupported = false;
         EXPECT_NO_FATAL_FAILURE(TestAccessors<AudioPlaybackRate>(
                 stream.get(), &IStreamOut::getPlaybackRateParameters,
-                &IStreamOut::setPlaybackRateParameters, validValues, invalidValues, &isSupported));
+                &IStreamOut::setPlaybackRateParameters, validValues, invalidValues, &isSupported,
+                &ambivalentValues));
         if (isSupported) atLeastOneSupports = true;
     }
     if (!atLeastOneSupports) {

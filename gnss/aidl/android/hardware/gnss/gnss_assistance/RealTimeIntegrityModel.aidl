@@ -16,6 +16,8 @@
 
 package android.hardware.gnss.gnss_assistance;
 
+import android.hardware.gnss.GnssSignalType;
+
 /**
  * Contains the real time integrity status of a GNSS satellite based on
  * notice advisory.
@@ -25,8 +27,8 @@ package android.hardware.gnss.gnss_assistance;
 @VintfStability
 parcelable RealTimeIntegrityModel {
     /**
-     * Pseudo-random or satellite ID number for the satellite, a.k.a. Space Vehicle (SV), or
-     * OSN number for Glonass. The distinction is made by looking at the constellation field.
+     * The bad signal ID number or OSN number for Glonass.
+     * The distinction is made by looking at the constellation field.
      * Values must be in the range of:
      *
      * - GPS:    1-32
@@ -35,10 +37,13 @@ parcelable RealTimeIntegrityModel {
      * - Galileo: 1-36
      * - Beidou:  1-63
      */
-    int svid;
+    int badSvid;
 
-    /** Indicates whether the satellite is currently usable for navigation. */
-    boolean usable;
+    /**
+     * The signal type of the badSvid, it's set to null array if
+     * all signals on the specific SV are not healthy.
+     */
+    GnssSignalType[] badSignalTypes;
 
     /** UTC timestamp (in seconds) when the advisory was published. */
     long publishDateSeconds;
