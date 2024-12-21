@@ -2815,6 +2815,138 @@ bool convertAidlRttConfigToLegacyV3(const RttConfig& aidl_config,
     return true;
 }
 
+long convertLegacyAkmsToAidl(legacy_hal::wifi_rtt_akm akms) {
+    long aidl_akms = Akm::NONE;
+    if ((akms & legacy_hal::WPA_KEY_MGMT_PASN) != 0) {
+        aidl_akms |= Akm::PASN;
+    }
+    if ((akms & legacy_hal::WPA_KEY_MGMT_SAE) != 0) {
+        aidl_akms |= Akm::SAE;
+    }
+    if ((akms & legacy_hal::WPA_KEY_MGMT_EAP_FT_SHA256) != 0) {
+        aidl_akms |= Akm::FT_EAP_SHA256;
+    }
+    if ((akms & legacy_hal::WPA_KEY_MGMT_FT_PSK_SHA256) != 0) {
+        aidl_akms |= Akm::FT_PSK_SHA256;
+    }
+    if ((akms & legacy_hal::WPA_KEY_MGMT_EAP_FT_SHA384) != 0) {
+        aidl_akms |= Akm::FT_EAP_SHA384;
+    }
+    if ((akms & legacy_hal::WPA_KEY_MGMT_FT_PSK_SHA384) != 0) {
+        aidl_akms |= Akm::FT_PSK_SHA384;
+    }
+    if ((akms & legacy_hal::WPA_KEY_MGMT_EAP_FILS_SHA256) != 0) {
+        aidl_akms |= Akm::FILS_EAP_SHA256;
+    }
+    if ((akms & legacy_hal::WPA_KEY_MGMT_EAP_FILS_SHA384) != 0) {
+        aidl_akms |= Akm::FILS_EAP_SHA384;
+    }
+    return aidl_akms;
+}
+
+legacy_hal::wifi_rtt_akm convertAidlAkmToLegacy(long akm) {
+    switch (akm) {
+        case Akm::PASN:
+            return legacy_hal::WPA_KEY_MGMT_PASN;
+        case Akm::SAE:
+            return legacy_hal::WPA_KEY_MGMT_SAE;
+        case Akm::FT_EAP_SHA256:
+            return legacy_hal::WPA_KEY_MGMT_EAP_FT_SHA256;
+        case Akm::FT_PSK_SHA256:
+            return legacy_hal::WPA_KEY_MGMT_FT_PSK_SHA256;
+        case Akm::FT_EAP_SHA384:
+            return legacy_hal::WPA_KEY_MGMT_EAP_FT_SHA384;
+        case Akm::FT_PSK_SHA384:
+            return legacy_hal::WPA_KEY_MGMT_FT_PSK_SHA384;
+        case Akm::FILS_EAP_SHA256:
+            return legacy_hal::WPA_KEY_MGMT_EAP_FILS_SHA256;
+        case Akm::FILS_EAP_SHA384:
+            return legacy_hal::WPA_KEY_MGMT_EAP_FILS_SHA384;
+        default:
+            return legacy_hal::WPA_KEY_MGMT_NONE;
+    }
+}
+
+long convertLegacyCipherSuitesToAidl(legacy_hal::wifi_rtt_cipher_suite ciphers) {
+    long aidl_ciphers = CipherSuite::NONE;
+    if ((ciphers & legacy_hal::WPA_CIPHER_CCMP_128) != 0) {
+        aidl_ciphers |= CipherSuite::CCMP_128;
+    }
+    if ((ciphers & legacy_hal::WPA_CIPHER_CCMP_256) != 0) {
+        aidl_ciphers |= CipherSuite::CCMP_256;
+    }
+    if ((ciphers & legacy_hal::WPA_CIPHER_GCMP_128) != 0) {
+        aidl_ciphers |= CipherSuite::GCMP_128;
+    }
+    if ((ciphers & legacy_hal::WPA_CIPHER_GCMP_256) != 0) {
+        aidl_ciphers |= CipherSuite::GCMP_256;
+    }
+    return aidl_ciphers;
+}
+
+legacy_hal::wifi_rtt_cipher_suite convertAidlCipherSuiteToLegacy(long cipher) {
+    switch (cipher) {
+        case CipherSuite::CCMP_128:
+            return WPA_CIPHER_CCMP_128;
+        case CipherSuite::CCMP_256:
+            return WPA_CIPHER_CCMP_256;
+        case CipherSuite::GCMP_128:
+            return WPA_CIPHER_GCMP_128;
+        case CipherSuite::GCMP_256:
+            return WPA_CIPHER_GCMP_256;
+        default:
+            return WPA_CIPHER_NONE;
+    }
+}
+
+bool convertAidlRttConfigToLegacyV4(const RttConfig& aidl_config,
+                                    legacy_hal::wifi_rtt_config_v4* legacy_config) {
+    if (!legacy_config) {
+        return false;
+    }
+    *legacy_config = {};
+    if (!convertAidlRttConfigToLegacyV3(aidl_config, &(legacy_config->rtt_config))) {
+        return false;
+    }
+    if (aidl_config.secureConfig.has_value()) {
+        legacy_config->rtt_secure_config.enable_secure_he_ltf =
+                aidl_config.secureConfig->enableSecureHeLtf;
+        legacy_config->rtt_secure_config.enable_ranging_frame_protection =
+                aidl_config.secureConfig->enableRangingFrameProtection;
+        if (aidl_config.secureConfig->pasnComebackCookie.has_value() &&
+            aidl_config.secureConfig->pasnComebackCookie->size() <= RTT_MAX_COOKIE_LEN) {
+            legacy_config->rtt_secure_config.pasn_config.comeback_cookie_len =
+                    aidl_config.secureConfig->pasnComebackCookie->size();
+            memcpy(legacy_config->rtt_secure_config.pasn_config.comeback_cookie,
+                   aidl_config.secureConfig->pasnComebackCookie->data(),
+                   aidl_config.secureConfig->pasnComebackCookie->size());
+        }
+        legacy_config->rtt_secure_config.pasn_config.base_akm =
+                convertAidlAkmToLegacy(aidl_config.secureConfig->pasnConfig.baseAkm);
+        legacy_config->rtt_secure_config.pasn_config.pairwise_cipher_suite =
+                convertAidlCipherSuiteToLegacy(aidl_config.secureConfig->pasnConfig.cipherSuite);
+        if (aidl_config.secureConfig->pasnConfig.passphrase.has_value() &&
+            aidl_config.secureConfig->pasnConfig.passphrase->size() <=
+                    RTT_SECURITY_MAX_PASSPHRASE_LEN) {
+            legacy_config->rtt_secure_config.pasn_config.passphrase_len =
+                    aidl_config.secureConfig->pasnConfig.passphrase->size();
+            memcpy(legacy_config->rtt_secure_config.pasn_config.passphrase,
+                   aidl_config.secureConfig->pasnConfig.passphrase->data(),
+                   aidl_config.secureConfig->pasnConfig.passphrase->size());
+        }
+        if (aidl_config.secureConfig->pasnConfig.pmkid.has_value() &&
+            aidl_config.secureConfig->pasnConfig.pmkid->size() == PMKID_LEN) {
+            legacy_config->rtt_secure_config.pasn_config.pmkid_len =
+                    aidl_config.secureConfig->pasnConfig.pmkid->size();
+            memcpy(legacy_config->rtt_secure_config.pasn_config.pmkid,
+                   aidl_config.secureConfig->pasnConfig.pmkid->data(),
+                   aidl_config.secureConfig->pasnConfig.pmkid->size());
+        }
+    }
+
+    return true;
+}
+
 bool convertAidlVectorOfRttConfigToLegacy(
         const std::vector<RttConfig>& aidl_configs,
         std::vector<legacy_hal::wifi_rtt_config>* legacy_configs) {
@@ -2842,6 +2974,23 @@ bool convertAidlVectorOfRttConfigToLegacyV3(
     for (const auto& aidl_config : aidl_configs) {
         legacy_hal::wifi_rtt_config_v3 legacy_config;
         if (!convertAidlRttConfigToLegacyV3(aidl_config, &legacy_config)) {
+            return false;
+        }
+        legacy_configs->push_back(legacy_config);
+    }
+    return true;
+}
+
+bool convertAidlVectorOfRttConfigToLegacyV4(
+        const std::vector<RttConfig>& aidl_configs,
+        std::vector<legacy_hal::wifi_rtt_config_v4>* legacy_configs) {
+    if (!legacy_configs) {
+        return false;
+    }
+    *legacy_configs = {};
+    for (const auto& aidl_config : aidl_configs) {
+        legacy_hal::wifi_rtt_config_v4 legacy_config;
+        if (!convertAidlRttConfigToLegacyV4(aidl_config, &legacy_config)) {
             return false;
         }
         legacy_configs->push_back(legacy_config);
@@ -2959,6 +3108,12 @@ bool convertLegacyRttCapabilitiesToAidl(
     aidl_capabilities->azBwSupport = (int)RttBw::BW_UNSPECIFIED;
     aidl_capabilities->ntbInitiatorSupported = false;
     aidl_capabilities->ntbResponderSupported = false;
+    // Initialize 11az secure ranging parameters to default
+    aidl_capabilities->akmsSupported = Akm::NONE;
+    aidl_capabilities->cipherSuitesSupported = CipherSuite::NONE;
+    aidl_capabilities->secureHeLtfSupported = false;
+    aidl_capabilities->rangingFrameProtectionSupported = false;
+    aidl_capabilities->maxSupportedSecureHeLtfProtocolVersion = false;
     return true;
 }
 
@@ -2986,6 +3141,53 @@ bool convertLegacyRttCapabilitiesV3ToAidl(
             (int)convertLegacyRttBwBitmapToAidl(legacy_capabilities_v3.az_bw_support);
     aidl_capabilities->ntbInitiatorSupported = legacy_capabilities_v3.ntb_initiator_supported;
     aidl_capabilities->ntbResponderSupported = legacy_capabilities_v3.ntb_responder_supported;
+    // Initialize 11az secure ranging parameters to default
+    aidl_capabilities->akmsSupported = Akm::NONE;
+    aidl_capabilities->cipherSuitesSupported = CipherSuite::NONE;
+    aidl_capabilities->secureHeLtfSupported = false;
+    aidl_capabilities->rangingFrameProtectionSupported = false;
+    aidl_capabilities->maxSupportedSecureHeLtfProtocolVersion = false;
+
+    return true;
+}
+
+bool convertLegacyRttCapabilitiesV4ToAidl(
+        const legacy_hal::wifi_rtt_capabilities_v4& legacy_capabilities_v4,
+        RttCapabilities* aidl_capabilities) {
+    if (!aidl_capabilities) {
+        return false;
+    }
+    *aidl_capabilities = {};
+    aidl_capabilities->rttOneSidedSupported =
+            legacy_capabilities_v4.rtt_capab_v3.rtt_capab.rtt_one_sided_supported;
+    aidl_capabilities->rttFtmSupported =
+            legacy_capabilities_v4.rtt_capab_v3.rtt_capab.rtt_ftm_supported;
+    aidl_capabilities->lciSupported = legacy_capabilities_v4.rtt_capab_v3.rtt_capab.lci_support;
+    aidl_capabilities->lcrSupported = legacy_capabilities_v4.rtt_capab_v3.rtt_capab.lcr_support;
+    aidl_capabilities->responderSupported =
+            legacy_capabilities_v4.rtt_capab_v3.rtt_capab.responder_supported;
+    aidl_capabilities->preambleSupport = convertLegacyRttPreambleBitmapToAidl(
+            legacy_capabilities_v4.rtt_capab_v3.rtt_capab.preamble_support);
+    aidl_capabilities->bwSupport = convertLegacyRttBwBitmapToAidl(
+            legacy_capabilities_v4.rtt_capab_v3.rtt_capab.bw_support);
+    aidl_capabilities->mcVersion = legacy_capabilities_v4.rtt_capab_v3.rtt_capab.mc_version;
+    aidl_capabilities->azPreambleSupport = (int)convertLegacyRttPreambleBitmapToAidl(
+            legacy_capabilities_v4.rtt_capab_v3.az_preamble_support);
+    aidl_capabilities->azBwSupport =
+            (int)convertLegacyRttBwBitmapToAidl(legacy_capabilities_v4.rtt_capab_v3.az_bw_support);
+    aidl_capabilities->ntbInitiatorSupported =
+            legacy_capabilities_v4.rtt_capab_v3.ntb_initiator_supported;
+    aidl_capabilities->ntbResponderSupported =
+            legacy_capabilities_v4.rtt_capab_v3.ntb_responder_supported;
+    aidl_capabilities->akmsSupported =
+            convertLegacyAkmsToAidl(legacy_capabilities_v4.supported_akms);
+    aidl_capabilities->cipherSuitesSupported =
+            convertLegacyCipherSuitesToAidl(legacy_capabilities_v4.supported_cipher_suites);
+    aidl_capabilities->secureHeLtfSupported = legacy_capabilities_v4.secure_he_ltf_supported;
+    aidl_capabilities->rangingFrameProtectionSupported =
+            legacy_capabilities_v4.ranging_fame_protection_supported;
+    aidl_capabilities->maxSupportedSecureHeLtfProtocolVersion =
+            legacy_capabilities_v4.max_supported_secure_he_ltf_protocol_ver;
     return true;
 }
 
@@ -3066,6 +3268,13 @@ bool convertLegacyVectorOfRttResultToAidl(
         aidl_result.ntbMaxMeasurementTime = 0;
         aidl_result.numTxSpatialStreams = 0;
         aidl_result.numRxSpatialStreams = 0;
+        aidl_result.isRangingFrameProtectionEnabled = false;
+        aidl_result.isSecureLtfEnabled = false;
+        aidl_result.baseAkm = Akm::NONE;
+        aidl_result.cipherSuite = CipherSuite::NONE;
+        aidl_result.secureHeLtfProtocolVersion = 0;
+        aidl_result.pasnComebackAfterMillis = 0;
+        aidl_result.pasnComebackCookie = std::nullopt;
         aidl_results->push_back(aidl_result);
     }
     return true;
@@ -3092,6 +3301,13 @@ bool convertLegacyVectorOfRttResultV2ToAidl(
         aidl_result.ntbMaxMeasurementTime = 0;
         aidl_result.numTxSpatialStreams = 0;
         aidl_result.numRxSpatialStreams = 0;
+        aidl_result.isRangingFrameProtectionEnabled = false;
+        aidl_result.isSecureLtfEnabled = false;
+        aidl_result.baseAkm = Akm::NONE;
+        aidl_result.cipherSuite = CipherSuite::NONE;
+        aidl_result.secureHeLtfProtocolVersion = 0;
+        aidl_result.pasnComebackAfterMillis = 0;
+        aidl_result.pasnComebackCookie = std::nullopt;
         aidl_results->push_back(aidl_result);
     }
     return true;
@@ -3119,6 +3335,57 @@ bool convertLegacyVectorOfRttResultV3ToAidl(
         aidl_result.ntbMaxMeasurementTime = legacy_result->ntb_max_measurement_time;
         aidl_result.numTxSpatialStreams = legacy_result->num_tx_sts;
         aidl_result.numRxSpatialStreams = legacy_result->num_rx_sts;
+        aidl_result.isRangingFrameProtectionEnabled = false;
+        aidl_result.isSecureLtfEnabled = false;
+        aidl_result.baseAkm = Akm::NONE;
+        aidl_result.cipherSuite = CipherSuite::NONE;
+        aidl_result.secureHeLtfProtocolVersion = 0;
+        aidl_result.pasnComebackAfterMillis = 0;
+        aidl_result.pasnComebackCookie = std::nullopt;
+        aidl_results->push_back(aidl_result);
+    }
+    return true;
+}
+
+bool convertLegacyVectorOfRttResultV4ToAidl(
+        const std::vector<const legacy_hal::wifi_rtt_result_v4*>& legacy_results,
+        std::vector<RttResult>* aidl_results) {
+    if (!aidl_results) {
+        return false;
+    }
+    *aidl_results = {};
+    for (const auto legacy_result : legacy_results) {
+        RttResult aidl_result;
+        if (!convertLegacyRttResultToAidl(legacy_result->rtt_result_v3.rtt_result.rtt_result,
+                                          &aidl_result)) {
+            return false;
+        }
+        aidl_result.channelFreqMHz =
+                legacy_result->rtt_result_v3.rtt_result.frequency != UNSPECIFIED
+                        ? legacy_result->rtt_result_v3.rtt_result.frequency
+                        : 0;
+        aidl_result.packetBw =
+                convertLegacyRttBwToAidl(legacy_result->rtt_result_v3.rtt_result.packet_bw);
+        aidl_result.i2rTxLtfRepetitionCount =
+                legacy_result->rtt_result_v3.i2r_tx_ltf_repetition_count;
+        aidl_result.r2iTxLtfRepetitionCount =
+                legacy_result->rtt_result_v3.r2i_tx_ltf_repetition_count;
+        aidl_result.ntbMinMeasurementTime = legacy_result->rtt_result_v3.ntb_min_measurement_time;
+        aidl_result.ntbMaxMeasurementTime = legacy_result->rtt_result_v3.ntb_max_measurement_time;
+        aidl_result.numTxSpatialStreams = legacy_result->rtt_result_v3.num_tx_sts;
+        aidl_result.numRxSpatialStreams = legacy_result->rtt_result_v3.num_rx_sts;
+        aidl_result.isRangingFrameProtectionEnabled = legacy_result->is_ranging_protection_enabled;
+        aidl_result.isSecureLtfEnabled = legacy_result->is_secure_he_ltf_enabled;
+        aidl_result.baseAkm = convertLegacyAkmsToAidl(legacy_result->base_akm);
+        aidl_result.cipherSuite = convertLegacyCipherSuitesToAidl(legacy_result->cipher_suite);
+        aidl_result.secureHeLtfProtocolVersion = legacy_result->secure_he_ltf_protocol_version;
+        aidl_result.pasnComebackAfterMillis = legacy_result->pasn_comeback_after_millis;
+        if (legacy_result->pasn_comeback_cookie_len > 0 &&
+            legacy_result->pasn_comeback_cookie_len <= RTT_MAX_COOKIE_LEN) {
+            aidl_result.pasnComebackCookie = std::vector<uint8_t>(
+                    legacy_result->pasn_comeback_cookie,
+                    legacy_result->pasn_comeback_cookie + legacy_result->pasn_comeback_cookie_len);
+        }
         aidl_results->push_back(aidl_result);
     }
     return true;

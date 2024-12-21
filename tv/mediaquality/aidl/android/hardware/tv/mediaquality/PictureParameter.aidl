@@ -20,6 +20,7 @@ import android.hardware.tv.mediaquality.ColorRange;
 import android.hardware.tv.mediaquality.ColorSpace;
 import android.hardware.tv.mediaquality.ColorTemperature;
 import android.hardware.tv.mediaquality.Gamma;
+import android.hardware.tv.mediaquality.PictureQualityEventType;
 import android.hardware.tv.mediaquality.QualityLevel;
 
 /**
@@ -440,4 +441,11 @@ union PictureParameter {
      * Determines whether the current profile is actively in use or not.
      */
     boolean activeProfile;
+
+    /**
+     * This indicates non picture parameter status change about a profile.
+     *
+     * Those status can be found in PictureQualityEventType.
+     */
+    PictureQualityEventType pictureQualityEventType;
 }

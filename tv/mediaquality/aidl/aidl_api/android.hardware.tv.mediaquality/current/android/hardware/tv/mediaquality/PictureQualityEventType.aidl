@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,22 +31,15 @@
 // with such a backward incompatible change, it has a high risk of breaking
 // later when a module using the interface is updated, e.g., Mainline modules.
 
-package android.hardware.radio.network;
-/* @hide */
-@Backing(type="int") @JavaDerive(toString=true) @VintfStability
-enum NasProtocolMessage {
-  UNKNOWN = 0,
-  ATTACH_REQUEST = 1,
-  IDENTITY_RESPONSE = 2,
-  DETACH_REQUEST = 3,
-  TRACKING_AREA_UPDATE_REQUEST = 4,
-  LOCATION_UPDATE_REQUEST = 5,
-  AUTHENTICATION_AND_CIPHERING_RESPONSE = 6,
-  REGISTRATION_REQUEST = 7,
-  DEREGISTRATION_REQUEST = 8,
-  CM_REESTABLISHMENT_REQUEST = 9,
-  CM_SERVICE_REQUEST = 10,
-  IMSI_DETACH_INDICATION = 11,
-  THREAT_IDENTIFIER_FALSE = 12,
-  THREAT_IDENTIFIER_TRUE = 13,
+package android.hardware.tv.mediaquality;
+@VintfStability
+enum PictureQualityEventType {
+  NONE,
+  BBD_RESULT,
+  VIDEO_DELAY_CHANGE,
+  CAPTUREPOINT_INFO_CHANGE,
+  VIDEOPATH_CHANGE,
+  EXTRA_FRAME_CHANGE,
+  DOLBY_IQ_CHANGE,
+  DOLBY_APO_CHANGE,
 }
