@@ -29,6 +29,7 @@
 #include <aidl/android/hardware/tv/mediaquality/SoundParameter.h>
 #include <aidl/android/hardware/tv/mediaquality/SoundParameters.h>
 #include <aidl/android/hardware/tv/mediaquality/SoundProfile.h>
+#include <aidl/android/hardware/tv/mediaquality/StreamStatus.h>
 
 #include <android/binder_auto_utils.h>
 #include <android/binder_manager.h>
@@ -51,6 +52,7 @@ using aidl::android::hardware::tv::mediaquality::PictureProfile;
 using aidl::android::hardware::tv::mediaquality::SoundParameter;
 using aidl::android::hardware::tv::mediaquality::SoundParameters;
 using aidl::android::hardware::tv::mediaquality::SoundProfile;
+using aidl::android::hardware::tv::mediaquality::StreamStatus;
 using aidl::android::hardware::tv::mediaquality::VendorParamCapability;
 using aidl::android::hardware::tv::mediaquality::VendorParameterIdentifier;
 using android::ProcessState;
@@ -96,6 +98,8 @@ class PictureProfileAdjustmentListener : public BnPictureProfileAdjustmentListen
     }
 
     ScopedAStatus requestPictureParameters(int64_t) { return ScopedAStatus::ok(); }
+
+    ScopedAStatus onStreamStatusChanged(int64_t, StreamStatus) { return ScopedAStatus::ok(); }
 
   private:
     std::function<void(const PictureProfile& pictureProfile)> on_hal_picture_profile_adjust_;

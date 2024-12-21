@@ -50,4 +50,6 @@ union SoundParameter {
   @nullable android.hardware.tv.mediaquality.DtsVirtualX dtsVirtualX;
   android.hardware.tv.mediaquality.DigitalOutput digitalOutput;
   int digitalOutputDelayMs;
+  boolean activeProfile;
+  android.hardware.tv.mediaquality.SoundStyle soundStyle;
 }

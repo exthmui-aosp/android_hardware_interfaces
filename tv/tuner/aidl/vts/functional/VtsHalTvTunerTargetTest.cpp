@@ -100,7 +100,9 @@ void TunerFilterAidlTest::reconfigSingleFilterInDemuxTest(FilterConfig filterCon
     ASSERT_TRUE(mFilterTests.configFilter(filterReconf.settings, filterId));
     ASSERT_TRUE(mFilterTests.startFilter(filterId));
     ASSERT_TRUE(mFrontendTests.tuneFrontend(frontendConf, true /*testWithDemux*/));
-    ASSERT_TRUE(mFilterTests.startIdTest(filterId));
+    if (!isPassthroughFilter(filterReconf)) {
+        ASSERT_TRUE(mFilterTests.startIdTest(filterId));
+    }
     ASSERT_TRUE(mFrontendTests.stopTuneFrontend(true /*testWithDemux*/));
     ASSERT_TRUE(mFilterTests.stopFilter(filterId));
     ASSERT_TRUE(mFilterTests.closeFilter(filterId));
@@ -152,7 +154,9 @@ void TunerBroadcastAidlTest::broadcastSingleFilterTest(FilterConfig filterConf,
     ASSERT_TRUE(mFilterTests.startFilter(filterId));
     // tune test
     ASSERT_TRUE(mFrontendTests.tuneFrontend(frontendConf, true /*testWithDemux*/));
-    ASSERT_TRUE(filterDataOutputTest());
+    if (!isPassthroughFilter(filterConf)) {
+        ASSERT_TRUE(filterDataOutputTest());
+    }
     ASSERT_TRUE(mFrontendTests.stopTuneFrontend(true /*testWithDemux*/));
     ASSERT_TRUE(mFilterTests.stopFilter(filterId));
     ASSERT_TRUE(mFilterTests.closeFilter(filterId));
@@ -210,7 +214,9 @@ void TunerBroadcastAidlTest::mediaFilterUsingSharedMemoryTest(FilterConfig filte
     ASSERT_TRUE(mFilterTests.startFilter(filterId));
     // tune test
     ASSERT_TRUE(mFrontendTests.tuneFrontend(frontendConf, true /*testWithDemux*/));
-    ASSERT_TRUE(filterDataOutputTest());
+    if (!isPassthroughFilter(filterConf)) {
+        ASSERT_TRUE(filterDataOutputTest());
+    }
     ASSERT_TRUE(mFrontendTests.stopTuneFrontend(true /*testWithDemux*/));
     ASSERT_TRUE(mFilterTests.stopFilter(filterId));
     ASSERT_TRUE(mFilterTests.releaseShareAvHandle(filterId));

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,22 @@
 
 package android.hardware.tv.mediaquality;
 @VintfStability
-interface IPictureProfileAdjustmentListener {
-  oneway void onPictureProfileAdjusted(in android.hardware.tv.mediaquality.PictureProfile pictureProfile);
-  oneway void onParamCapabilityChanged(long pictureProfileId, in android.hardware.tv.mediaquality.ParamCapability[] caps);
-  oneway void onVendorParamCapabilityChanged(long pictureProfileId, in android.hardware.tv.mediaquality.VendorParamCapability[] caps);
-  oneway void requestPictureParameters(long pictureProfileId);
-  oneway void onStreamStatusChanged(long pictureProfileId, android.hardware.tv.mediaquality.StreamStatus status);
+enum StreamStatus {
+  SDR,
+  DOLBYVISION,
+  HDR10,
+  TCH,
+  HLG,
+  HDR10PLUS,
+  HDRVIVID,
+  IMAXSDR,
+  IMAXHDR10,
+  IMAXHDR10PLUS,
+  FMMSDR,
+  FMMHDR10,
+  FMMHDR10PLUS,
+  FMMHLG,
+  FMMDOLBY,
+  FMMTCH,
+  FMMHDRVIVID,
 }

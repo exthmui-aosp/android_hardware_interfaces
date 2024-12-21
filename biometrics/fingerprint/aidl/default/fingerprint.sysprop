@@ -9,7 +9,7 @@ prop {
     type: String
     scope: Public
     access: ReadWrite
-    enum_values: "default|rear|udfps|side"
+    enum_values: "default|rear|udfps|udfps-us|side"
     api_name: "type"
 }
 

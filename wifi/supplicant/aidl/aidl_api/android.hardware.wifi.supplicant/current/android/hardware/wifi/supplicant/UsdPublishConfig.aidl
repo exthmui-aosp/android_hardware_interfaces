@@ -39,6 +39,7 @@ parcelable UsdPublishConfig {
   boolean isFsd;
   int announcementPeriodMillis;
   android.hardware.wifi.supplicant.UsdPublishTransmissionType transmissionType;
+  boolean eventsEnabled;
   enum PublishType {
     SOLICITED_ONLY = 0,
     UNSOLICITED_ONLY = 1,

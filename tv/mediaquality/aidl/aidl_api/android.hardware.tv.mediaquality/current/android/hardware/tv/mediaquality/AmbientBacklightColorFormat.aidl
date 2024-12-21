@@ -33,10 +33,6 @@
 
 package android.hardware.tv.mediaquality;
 @VintfStability
-interface IPictureProfileAdjustmentListener {
-  oneway void onPictureProfileAdjusted(in android.hardware.tv.mediaquality.PictureProfile pictureProfile);
-  oneway void onParamCapabilityChanged(long pictureProfileId, in android.hardware.tv.mediaquality.ParamCapability[] caps);
-  oneway void onVendorParamCapabilityChanged(long pictureProfileId, in android.hardware.tv.mediaquality.VendorParamCapability[] caps);
-  oneway void requestPictureParameters(long pictureProfileId);
-  oneway void onStreamStatusChanged(long pictureProfileId, android.hardware.tv.mediaquality.StreamStatus status);
+union AmbientBacklightColorFormat {
+  int RGB888;
 }

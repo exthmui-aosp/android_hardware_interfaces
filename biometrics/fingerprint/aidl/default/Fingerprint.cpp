@@ -50,6 +50,9 @@ Fingerprint::Fingerprint() : mWorker(MAX_WORKER_QUEUE_SIZE) {
     } else if (sensorTypeProp == "udfps") {
         mSensorType = FingerprintSensorType::UNDER_DISPLAY_OPTICAL;
         mEngine = std::make_unique<FakeFingerprintEngineUdfps>();
+    } else if (sensorTypeProp == "udfps-us") {
+        mSensorType = FingerprintSensorType::UNDER_DISPLAY_ULTRASONIC;
+        mEngine = std::make_unique<FakeFingerprintEngineUdfps>();
     } else if (sensorTypeProp == "side") {
         mSensorType = FingerprintSensorType::POWER_BUTTON;
         mEngine = std::make_unique<FakeFingerprintEngineSide>();
@@ -220,7 +223,7 @@ const char* Fingerprint::type2String(FingerprintSensorType type) {
         case FingerprintSensorType::UNDER_DISPLAY_OPTICAL:
             return "udfps";
         case FingerprintSensorType::UNDER_DISPLAY_ULTRASONIC:
-            return "udfps";
+            return "udfps-us";
         default:
             return "unknown";
     }

@@ -184,8 +184,12 @@ ndk::ScopedAStatus Module::createStreamContext(
     const int32_t nominalLatencyMs = getNominalLatencyMs(*portConfigIt);
     // Since this is a private method, it is assumed that
     // validity of the portConfigId has already been checked.
-    const int32_t minimumStreamBufferSizeFrames =
-            calculateBufferSizeFrames(nominalLatencyMs, portConfigIt->sampleRate.value().value);
+    int32_t minimumStreamBufferSizeFrames = 0;
+    if (!calculateBufferSizeFrames(
+                portConfigIt->format.value(), nominalLatencyMs,
+                portConfigIt->sampleRate.value().value, &minimumStreamBufferSizeFrames).isOk()) {
+        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
+    }
     if (in_bufferSizeFrames < minimumStreamBufferSizeFrames) {
         LOG(ERROR) << __func__ << ": " << mType << ": insufficient buffer size "
                    << in_bufferSizeFrames << ", must be at least " << minimumStreamBufferSizeFrames;
@@ -376,6 +380,18 @@ int32_t Module::getNominalLatencyMs(const AudioPortConfig&) {
     // Arbitrary value. Implementations must override this method to provide their actual latency.
     static constexpr int32_t kLatencyMs = 5;
     return kLatencyMs;
+}
+
+ndk::ScopedAStatus Module::calculateBufferSizeFrames(
+        const ::aidl::android::media::audio::common::AudioFormatDescription &format,
+        int32_t latencyMs, int32_t sampleRateHz, int32_t *bufferSizeFrames) {
+    if (format.type == AudioFormatType::PCM) {
+        *bufferSizeFrames = calculateBufferSizeFramesForPcm(latencyMs, sampleRateHz);
+        return ndk::ScopedAStatus::ok();
+    }
+    LOG(ERROR) << __func__ << ": " << mType << ": format " << format.toString()
+        << " is not supported";
+    return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
 
 ndk::ScopedAStatus Module::createMmapBuffer(
@@ -1123,8 +1139,14 @@ ndk::ScopedAStatus Module::setAudioPatch(const AudioPatch& in_requested, AudioPa
     *_aidl_return = in_requested;
     auto maxSampleRateIt = std::max_element(sampleRates.begin(), sampleRates.end());
     const int32_t latencyMs = getNominalLatencyMs(*(maxSampleRateIt->second));
-    _aidl_return->minimumStreamBufferSizeFrames =
-            calculateBufferSizeFrames(latencyMs, maxSampleRateIt->first);
+    if (!calculateBufferSizeFrames(
+                maxSampleRateIt->second->format.value(), latencyMs, maxSampleRateIt->first,
+                &_aidl_return->minimumStreamBufferSizeFrames).isOk()) {
+        if (patchesBackup.has_value()) {
+            mPatches = std::move(*patchesBackup);
+        }
+        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
+    }
     _aidl_return->latenciesMs.clear();
     _aidl_return->latenciesMs.insert(_aidl_return->latenciesMs.end(),
                                      _aidl_return->sinkPortConfigIds.size(), latencyMs);

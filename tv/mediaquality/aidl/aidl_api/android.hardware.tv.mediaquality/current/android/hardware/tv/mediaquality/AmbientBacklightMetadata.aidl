@@ -36,5 +36,5 @@ package android.hardware.tv.mediaquality;
 parcelable AmbientBacklightMetadata {
   android.hardware.tv.mediaquality.AmbientBacklightSettings settings;
   android.hardware.tv.mediaquality.AmbientBacklightCompressAlgorithm compressAlgorithm;
-  int[] zonesColors;
+  android.hardware.tv.mediaquality.AmbientBacklightColorFormat[] zonesColors;
 }

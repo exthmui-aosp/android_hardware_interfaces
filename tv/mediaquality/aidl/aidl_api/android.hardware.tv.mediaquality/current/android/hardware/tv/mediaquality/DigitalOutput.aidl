@@ -37,4 +37,7 @@ enum DigitalOutput {
   AUTO,
   BYPASS,
   PCM,
+  DolbyDigitalPlus,
+  DolbyDigital,
+  DolbyMat,
 }

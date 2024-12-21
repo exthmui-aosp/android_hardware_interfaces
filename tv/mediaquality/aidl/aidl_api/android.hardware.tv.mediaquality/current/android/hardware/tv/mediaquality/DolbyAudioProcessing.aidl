@@ -37,11 +37,14 @@ parcelable DolbyAudioProcessing {
   android.hardware.tv.mediaquality.DolbyAudioProcessing.SoundMode soundMode;
   boolean volumeLeveler;
   boolean surroundVirtualizer;
-  boolean doblyAtmos;
+  boolean dolbyAtmos;
   enum SoundMode {
     GAME,
     MOVIE,
     MUSIC,
     NEWS,
+    STADIUM,
+    STANDARD,
+    USER,
   }
 }

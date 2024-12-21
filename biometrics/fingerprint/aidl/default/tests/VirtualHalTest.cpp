@@ -152,7 +152,7 @@ TEST_F(VirtualHalTest, type) {
     } typeMap[] = {{FingerprintSensorType::REAR, "rear"},
                    {FingerprintSensorType::POWER_BUTTON, "side"},
                    {FingerprintSensorType::UNDER_DISPLAY_OPTICAL, "udfps"},
-                   {FingerprintSensorType::UNDER_DISPLAY_ULTRASONIC, "udfps"},
+                   {FingerprintSensorType::UNDER_DISPLAY_ULTRASONIC, "udfps-us"},
                    {FingerprintSensorType::UNKNOWN, "unknown"}};
     for (auto const& x : typeMap) {
         mVhal->setType(x.type);

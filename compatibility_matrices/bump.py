@@ -181,14 +181,14 @@ def main():
                         help="VINTF level of the next version (e.g. 202504)")
     parser.add_argument("current_letter",
                         type=str,
-                        help="Letter of the API level of the current version (e.g. v)")
+                        help="Letter of the API level of the current version (e.g. b)")
     parser.add_argument("next_letter",
                         type=str,
-                        help="Letter of the API level of the next version (e.g. w)")
+                        help="Letter of the API level of the next version (e.g. c)")
     parser.add_argument("platform_version",
                         type=str,
                         nargs="?",
-                        help="Android release version number number (e.g. 15)")
+                        help="Android release version number number (e.g. 16)")
     cmdline_args = parser.parse_args()
 
     Bump(cmdline_args).run()

@@ -16,24 +16,15 @@
 
 package android.hardware.tv.mediaquality;
 
-import android.hardware.tv.mediaquality.AmbientBacklightColorFormat;
-import android.hardware.tv.mediaquality.AmbientBacklightCompressAlgorithm;
-import android.hardware.tv.mediaquality.AmbientBacklightSettings;
-
 @VintfStability
-parcelable AmbientBacklightMetadata {
-    /**
-     * The settings which are used to generate the colors.
-     */
-    AmbientBacklightSettings settings;
-
-    /**
-     * The compress algorithm of the ambient backlight colors.
-     */
-    AmbientBacklightCompressAlgorithm compressAlgorithm;
-
-    /**
-     * The colors for the zones. Formats of the color will be AmbientBacklightColorFormat.
-     */
-    AmbientBacklightColorFormat[] zonesColors;
+enum SoundStyle {
+    /* User custom style is the default value for sound style */
+    USER,
+    STANDARD,
+    VIVID,
+    SPORTS,
+    MOVIE,
+    MUSIC,
+    NEWS,
+    AUTO,
 }

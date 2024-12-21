@@ -207,12 +207,15 @@ class Module : public BnModule {
     virtual std::unique_ptr<Configuration> initializeConfig();
     virtual int32_t getNominalLatencyMs(
             const ::aidl::android::media::audio::common::AudioPortConfig& portConfig);
+    virtual ndk::ScopedAStatus calculateBufferSizeFrames(
+            const ::aidl::android::media::audio::common::AudioFormatDescription &format,
+            int32_t latencyMs, int32_t sampleRateHz, int32_t *bufferSizeFrames);
     virtual ndk::ScopedAStatus createMmapBuffer(
             const ::aidl::android::hardware::audio::core::StreamContext& context,
             ::aidl::android::hardware::audio::core::StreamDescriptor* desc);
 
     // Utility and helper functions accessible to subclasses.
-    static int32_t calculateBufferSizeFrames(int32_t latencyMs, int32_t sampleRateHz) {
+    static int32_t calculateBufferSizeFramesForPcm(int32_t latencyMs, int32_t sampleRateHz) {
         const int32_t rawSizeFrames =
                 aidl::android::hardware::audio::common::frameCountFromDurationMs(latencyMs,
                                                                                  sampleRateHz);

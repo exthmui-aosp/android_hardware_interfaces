@@ -42,12 +42,12 @@ parcelable AmbientBacklightSettings {
     PixelFormat colorFormat;
 
     /**
-     * The number of zones in horizontal direction.
+     * The number of logical zones in horizontal direction desire by the package.
      */
     int hZonesNumber;
 
     /**
-     * The number of zones in vertical direction.
+     * The number of logical zones in vertical direction desire by the package.
      */
     int vZonesNumber;
 
