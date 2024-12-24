@@ -47,6 +47,8 @@
 #include <aidl/android/hardware/bluetooth/audio/Phy.h>
 #include <android-base/logging.h>
 
+#include <optional>
+
 #include "flatbuffers/idl.h"
 #include "flatbuffers/util.h"
 
@@ -561,6 +563,17 @@ void AudioSetConfigurationProviderJson::processSubconfig(
   if (ase_cnt == 2) directionAseConfiguration.push_back(config);
 }
 
+// Comparing if 2 AseDirectionConfiguration is equal.
+// Configuration are copied in, so we can remove some fields for comparison
+// without affecting the result.
+bool isAseConfigurationEqual(AseDirectionConfiguration cfg_a,
+                             AseDirectionConfiguration cfg_b) {
+  // Remove unneeded fields when comparing.
+  cfg_a.aseConfiguration.metadata = std::nullopt;
+  cfg_b.aseConfiguration.metadata = std::nullopt;
+  return cfg_a == cfg_b;
+}
+
 void AudioSetConfigurationProviderJson::PopulateAseConfigurationFromFlat(
     const le_audio::AudioSetConfiguration* flat_cfg,
     std::vector<const le_audio::CodecConfiguration*>* codec_cfgs,
@@ -569,7 +582,7 @@ void AudioSetConfigurationProviderJson::PopulateAseConfigurationFromFlat(
     std::vector<std::optional<AseDirectionConfiguration>>&
         sourceAseConfiguration,
     std::vector<std::optional<AseDirectionConfiguration>>& sinkAseConfiguration,
-    ConfigurationFlags& /*configurationFlags*/) {
+    ConfigurationFlags& configurationFlags) {
   if (flat_cfg == nullptr) {
     LOG(ERROR) << "flat_cfg cannot be null";
     return;
@@ -636,17 +649,41 @@ void AudioSetConfigurationProviderJson::PopulateAseConfigurationFromFlat(
                          sourceAseConfiguration, location);
       }
     }
-  } else {
-    if (codec_cfg == nullptr) {
-      LOG(ERROR) << "No codec config matching key " << codec_config_key.c_str()
-                 << " found";
+
+    // After putting all subconfig, check if it's an asymmetric configuration
+    // and populate information for ConfigurationFlags
+    if (!sinkAseConfiguration.empty() && !sourceAseConfiguration.empty()) {
+      if (sinkAseConfiguration.size() == sourceAseConfiguration.size()) {
+        for (int i = 0; i < sinkAseConfiguration.size(); ++i) {
+          if (sinkAseConfiguration[i].has_value() !=
+              sourceAseConfiguration[i].has_value()) {
+            // Different configuration: one is not empty and other is.
+            configurationFlags.bitmask |=
+                ConfigurationFlags::ALLOW_ASYMMETRIC_CONFIGURATIONS;
+          } else if (sinkAseConfiguration[i].has_value()) {
+            // Both is not empty, comparing inner fields:
+            if (!isAseConfigurationEqual(sinkAseConfiguration[i].value(),
+                                         sourceAseConfiguration[i].value())) {
+              configurationFlags.bitmask |=
+                  ConfigurationFlags::ALLOW_ASYMMETRIC_CONFIGURATIONS;
+            }
+          }
+        }
+      } else {
+        // Different number of ASE, is a different configuration.
+        configurationFlags.bitmask |=
+            ConfigurationFlags::ALLOW_ASYMMETRIC_CONFIGURATIONS;
+      }
     } else {
-      LOG(ERROR) << "Configuration '" << flat_cfg->name()->c_str()
-                 << "' has no valid subconfigurations.";
+      if (codec_cfg == nullptr) {
+        LOG(ERROR) << "No codec config matching key "
+                   << codec_config_key.c_str() << " found";
+      } else {
+        LOG(ERROR) << "Configuration '" << flat_cfg->name()->c_str()
+                   << "' has no valid subconfigurations.";
+      }
     }
   }
-
-  // TODO: Populate information for ConfigurationFlags
 }
 
 bool AudioSetConfigurationProviderJson::LoadConfigurationsFromFiles(
