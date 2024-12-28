@@ -1234,6 +1234,22 @@ enum VehicleProperty {
      * The minInt32Value indicates the lowest fan speed.
      * The maxInt32Value indicates the highest fan speed.
      *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     *
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specific
+     * area ID.
+     *
+     * {@code MinMaxSupportedValueResult.minSupportedValue} indicates the lowest fan speed.
+     *
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} indicates the highest fan speed.
+     *
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     *
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
+     *
+     *
      * This property is not in any particular unit but in a specified range of relative speeds.
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
@@ -1242,6 +1258,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     HVAC_FAN_SPEED = 0x0500 + 0x10000000 + 0x05000000

@@ -70,21 +70,7 @@ std::mutex gCallbackMutex;
 
 }  // anonymous namespace
 
-ScopedAStatus ContextHub::getContextHubs(std::vector<ContextHubInfo>* out_contextHubInfos) {
-    ContextHubInfo hub = {};
-    hub.name = "Mock Context Hub";
-    hub.vendor = "AOSP";
-    hub.toolchain = "n/a";
-    hub.id = kMockHubId;
-    hub.peakMips = 1;
-    hub.maxSupportedMessageLengthBytes = 4096;
-    hub.chrePlatformId = UINT64_C(0x476f6f6754000000);
-    hub.chreApiMajorVersion = 1;
-    hub.chreApiMinorVersion = 6;
-    hub.supportsReliableMessages = false;
-
-    out_contextHubInfos->push_back(hub);
-
+ScopedAStatus ContextHub::getContextHubs(std::vector<ContextHubInfo>* /* out_contextHubInfos */) {
     return ScopedAStatus::ok();
 }
 
@@ -197,43 +183,26 @@ ScopedAStatus ContextHub::getHubs(std::vector<HubInfo>* _aidl_return) {
         return ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
     }
 
-    ContextHubInfo hub = {};
-    hub.name = "Mock Context Hub";
-    hub.vendor = "AOSP";
-    hub.toolchain = "n/a";
-    hub.id = kMockHubId;
-    hub.peakMips = 1;
-    hub.maxSupportedMessageLengthBytes = 4096;
-    hub.chrePlatformId = UINT64_C(0x476f6f6754000000);
-    hub.chreApiMajorVersion = 1;
-    hub.chreApiMinorVersion = 6;
-    hub.supportsReliableMessages = false;
-
-    HubInfo hubInfo1 = {};
-    hubInfo1.hubId = hub.chrePlatformId;
-    hubInfo1.hubDetails = HubInfo::HubDetails::make<HubInfo::HubDetails::Tag::contextHubInfo>(hub);
-
     VendorHubInfo vendorHub = {};
     vendorHub.name = "Mock Vendor Hub";
     vendorHub.version = 42;
 
-    HubInfo hubInfo2 = {};
-    hubInfo2.hubId = kMockVendorHubId;
-    hubInfo2.hubDetails =
+    HubInfo hubInfo1 = {};
+    hubInfo1.hubId = kMockVendorHubId;
+    hubInfo1.hubDetails =
             HubInfo::HubDetails::make<HubInfo::HubDetails::Tag::vendorHubInfo>(vendorHub);
 
     VendorHubInfo vendorHub2 = {};
     vendorHub2.name = "Mock Vendor Hub 2";
     vendorHub2.version = 24;
 
-    HubInfo hubInfo3 = {};
-    hubInfo3.hubId = kMockVendorHub2Id;
-    hubInfo3.hubDetails =
+    HubInfo hubInfo2 = {};
+    hubInfo2.hubId = kMockVendorHub2Id;
+    hubInfo2.hubDetails =
             HubInfo::HubDetails::make<HubInfo::HubDetails::Tag::vendorHubInfo>(vendorHub2);
 
     _aidl_return->push_back(hubInfo1);
     _aidl_return->push_back(hubInfo2);
-    _aidl_return->push_back(hubInfo3);
 
     return ScopedAStatus::ok();
 };
