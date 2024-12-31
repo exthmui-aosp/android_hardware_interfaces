@@ -95,15 +95,14 @@ class SubscriptionManager final {
             bool isContinuousProperty);
 
     // Unsubscribes from the properties for the client.
-    // Returns error if the client was not subscribed before, or one of the given property was not
-    // subscribed, or one of the property failed to unsubscribe. Caller is safe to retry since
+    // Returns error if one of the property failed to unsubscribe. Caller is safe to retry since
     // unsubscribing to an already unsubscribed property is okay (it would be ignored).
     // Returns ok if all the requested properties for the client are unsubscribed.
     VhalResult<void> unsubscribe(ClientIdType client, const std::vector<int32_t>& propIds);
 
     // Unsubscribes from all the properties for the client.
-    // Returns error if the client was not subscribed before or one of the subscribed properties
-    // for the client failed to unsubscribe. Caller is safe to retry.
+    // Returns error one of the subscribed properties for the client failed to unsubscribe.
+    // Caller is safe to retry.
     // Returns ok if all the properties for the client are unsubscribed.
     VhalResult<void> unsubscribe(ClientIdType client);
 

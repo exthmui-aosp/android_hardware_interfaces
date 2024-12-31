@@ -45,6 +45,9 @@ interface IKeyMintDevice {
   void deleteAllKeys();
   void destroyAttestationIds();
   android.hardware.security.keymint.BeginResult begin(in android.hardware.security.keymint.KeyPurpose purpose, in byte[] keyBlob, in android.hardware.security.keymint.KeyParameter[] params, in @nullable android.hardware.security.keymint.HardwareAuthToken authToken);
+  /**
+   * @deprecated Method has never been used due to design limitations
+   */
   void deviceLocked(in boolean passwordOnly, in @nullable android.hardware.security.secureclock.TimeStampToken timestampToken);
   void earlyBootEnded();
   byte[] convertStorageKeyToEphemeral(in byte[] storageKeyBlob);

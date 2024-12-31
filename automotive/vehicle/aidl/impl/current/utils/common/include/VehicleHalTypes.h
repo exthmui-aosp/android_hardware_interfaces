@@ -53,6 +53,8 @@
 #include <aidl/android/hardware/automotive/vehicle/LocationCharacterization.h>
 #include <aidl/android/hardware/automotive/vehicle/LowSpeedAutomaticEmergencyBrakingState.h>
 #include <aidl/android/hardware/automotive/vehicle/LowSpeedCollisionWarningState.h>
+#include <aidl/android/hardware/automotive/vehicle/MinMaxSupportedValueResult.h>
+#include <aidl/android/hardware/automotive/vehicle/MinMaxSupportedValueResults.h>
 #include <aidl/android/hardware/automotive/vehicle/Obd2CommonIgnitionMonitors.h>
 #include <aidl/android/hardware/automotive/vehicle/Obd2FuelSystemStatus.h>
 #include <aidl/android/hardware/automotive/vehicle/Obd2FuelType.h>
@@ -65,6 +67,8 @@
 #include <aidl/android/hardware/automotive/vehicle/SetValueResults.h>
 #include <aidl/android/hardware/automotive/vehicle/StatusCode.h>
 #include <aidl/android/hardware/automotive/vehicle/SubscribeOptions.h>
+#include <aidl/android/hardware/automotive/vehicle/SupportedValuesListResult.h>
+#include <aidl/android/hardware/automotive/vehicle/SupportedValuesListResults.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleAirbagLocation.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleApPowerBootupReason.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleApPowerStateReport.h>

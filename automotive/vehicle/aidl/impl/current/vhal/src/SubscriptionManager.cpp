@@ -345,8 +345,8 @@ VhalResult<void> SubscriptionManager::unsubscribe(SubscriptionManager::ClientIdT
     std::scoped_lock<std::mutex> lockGuard(mLock);
 
     if (mSubscribedPropsByClient.find(clientId) == mSubscribedPropsByClient.end()) {
-        return StatusError(StatusCode::INVALID_ARG)
-               << "No property was subscribed for the callback";
+        ALOGW("No property was subscribed for the callback, unsubscribe does nothing");
+        return {};
     }
 
     std::vector<PropIdAreaId> propIdAreaIdsToUnsubscribe;
@@ -378,7 +378,8 @@ VhalResult<void> SubscriptionManager::unsubscribe(SubscriptionManager::ClientIdT
     std::scoped_lock<std::mutex> lockGuard(mLock);
 
     if (mSubscribedPropsByClient.find(clientId) == mSubscribedPropsByClient.end()) {
-        return StatusError(StatusCode::INVALID_ARG) << "No property was subscribed for this client";
+        ALOGW("No property was subscribed for this client, unsubscribe does nothing");
+        return {};
     }
 
     auto& subscriptions = mSubscribedPropsByClient[clientId];

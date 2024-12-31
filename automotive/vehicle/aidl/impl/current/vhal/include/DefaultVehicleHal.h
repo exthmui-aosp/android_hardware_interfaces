@@ -233,6 +233,10 @@ class DefaultVehicleHal final : public aidlvhal::BnVehicle {
             std::function<void(const std::unordered_map<int32_t, aidlvhal::VehiclePropConfig>&)>
                     callback) const EXCLUDES(mConfigLock);
 
+    android::base::Result<const aidlvhal::VehicleAreaConfig*> getAreaConfigForPropIdAreaId(
+            int32_t propId, int32_t areaId) const;
+    android::base::Result<const aidlvhal::HasSupportedValueInfo*> getHasSupportedValueInfo(
+            int32_t propId, int32_t areaId) const;
     // Puts the property change events into a queue so that they can handled in batch.
     static void batchPropertyChangeEvent(
             const std::weak_ptr<ConcurrentQueue<aidlvhal::VehiclePropValue>>& batchedEventQueue,

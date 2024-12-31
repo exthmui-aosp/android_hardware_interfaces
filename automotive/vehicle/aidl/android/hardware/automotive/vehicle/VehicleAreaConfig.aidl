@@ -230,10 +230,17 @@ parcelable VehicleAreaConfig {
     boolean supportVariableUpdateRate;
 
     /**
-     * For VHAL implementation >= V4, this must not be {@code null}. This specifies whether
-     * this property may have min/max supported value or supported values list.
+     * This specifies whether this property may have min/max supported value or supported values
+     * list for [propId, areaId] that supports new supported values APIs.
      *
-     * For VHAL implementation < V4, this is always {@code null} and is not accessed.
+     * If this is not {@code null}. The client may use {@code getMinMaxSupportedValue},
+     * {@code getSupportedValuesLists}, {@code subscribeSupportedValueChange},
+     * {@code unsubscribeSupportedValueChange}.
+     *
+     * If this is {@code null} for legacy properties, the APIs mentioned before are not supported.
+     * Client must fallback to use static supported value information in {@code VehicleAreaConfig}.
+     *
+     * For VHAL implementation < V4, this is always {@code null}.
      */
     @nullable HasSupportedValueInfo hasSupportedValueInfo;
 }

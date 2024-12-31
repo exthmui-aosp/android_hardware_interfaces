@@ -351,6 +351,10 @@ TEST_F(SubscriptionManagerTest, testUnsubscribeUnsubscribedPropId) {
                                        std::vector<int32_t>({0, 1, 2}));
     ASSERT_TRUE(result.ok()) << "unsubscribe an unsubscribed property must do nothing";
 
+    result = getManager()->unsubscribe(getCallbackClient()->asBinder().get(),
+                                       std::vector<int32_t>({0, 1, 2}));
+    ASSERT_TRUE(result.ok()) << "retry an unsubscribe operation must not throw error";
+
     std::vector<VehiclePropValue> updatedValues = {
             {
                     .prop = 0,

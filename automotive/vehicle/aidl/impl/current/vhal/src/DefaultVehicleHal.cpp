@@ -49,7 +49,9 @@ using ::aidl::android::hardware::automotive::vehicle::GetValueRequest;
 using ::aidl::android::hardware::automotive::vehicle::GetValueRequests;
 using ::aidl::android::hardware::automotive::vehicle::GetValueResult;
 using ::aidl::android::hardware::automotive::vehicle::GetValueResults;
+using ::aidl::android::hardware::automotive::vehicle::HasSupportedValueInfo;
 using ::aidl::android::hardware::automotive::vehicle::IVehicleCallback;
+using ::aidl::android::hardware::automotive::vehicle::MinMaxSupportedValueResult;
 using ::aidl::android::hardware::automotive::vehicle::MinMaxSupportedValueResults;
 using ::aidl::android::hardware::automotive::vehicle::SetValueRequest;
 using ::aidl::android::hardware::automotive::vehicle::SetValueRequests;
@@ -57,6 +59,7 @@ using ::aidl::android::hardware::automotive::vehicle::SetValueResult;
 using ::aidl::android::hardware::automotive::vehicle::SetValueResults;
 using ::aidl::android::hardware::automotive::vehicle::StatusCode;
 using ::aidl::android::hardware::automotive::vehicle::SubscribeOptions;
+using ::aidl::android::hardware::automotive::vehicle::SupportedValuesListResult;
 using ::aidl::android::hardware::automotive::vehicle::SupportedValuesListResults;
 using ::aidl::android::hardware::automotive::vehicle::VehicleAreaConfig;
 using ::aidl::android::hardware::automotive::vehicle::VehiclePropConfig;
@@ -76,6 +79,11 @@ using ::android::base::StringPrintf;
 using ::ndk::ScopedAIBinder_DeathRecipient;
 using ::ndk::ScopedAStatus;
 using ::ndk::ScopedFileDescriptor;
+
+using VhalPropIdAreaId = ::aidl::android::hardware::automotive::vehicle::PropIdAreaId;
+
+#define propIdtoString(PROP_ID) \
+    aidl::android::hardware::automotive::vehicle::toString(static_cast<VehicleProperty>(PROP_ID))
 
 std::string toString(const std::unordered_set<int64_t>& values) {
     std::string str = "";
@@ -964,30 +972,171 @@ ScopedAStatus DefaultVehicleHal::returnSharedMemory(const CallbackType&, int64_t
     return ScopedAStatus::ok();
 }
 
+Result<const VehicleAreaConfig*> DefaultVehicleHal::getAreaConfigForPropIdAreaId(
+        int32_t propId, int32_t areaId) const {
+    auto result = getConfig(propId);
+    if (!result.ok()) {
+        return Error() << "Failed to get property config for propertyId: " << propIdtoString(propId)
+                       << ", error: " << result.error();
+    }
+    const VehiclePropConfig& config = result.value();
+    const VehicleAreaConfig* areaConfig = getAreaConfig(propId, areaId, config);
+    if (areaConfig == nullptr) {
+        return Error() << "AreaId config not found for propertyId: " << propIdtoString(propId)
+                       << ", areaId: " << areaId;
+    }
+    return areaConfig;
+}
+
+Result<const HasSupportedValueInfo*> DefaultVehicleHal::getHasSupportedValueInfo(
+        int32_t propId, int32_t areaId) const {
+    Result<const VehicleAreaConfig*> propIdAreaIdConfigResult =
+            getAreaConfigForPropIdAreaId(propId, areaId);
+    if (!isGlobalProp(propId) && !propIdAreaIdConfigResult.ok()) {
+        // For global property, it is possible that no config exists.
+        return Error() << propIdAreaIdConfigResult.error();
+    }
+    if (propIdAreaIdConfigResult.has_value()) {
+        auto areaConfig = propIdAreaIdConfigResult.value();
+        if (areaConfig->hasSupportedValueInfo.has_value()) {
+            return &(areaConfig->hasSupportedValueInfo.value());
+        }
+    }
+    return Error() << "property: " << propIdtoString(propId) << ", areaId: " << areaId
+                   << " does not support this operation because hasSupportedValueInfo is null";
+}
+
 ScopedAStatus DefaultVehicleHal::getSupportedValuesLists(
-        const std::vector<::aidl::android::hardware::automotive::vehicle::PropIdAreaId>&,
-        SupportedValuesListResults*) {
-    // TODO(b/381020465): Add relevant implementation.
-    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+        const std::vector<VhalPropIdAreaId>& vhalPropIdAreaIds,
+        SupportedValuesListResults* supportedValuesListResults) {
+    std::vector<size_t> toHardwareRequestCounters;
+    std::vector<PropIdAreaId> toHardwarePropIdAreaIds;
+    std::vector<SupportedValuesListResult> results;
+    results.resize(vhalPropIdAreaIds.size());
+    for (size_t requestCounter = 0; requestCounter < vhalPropIdAreaIds.size(); requestCounter++) {
+        const auto& vhalPropIdAreaId = vhalPropIdAreaIds.at(requestCounter);
+        int32_t propId = vhalPropIdAreaId.propId;
+        int32_t areaId = vhalPropIdAreaId.areaId;
+        auto hasSupportedValueInfoResult = getHasSupportedValueInfo(propId, areaId);
+        if (!hasSupportedValueInfoResult.ok()) {
+            ALOGE("getSupportedValuesLists: %s",
+                  hasSupportedValueInfoResult.error().message().c_str());
+            results[requestCounter] = SupportedValuesListResult{
+                    .status = StatusCode::INVALID_ARG, .supportedValuesList = std::nullopt};
+            continue;
+        }
+
+        const auto& hasSupportedValueInfo = *(hasSupportedValueInfoResult.value());
+        if (hasSupportedValueInfo.hasSupportedValuesList) {
+            toHardwarePropIdAreaIds.push_back(PropIdAreaId{.propId = propId, .areaId = areaId});
+            toHardwareRequestCounters.push_back(requestCounter);
+        } else {
+            results[requestCounter] = SupportedValuesListResult{
+                    .status = StatusCode::OK, .supportedValuesList = std::nullopt};
+            continue;
+        }
+    }
+    if (toHardwarePropIdAreaIds.size() != 0) {
+        std::vector<SupportedValuesListResult> resultsFromHardware =
+                mVehicleHardware->getSupportedValuesLists(toHardwarePropIdAreaIds);
+        // It is guaranteed that toHardwarePropIdAreaIds, toHardwareRequestCounters,
+        // resultsFromHardware have the same size.
+        if (resultsFromHardware.size() != toHardwareRequestCounters.size()) {
+            return ScopedAStatus::fromServiceSpecificErrorWithMessage(
+                    toInt(StatusCode::INTERNAL_ERROR),
+                    fmt::format(
+                            "getSupportedValuesLists: Unexpected results size from IVehicleHardware"
+                            ", got: {}, expect: {}",
+                            resultsFromHardware.size(), toHardwareRequestCounters.size())
+                            .c_str());
+        }
+        for (size_t i = 0; i < toHardwareRequestCounters.size(); i++) {
+            results[toHardwareRequestCounters[i]] = resultsFromHardware[i];
+        }
+    }
+    ScopedAStatus status =
+            vectorToStableLargeParcelable(std::move(results), supportedValuesListResults);
+    if (!status.isOk()) {
+        int statusCode = status.getServiceSpecificError();
+        ALOGE("getSupportedValuesLists: failed to marshal result into large parcelable, error: "
+              "%s, code: %d",
+              status.getMessage(), statusCode);
+        return status;
+    }
+    return ScopedAStatus::ok();
 }
 
 ScopedAStatus DefaultVehicleHal::getMinMaxSupportedValue(
-        const std::vector<::aidl::android::hardware::automotive::vehicle::PropIdAreaId>&,
-        MinMaxSupportedValueResults*) {
-    // TODO(b/381020465): Add relevant implementation.
-    return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+        const std::vector<VhalPropIdAreaId>& vhalPropIdAreaIds,
+        MinMaxSupportedValueResults* minMaxSupportedValueResults) {
+    std::vector<size_t> toHardwareRequestCounters;
+    std::vector<PropIdAreaId> toHardwarePropIdAreaIds;
+    std::vector<MinMaxSupportedValueResult> results;
+    results.resize(vhalPropIdAreaIds.size());
+    for (size_t requestCounter = 0; requestCounter < vhalPropIdAreaIds.size(); requestCounter++) {
+        const auto& vhalPropIdAreaId = vhalPropIdAreaIds.at(requestCounter);
+        int32_t propId = vhalPropIdAreaId.propId;
+        int32_t areaId = vhalPropIdAreaId.areaId;
+        auto hasSupportedValueInfoResult = getHasSupportedValueInfo(propId, areaId);
+        if (!hasSupportedValueInfoResult.ok()) {
+            ALOGE("getMinMaxSupportedValue: %s",
+                  hasSupportedValueInfoResult.error().message().c_str());
+            results[requestCounter] = MinMaxSupportedValueResult{.status = StatusCode::INVALID_ARG,
+                                                                 .minSupportedValue = std::nullopt,
+                                                                 .maxSupportedValue = std::nullopt};
+            continue;
+        }
+
+        const auto& hasSupportedValueInfo = *(hasSupportedValueInfoResult.value());
+        if (hasSupportedValueInfo.hasMinSupportedValue ||
+            hasSupportedValueInfo.hasMaxSupportedValue) {
+            toHardwarePropIdAreaIds.push_back(PropIdAreaId{.propId = propId, .areaId = areaId});
+            toHardwareRequestCounters.push_back(requestCounter);
+        } else {
+            results[requestCounter] = MinMaxSupportedValueResult{.status = StatusCode::OK,
+                                                                 .minSupportedValue = std::nullopt,
+                                                                 .maxSupportedValue = std::nullopt};
+            continue;
+        }
+    }
+    if (toHardwarePropIdAreaIds.size() != 0) {
+        std::vector<MinMaxSupportedValueResult> resultsFromHardware =
+                mVehicleHardware->getMinMaxSupportedValues(toHardwarePropIdAreaIds);
+        // It is guaranteed that toHardwarePropIdAreaIds, toHardwareRequestCounters,
+        // resultsFromHardware have the same size.
+        if (resultsFromHardware.size() != toHardwareRequestCounters.size()) {
+            return ScopedAStatus::fromServiceSpecificErrorWithMessage(
+                    toInt(StatusCode::INTERNAL_ERROR),
+                    fmt::format(
+                            "getMinMaxSupportedValue: Unexpected results size from IVehicleHardware"
+                            ", got: {}, expect: {}",
+                            resultsFromHardware.size(), toHardwareRequestCounters.size())
+                            .c_str());
+        }
+        for (size_t i = 0; i < toHardwareRequestCounters.size(); i++) {
+            results[toHardwareRequestCounters[i]] = resultsFromHardware[i];
+        }
+    }
+    ScopedAStatus status =
+            vectorToStableLargeParcelable(std::move(results), minMaxSupportedValueResults);
+    if (!status.isOk()) {
+        int statusCode = status.getServiceSpecificError();
+        ALOGE("getMinMaxSupportedValue: failed to marshal result into large parcelable, error: "
+              "%s, code: %d",
+              status.getMessage(), statusCode);
+        return status;
+    }
+    return ScopedAStatus::ok();
 }
 
 ScopedAStatus DefaultVehicleHal::registerSupportedValueChangeCallback(
-        const std::shared_ptr<IVehicleCallback>&,
-        const std::vector<::aidl::android::hardware::automotive::vehicle::PropIdAreaId>&) {
+        const std::shared_ptr<IVehicleCallback>&, const std::vector<VhalPropIdAreaId>&) {
     // TODO(b/381020465): Add relevant implementation.
     return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
 
 ScopedAStatus DefaultVehicleHal::unregisterSupportedValueChangeCallback(
-        const std::shared_ptr<IVehicleCallback>&,
-        const std::vector<::aidl::android::hardware::automotive::vehicle::PropIdAreaId>&) {
+        const std::shared_ptr<IVehicleCallback>&, const std::vector<VhalPropIdAreaId>&) {
     // TODO(b/381020465): Add relevant implementation.
     return ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
