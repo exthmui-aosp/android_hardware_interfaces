@@ -254,10 +254,12 @@ class SupplicantStaIfaceCallback : public BnSupplicantStaIfaceCallback {
                                                int32_t /* subscribeId */) override {
         return ndk::ScopedAStatus::ok();
     }
-    ::ndk::ScopedAStatus onUsdPublishConfigFailed(int32_t /* cmdId */) override {
+    ::ndk::ScopedAStatus onUsdPublishConfigFailed(int32_t /* cmdId */,
+                                                  UsdConfigErrorCode /* errorCode */) override {
         return ndk::ScopedAStatus::ok();
     }
-    ::ndk::ScopedAStatus onUsdSubscribeConfigFailed(int32_t /* cmdId */) override {
+    ::ndk::ScopedAStatus onUsdSubscribeConfigFailed(int32_t /* cmdId */,
+                                                    UsdConfigErrorCode /* errorCode */) override {
         return ndk::ScopedAStatus::ok();
     }
     ::ndk::ScopedAStatus onUsdPublishTerminated(int32_t /* publishId */,
