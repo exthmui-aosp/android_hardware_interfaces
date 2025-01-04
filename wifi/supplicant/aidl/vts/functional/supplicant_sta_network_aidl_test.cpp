@@ -32,6 +32,7 @@
 using aidl::android::hardware::wifi::supplicant::AuthAlgMask;
 using aidl::android::hardware::wifi::supplicant::BnSupplicantStaNetworkCallback;
 using aidl::android::hardware::wifi::supplicant::DebugLevel;
+using aidl::android::hardware::wifi::supplicant::DppConnectionKeys;
 using aidl::android::hardware::wifi::supplicant::EapMethod;
 using aidl::android::hardware::wifi::supplicant::EapPhase2Method;
 using aidl::android::hardware::wifi::supplicant::GroupCipherMask;
@@ -834,6 +835,21 @@ TEST_P(SupplicantStaNetworkAidlTest, DisableEht) {
         GTEST_SKIP() << "disableEht is available as of Supplicant V3";
     }
     EXPECT_TRUE(sta_network_->disableEht().isOk());
+}
+
+/*
+ * SetDppKeys
+ */
+TEST_P(SupplicantStaNetworkAidlTest, SetDppKeys) {
+    if (!keyMgmtSupported(sta_iface_, KeyMgmtMask::DPP)) {
+        GTEST_SKIP() << "Missing DPP support";
+    }
+
+    DppConnectionKeys in_keys;
+    in_keys.connector = std::vector<uint8_t>({0x11, 0x22, 0x33, 0x44});
+    in_keys.cSign = std::vector<uint8_t>({0x55, 0x66, 0x77, 0x88});
+    in_keys.netAccessKey = std::vector<uint8_t>({0xaa, 0xbb, 0xcc, 0xdd});
+    EXPECT_TRUE(sta_network_->setDppKeys(in_keys).isOk());
 }
 
 /*

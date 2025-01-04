@@ -303,6 +303,8 @@ class IVehicleHardware {
     //
     // If the propertyId's supported values are static, then must do nothing.
     //
+    // If some of the [propId, areaId]s are already subscribed, then do nothing.
+    //
     // This is only called for [propId, areaId] that has non-null {@code HasSupportedValueInfo}.
     //
     // Client must implement (override) this function if at least one [propId, areaId]'s

@@ -870,7 +870,7 @@ ErrMsgOr<bool> isCsrWithProperDiceChain(const std::vector<uint8_t>& encodedCsr,
     }
 
     auto csr = hwtrust::Csr::validate(encodedCsr, *diceChainKind, false /*isFactory*/,
-                                      false /*allowAnyMode*/, deviceSuffix(instanceName));
+                                      true /*allowAnyMode*/, deviceSuffix(instanceName));
     if (!csr.ok()) {
         return csr.error().message();
     }
@@ -904,7 +904,7 @@ ErrMsgOr<bool> compareRootPublicKeysInDiceChains(const std::vector<uint8_t>& enc
     }
 
     auto csr1 = hwtrust::Csr::validate(encodedCsr1, *diceChainKind, false /*isFactory*/,
-                                       false /*allowAnyMode*/, deviceSuffix(instanceName1));
+                                       true /*allowAnyMode*/, deviceSuffix(instanceName1));
     if (!csr1.ok()) {
         return csr1.error().message();
     }
@@ -921,7 +921,7 @@ ErrMsgOr<bool> compareRootPublicKeysInDiceChains(const std::vector<uint8_t>& enc
     }
 
     auto csr2 = hwtrust::Csr::validate(encodedCsr2, *diceChainKind, false /*isFactory*/,
-                                       false /*allowAnyMode*/, deviceSuffix(instanceName2));
+                                       true /*allowAnyMode*/, deviceSuffix(instanceName2));
     if (!csr2.ok()) {
         return csr2.error().message();
     }
@@ -952,7 +952,7 @@ ErrMsgOr<bool> verifyComponentNameInKeyMintDiceChain(const std::vector<uint8_t>&
     }
 
     auto csr = hwtrust::Csr::validate(encodedCsr, *diceChainKind, false /*isFactory*/,
-                                      false /*allowAnyMode*/, deviceSuffix(DEFAULT_INSTANCE_NAME));
+                                      true /*allowAnyMode*/, deviceSuffix(DEFAULT_INSTANCE_NAME));
     if (!csr.ok()) {
         return csr.error().message();
     }

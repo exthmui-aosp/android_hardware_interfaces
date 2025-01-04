@@ -118,8 +118,19 @@ class SubscriptionManager final {
                        std::vector<aidl::android::hardware::automotive::vehicle::VehiclePropError>>
     getSubscribedClientsForErrorEvents(const std::vector<SetValueErrorEvent>& errorEvents);
 
-    // Returns the number of subscribed clients.
-    size_t countClients();
+    // Subscribes to supported values change.
+    VhalResult<void> subscribeSupportedValueChange(const CallbackType& callback,
+                                                   const std::vector<PropIdAreaId>& propIdAreaIds);
+
+    // Unsubscribes to supported values change.
+    VhalResult<void> unsubscribeSupportedValueChange(
+            ClientIdType client, const std::vector<PropIdAreaId>& propIdAreaIds);
+
+    // Returns the number of subscribed property change clients.
+    size_t countPropertyChangeClients();
+
+    // Returns the number of subscribed supported value change clients.
+    size_t countSupportedValueChangeClients();
 
     // Checks whether the sample rate is valid.
     static bool checkSampleRateHz(float sampleRateHz);
@@ -160,6 +171,11 @@ class SubscriptionManager final {
                        std::unordered_set<VehiclePropValue, VehiclePropValueHashPropIdAreaId,
                                           VehiclePropValueEqualPropIdAreaId>>
             mContSubValuesByCallback GUARDED_BY(mLock);
+    std::unordered_map<PropIdAreaId, std::unordered_map<ClientIdType, CallbackType>,
+                       PropIdAreaIdHash>
+            mSupportedValueChangeClientsByPropIdAreaId GUARDED_BY(mLock);
+    std::unordered_map<ClientIdType, std::unordered_set<PropIdAreaId, PropIdAreaIdHash>>
+            mSupportedValueChangePropIdAreaIdsByClient GUARDED_BY(mLock);
 
     VhalResult<void> addContinuousSubscriberLocked(const ClientIdType& clientId,
                                                    const PropIdAreaId& propIdAreaId,
@@ -180,6 +196,9 @@ class SubscriptionManager final {
     VhalResult<void> unsubscribePropIdAreaIdLocked(SubscriptionManager::ClientIdType clientId,
                                                    const PropIdAreaId& propIdAreaId)
             REQUIRES(mLock);
+    VhalResult<void> unsubscribeSupportedValueChangeLocked(
+            SubscriptionManager::ClientIdType clientId,
+            const std::vector<PropIdAreaId>& propIdAreaIds) REQUIRES(mLock);
 
     // Checks whether the manager is empty. For testing purpose.
     bool isEmpty();

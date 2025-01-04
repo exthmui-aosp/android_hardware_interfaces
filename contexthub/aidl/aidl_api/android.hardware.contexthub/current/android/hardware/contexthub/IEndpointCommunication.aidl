@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,24 +33,14 @@
 
 package android.hardware.contexthub;
 @VintfStability
-interface IContextHub {
-  List<android.hardware.contexthub.ContextHubInfo> getContextHubs();
-  void loadNanoapp(in int contextHubId, in android.hardware.contexthub.NanoappBinary appBinary, in int transactionId);
-  void unloadNanoapp(in int contextHubId, in long appId, in int transactionId);
-  void disableNanoapp(in int contextHubId, in long appId, in int transactionId);
-  void enableNanoapp(in int contextHubId, in long appId, in int transactionId);
-  void onSettingChanged(in android.hardware.contexthub.Setting setting, in boolean enabled);
-  void queryNanoapps(in int contextHubId);
-  void registerCallback(in int contextHubId, in android.hardware.contexthub.IContextHubCallback cb);
-  void sendMessageToHub(in int contextHubId, in android.hardware.contexthub.ContextHubMessage message);
-  void onHostEndpointConnected(in android.hardware.contexthub.HostEndpointInfo hostEndpointInfo);
-  void onHostEndpointDisconnected(char hostEndpointId);
-  long[] getPreloadedNanoappIds(in int contextHubId);
-  void onNanSessionStateChanged(in android.hardware.contexthub.NanSessionStateUpdate update);
-  void setTestMode(in boolean enable);
-  void sendMessageDeliveryStatusToHub(in int contextHubId, in android.hardware.contexthub.MessageDeliveryStatus messageDeliveryStatus);
-  List<android.hardware.contexthub.HubInfo> getHubs();
-  List<android.hardware.contexthub.EndpointInfo> getEndpoints();
-  @PropagateAllowBlocking android.hardware.contexthub.IEndpointCommunication registerEndpointHub(in android.hardware.contexthub.IEndpointCallback callback, in android.hardware.contexthub.HubInfo hubInfo);
-  const int EX_CONTEXT_HUB_UNSPECIFIED = (-1) /* -1 */;
+interface IEndpointCommunication {
+  void registerEndpoint(in android.hardware.contexthub.EndpointInfo endpoint);
+  void unregisterEndpoint(in android.hardware.contexthub.EndpointInfo endpoint);
+  int[2] requestSessionIdRange(int size);
+  void openEndpointSession(int sessionId, in android.hardware.contexthub.EndpointId destination, in android.hardware.contexthub.EndpointId initiator, in @nullable String serviceDescriptor);
+  void sendMessageToEndpoint(int sessionId, in android.hardware.contexthub.Message msg);
+  void sendMessageDeliveryStatusToEndpoint(int sessionId, in android.hardware.contexthub.MessageDeliveryStatus msgStatus);
+  void closeEndpointSession(int sessionId, in android.hardware.contexthub.Reason reason);
+  void endpointSessionOpenComplete(int sessionId);
+  void unregister();
 }

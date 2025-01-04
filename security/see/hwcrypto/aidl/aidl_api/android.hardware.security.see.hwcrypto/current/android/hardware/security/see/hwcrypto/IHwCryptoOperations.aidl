@@ -34,5 +34,5 @@
 package android.hardware.security.see.hwcrypto;
 @VintfStability
 interface IHwCryptoOperations {
-  android.hardware.security.see.hwcrypto.CryptoOperationResult[] processCommandList(inout android.hardware.security.see.hwcrypto.CryptoOperationSet[] operations, out android.hardware.security.see.hwcrypto.CryptoOperationErrorAdditionalInfo additionalErrorInfo);
+  android.hardware.security.see.hwcrypto.CryptoOperationResult[] processCommandList(inout android.hardware.security.see.hwcrypto.CryptoOperationSet[] operations);
 }

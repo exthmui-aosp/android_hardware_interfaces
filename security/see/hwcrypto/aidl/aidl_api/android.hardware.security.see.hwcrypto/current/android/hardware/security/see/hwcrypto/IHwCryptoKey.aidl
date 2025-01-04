@@ -64,7 +64,7 @@ interface IHwCryptoKey {
     int keySizeBytes;
   }
   union DerivedKeyPolicy {
-    android.hardware.security.see.hwcrypto.IHwCryptoKey.ClearKeyPolicy clearKey;
+    android.hardware.security.see.hwcrypto.IHwCryptoKey.ClearKeyPolicy clearKeyPolicy;
     byte[] opaqueKey;
   }
   parcelable DerivedKeyParameters {

@@ -71,6 +71,10 @@ class MockVehicleHardware final : public IVehicleHardware {
     getSupportedValuesLists(const std::vector<PropIdAreaId>& propIdAreaIds) override;
     std::vector<aidl::android::hardware::automotive::vehicle::MinMaxSupportedValueResult>
     getMinMaxSupportedValues(const std::vector<PropIdAreaId>& propIdAreaIds) override;
+    aidl::android::hardware::automotive::vehicle::StatusCode subscribeSupportedValueChange(
+            const std::vector<PropIdAreaId>& propIdAreaIds) override;
+    aidl::android::hardware::automotive::vehicle::StatusCode unsubscribeSupportedValueChange(
+            const std::vector<PropIdAreaId>& propIdAreaIds) override;
 
     // Test functions.
     void setPropertyConfigs(
@@ -114,9 +118,12 @@ class MockVehicleHardware final : public IVehicleHardware {
     std::vector<aidl::android::hardware::automotive::vehicle::SubscribeOptions>
     getSubscribeOptions();
     void clearSubscribeOptions();
-    // Whether getAllPropertyConfigs() has been called, which blocks all all property configs
+    // Whether getAllPropertyConfigs() has been called, which blocks on all property configs
     // being ready.
     bool getAllPropertyConfigsCalled();
+
+    std::unordered_set<PropIdAreaId, PropIdAreaIdHash>
+    getSubscribedSupportedValueChangePropIdAreaIds();
 
   private:
     mutable std::mutex mLock;
@@ -174,6 +181,9 @@ class MockVehicleHardware final : public IVehicleHardware {
     std::shared_ptr<RecurrentTimer> mRecurrentTimer;
     std::unordered_map<int32_t, std::unordered_map<int32_t, std::shared_ptr<std::function<void()>>>>
             mRecurrentActions GUARDED_BY(mLock);
+
+    std::unordered_set<PropIdAreaId, PropIdAreaIdHash> mSubscribedSupportedValueChangePropIdAreaIds
+            GUARDED_BY(mLock);
 };
 
 }  // namespace vehicle

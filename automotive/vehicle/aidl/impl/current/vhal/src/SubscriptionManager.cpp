@@ -17,6 +17,7 @@
 #include "SubscriptionManager.h"
 
 #include <VehicleUtils.h>
+#include <android-base/format.h>
 #include <android-base/stringprintf.h>
 #include <utils/Log.h>
 #include <utils/SystemClock.h>
@@ -65,6 +66,8 @@ SubscriptionManager::~SubscriptionManager() {
 
     mClientsByPropIdAreaId.clear();
     mSubscribedPropsByClient.clear();
+    mSupportedValueChangeClientsByPropIdAreaId.clear();
+    mSupportedValueChangePropIdAreaIdsByClient.clear();
 }
 
 bool SubscriptionManager::checkSampleRateHz(float sampleRateHz) {
@@ -166,8 +169,7 @@ VhalResult<void> SubscriptionManager::addOnChangeSubscriberLocked(
                                     /*enableVur*/ false));
         status != StatusCode::OK) {
         return StatusError(status)
-               << StringPrintf("failed subscribe for prop: %s, areaId: %" PRId32,
-                               propIdToString(propId).c_str(), areaId);
+               << fmt::format("failed subscribe for propIdAreaId: {}", propIdAreaId);
     }
     return {};
 }
@@ -379,16 +381,111 @@ VhalResult<void> SubscriptionManager::unsubscribe(SubscriptionManager::ClientIdT
 
     if (mSubscribedPropsByClient.find(clientId) == mSubscribedPropsByClient.end()) {
         ALOGW("No property was subscribed for this client, unsubscribe does nothing");
-        return {};
+    } else {
+        auto& propIdAreaIds = mSubscribedPropsByClient[clientId];
+        for (auto const& propIdAreaId : propIdAreaIds) {
+            if (auto result = unsubscribePropIdAreaIdLocked(clientId, propIdAreaId); !result.ok()) {
+                return result;
+            }
+        }
+        mSubscribedPropsByClient.erase(clientId);
     }
 
-    auto& subscriptions = mSubscribedPropsByClient[clientId];
-    for (auto const& propIdAreaId : subscriptions) {
-        if (auto result = unsubscribePropIdAreaIdLocked(clientId, propIdAreaId); !result.ok()) {
+    if (mSupportedValueChangePropIdAreaIdsByClient.find(clientId) ==
+        mSupportedValueChangePropIdAreaIdsByClient.end()) {
+        ALOGW("No supported value change was subscribed for this client, unsubscribe does nothing");
+    } else {
+        const auto& propIdAreaIds = mSupportedValueChangePropIdAreaIdsByClient[clientId];
+        if (auto result = unsubscribeSupportedValueChangeLocked(
+                    clientId,
+                    std::vector<PropIdAreaId>(propIdAreaIds.begin(), propIdAreaIds.end()));
+            !result.ok()) {
             return result;
         }
     }
-    mSubscribedPropsByClient.erase(clientId);
+    return {};
+}
+
+VhalResult<void> SubscriptionManager::subscribeSupportedValueChange(
+        const std::shared_ptr<IVehicleCallback>& callback,
+        const std::vector<PropIdAreaId>& propIdAreaIds) {
+    // Need to make sure this whole operation is guarded by a lock so that our internal state is
+    // consistent with IVehicleHardware state.
+    std::scoped_lock<std::mutex> lockGuard(mLock);
+
+    ClientIdType clientId = callback->asBinder().get();
+
+    // It is possible that some of the [propId, areaId]s are already subscribed, IVehicleHardware
+    // will ignore them.
+    if (auto status = mVehicleHardware->subscribeSupportedValueChange(propIdAreaIds);
+        status != StatusCode::OK) {
+        return StatusError(status)
+               << fmt::format("failed to call subscribeSupportedValueChange for propIdAreaIds: {}",
+                              propIdAreaIds);
+    }
+    for (const auto& propIdAreaId : propIdAreaIds) {
+        mSupportedValueChangeClientsByPropIdAreaId[propIdAreaId][clientId] = callback;
+        // mSupportedValueChangePropIdAreaIdsByClient[clientId] is a set so this will ignore
+        // duplicate [propId, areaId].
+        mSupportedValueChangePropIdAreaIdsByClient[clientId].insert(propIdAreaId);
+    }
+    return {};
+}
+
+VhalResult<void> SubscriptionManager::unsubscribeSupportedValueChange(
+        SubscriptionManager::ClientIdType clientId,
+        const std::vector<PropIdAreaId>& propIdAreaIds) {
+    // Need to make sure this whole operation is guarded by a lock so that our internal state is
+    // consistent with IVehicleHardware state.
+    std::scoped_lock<std::mutex> lockGuard(mLock);
+
+    return unsubscribeSupportedValueChangeLocked(clientId, propIdAreaIds);
+}
+
+VhalResult<void> SubscriptionManager::unsubscribeSupportedValueChangeLocked(
+        SubscriptionManager::ClientIdType clientId,
+        const std::vector<PropIdAreaId>& propIdAreaIds) {
+    std::vector<PropIdAreaId> propIdAreaIdsToUnsubscribe;
+
+    // Check which [propId, areaId] needs to be unsubscribed from the hardware.
+    for (const auto& propIdAreaId : propIdAreaIds) {
+        auto it = mSupportedValueChangeClientsByPropIdAreaId.find(propIdAreaId);
+        if (it != mSupportedValueChangeClientsByPropIdAreaId.end()) {
+            const auto& clients = it->second;
+            if (clients.size() == 1 && clients.find(clientId) != clients.end()) {
+                // This callback is the only client registered for [propId, areaId].
+                // Unregister it should unregister the [propId, areaId].
+                propIdAreaIdsToUnsubscribe.push_back(propIdAreaId);
+            }
+        }
+    }
+
+    // Send the unsubscribe request.
+    if (!propIdAreaIdsToUnsubscribe.empty()) {
+        if (auto status =
+                    mVehicleHardware->unsubscribeSupportedValueChange(propIdAreaIdsToUnsubscribe);
+            status != StatusCode::OK) {
+            return StatusError(status) << fmt::format(
+                           "failed to call unsubscribeSupportedValueChange for "
+                           "propIdAreaIds: {}",
+                           propIdAreaIdsToUnsubscribe);
+        }
+    }
+
+    // Remove internal book-keeping.
+    for (const auto& propIdAreaId : propIdAreaIds) {
+        if (mSupportedValueChangeClientsByPropIdAreaId.find(propIdAreaId) !=
+            mSupportedValueChangeClientsByPropIdAreaId.end()) {
+            mSupportedValueChangeClientsByPropIdAreaId[propIdAreaId].erase(clientId);
+        }
+        if (mSupportedValueChangeClientsByPropIdAreaId.empty()) {
+            mSupportedValueChangeClientsByPropIdAreaId.erase(propIdAreaId);
+        }
+        mSupportedValueChangePropIdAreaIdsByClient[clientId].erase(propIdAreaId);
+        if (mSupportedValueChangePropIdAreaIdsByClient[clientId].empty()) {
+            mSupportedValueChangePropIdAreaIdsByClient.erase(clientId);
+        }
+    }
     return {};
 }
 
@@ -486,12 +583,19 @@ SubscriptionManager::getSubscribedClientsForErrorEvents(
 
 bool SubscriptionManager::isEmpty() {
     std::scoped_lock<std::mutex> lockGuard(mLock);
-    return mSubscribedPropsByClient.empty() && mClientsByPropIdAreaId.empty();
+    return mSubscribedPropsByClient.empty() && mClientsByPropIdAreaId.empty() &&
+           mSupportedValueChangeClientsByPropIdAreaId.empty() &&
+           mSupportedValueChangePropIdAreaIdsByClient.empty();
 }
 
-size_t SubscriptionManager::countClients() {
+size_t SubscriptionManager::countPropertyChangeClients() {
     std::scoped_lock<std::mutex> lockGuard(mLock);
     return mSubscribedPropsByClient.size();
+}
+
+size_t SubscriptionManager::countSupportedValueChangeClients() {
+    std::scoped_lock<std::mutex> lockGuard(mLock);
+    return mSupportedValueChangePropIdAreaIdsByClient.size();
 }
 
 }  // namespace vehicle
