@@ -55,8 +55,4 @@ enum RadioAccessFamily {
      * 5G NR. This is only use in 5G Standalone mode.
      */
     NR = 1 << RadioTechnology.NR,
-    /**
-     * 3GPP NB-IOT (Narrowband Internet of Things) over Non-Terrestrial-Networks technology.
-     */
-    NB_IOT_NTN = 1 << RadioTechnology.NB_IOT_NTN,
 }

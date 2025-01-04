@@ -80,5 +80,4 @@ enum RadioAccessFamily {
    */
   LTE_CA = (1 << android.hardware.radio.RadioTechnology.LTE_CA) /* 524288 */,
   NR = (1 << android.hardware.radio.RadioTechnology.NR) /* 1048576 */,
-  NB_IOT_NTN = (1 << android.hardware.radio.RadioTechnology.NB_IOT_NTN) /* 2097152 */,
 }
