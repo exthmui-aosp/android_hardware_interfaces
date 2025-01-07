@@ -17,6 +17,7 @@
 #pragma once
 
 #include <aidl/android/hardware/graphics/composer3/IComposerClient.h>
+#include <aidl/android/hardware/graphics/composer3/Luts.h>
 #include <android-base/unique_fd.h>
 #include <android/hardware/graphics/composer3/ComposerClientReader.h>
 #include <android/hardware/graphics/composer3/ComposerClientWriter.h>
@@ -25,6 +26,8 @@
 #include <memory>
 #include "GraphicsComposerCallback.h"
 #include "VtsComposerClient.h"
+
+using aidl::android::hardware::graphics::composer3::Luts;
 
 namespace aidl::android::hardware::graphics::composer3::vts {
 
@@ -80,6 +83,7 @@ class TestLayer {
     void setTransform(Transform transform) { mTransform = transform; }
     void setAlpha(float alpha) { mAlpha = alpha; }
     void setBlendMode(BlendMode blendMode) { mBlendMode = blendMode; }
+    void setLuts(Luts luts) { mLuts = std::move(luts); }
 
     BlendMode getBlendMode() const { return mBlendMode; }
 
@@ -105,6 +109,7 @@ class TestLayer {
     BlendMode mBlendMode = BlendMode::NONE;
     uint32_t mZOrder = 0;
     Dataspace mDataspace = Dataspace::UNKNOWN;
+    Luts mLuts;
 };
 
 class TestColorLayer : public TestLayer {

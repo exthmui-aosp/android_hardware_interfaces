@@ -20,6 +20,7 @@
 #include <aidl/Vintf.h>
 #include <aidl/android/hardware/graphics/common/BufferUsage.h>
 #include <aidl/android/hardware/graphics/composer3/IComposer.h>
+#include <cutils/ashmem.h>
 #include <gtest/gtest.h>
 #include <ui/DisplayId.h>
 #include <ui/DisplayIdentification.h>
@@ -524,6 +525,118 @@ TEST_P(GraphicsCompositionTest, ClientComposition) {
         ASSERT_TRUE(mReader.takeErrors().empty());
 
         ASSERT_NO_FATAL_FAILURE(readbackBuffer.checkReadbackBuffer(expectedColors));
+    }
+}
+
+void generateLuts(Luts* luts, LutProperties::Dimension dimension, int32_t size,
+                  LutProperties::SamplingKey key) {
+    size_t bufferSize = dimension == LutProperties::Dimension::ONE_D
+                                ? static_cast<size_t>(size) * sizeof(float)
+                                : static_cast<size_t>(size * size * size) * sizeof(float);
+    int32_t fd = ashmem_create_region("lut_shared_mem", bufferSize);
+    void* ptr = mmap(nullptr, bufferSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    std::vector<float> buffers(static_cast<size_t>(size), 0.5f);
+    memcpy(ptr, buffers.data(), bufferSize);
+    munmap(ptr, bufferSize);
+    luts->pfd = ndk::ScopedFileDescriptor(fd);
+    luts->offsets = std::vector<int32_t>{0};
+    luts->lutProperties = {LutProperties{dimension, size, {key}}};
+}
+
+TEST_P(GraphicsCompositionTest, Luts) {
+    ASSERT_TRUE(
+            mComposerClient->setClientTargetSlotCount(getPrimaryDisplayId(), kClientTargetSlotCount)
+                    .isOk());
+    const auto& [status, properties] = mComposerClient->getOverlaySupport();
+    if (!status.isOk() && status.getExceptionCode() == EX_SERVICE_SPECIFIC &&
+        status.getServiceSpecificError() == IComposerClient::EX_UNSUPPORTED) {
+        GTEST_SKIP() << "getOverlaySupport is not supported";
+        return;
+    }
+
+    if (!properties.lutProperties) {
+        GTEST_SKIP() << "lutProperties is not supported";
+        return;
+    }
+
+    for (const auto& lutProperties : *properties.lutProperties) {
+        if (!lutProperties) {
+            continue;
+        }
+        auto& l = *lutProperties;
+
+        for (const auto& key : l.samplingKeys) {
+            for (ColorMode mode : mTestColorModes) {
+                EXPECT_TRUE(mComposerClient
+                                    ->setColorMode(getPrimaryDisplayId(), mode,
+                                                   RenderIntent::COLORIMETRIC)
+                                    .isOk());
+
+                bool isSupported;
+                ASSERT_NO_FATAL_FAILURE(isSupported = getHasReadbackBuffer());
+                if (!isSupported) {
+                    GTEST_SUCCEED()
+                            << "Readback not supported or unsupported pixelFormat/dataspace";
+                    return;
+                }
+
+                common::Rect coloredSquare({0, 0, getDisplayWidth(), getDisplayHeight()});
+
+                // expected color for each pixel
+                std::vector<Color> expectedColors(
+                        static_cast<size_t>(getDisplayWidth() * getDisplayHeight()));
+                ReadbackHelper::fillColorsArea(expectedColors, getDisplayWidth(), coloredSquare,
+                                               WHITE);
+
+                auto layer = std::make_shared<TestBufferLayer>(
+                        mComposerClient, *mTestRenderEngine, getPrimaryDisplayId(),
+                        getDisplayWidth(), getDisplayHeight(), PixelFormat::RGBA_8888, *mWriter);
+                layer->setDisplayFrame(coloredSquare);
+                layer->setZOrder(10);
+                layer->setDataspace(Dataspace::SRGB);
+
+                Luts luts;
+                generateLuts(&luts, l.dimension, l.size, key);
+                layer->setLuts(std::move(luts));
+
+                ASSERT_NO_FATAL_FAILURE(layer->setBuffer(expectedColors));
+
+                std::vector<std::shared_ptr<TestLayer>> layers = {layer};
+
+                ReadbackBuffer readbackBuffer(getPrimaryDisplayId(), mComposerClient,
+                                              getDisplayWidth(), getDisplayHeight(), mPixelFormat,
+                                              mDataspace);
+                ASSERT_NO_FATAL_FAILURE(readbackBuffer.setReadbackBuffer());
+
+                writeLayers(layers);
+                ASSERT_TRUE(mReader.takeErrors().empty());
+                mWriter->validateDisplay(getPrimaryDisplayId(), ComposerClientWriter::kNoTimestamp,
+                                         VtsComposerClient::kNoFrameIntervalNs);
+                execute();
+                // if hwc cannot handle and asks for composition change,
+                // just succeed the test
+                if (!mReader.takeChangedCompositionTypes(getPrimaryDisplayId()).empty()) {
+                    GTEST_SUCCEED();
+                    return;
+                }
+
+                auto changedCompositionTypes =
+                        mReader.takeChangedCompositionTypes(getPrimaryDisplayId());
+                ASSERT_TRUE(changedCompositionTypes.empty());
+
+                mWriter->presentDisplay(getPrimaryDisplayId());
+                execute();
+                ASSERT_TRUE(mReader.takeErrors().empty());
+
+                ReadbackHelper::fillColorsArea(expectedColors, getDisplayWidth(), coloredSquare,
+                                               {188.f / 255.f, 188.f / 255.f, 188.f / 255.f, 1.0f});
+
+                ASSERT_NO_FATAL_FAILURE(readbackBuffer.checkReadbackBuffer(expectedColors));
+                mTestRenderEngine->setRenderLayers(layers);
+                ASSERT_NO_FATAL_FAILURE(mTestRenderEngine->drawLayers());
+                ASSERT_NO_FATAL_FAILURE(mTestRenderEngine->checkColorBuffer(expectedColors));
+            }
+        }
     }
 }
 

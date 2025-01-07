@@ -55,5 +55,10 @@ parcelable SupportInfo {
     boolean isGpuSupported;
     int cpuMinIntervalMillis;
     int gpuMinIntervalMillis;
+    int cpuMinCalculationWindowMillis = 50;
+    int cpuMaxCalculationWindowMillis = 10000;
+    int gpuMinCalculationWindowMillis = 50;
+    int gpuMaxCalculationWindowMillis = 10000;
+    int cpuMaxTidCount = 5;
   }
 }

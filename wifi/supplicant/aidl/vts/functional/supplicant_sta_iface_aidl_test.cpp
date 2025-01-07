@@ -43,10 +43,12 @@ using aidl::android::hardware::wifi::supplicant::ISupplicant;
 using aidl::android::hardware::wifi::supplicant::ISupplicantStaIface;
 using aidl::android::hardware::wifi::supplicant::ISupplicantStaNetwork;
 using aidl::android::hardware::wifi::supplicant::KeyMgmtMask;
+using aidl::android::hardware::wifi::supplicant::MloLinksInfo;
 using aidl::android::hardware::wifi::supplicant::MscsParams;
 using aidl::android::hardware::wifi::supplicant::QosCharacteristics;
 using aidl::android::hardware::wifi::supplicant::QosPolicyScsData;
 using aidl::android::hardware::wifi::supplicant::QosPolicyScsRequestStatus;
+using aidl::android::hardware::wifi::supplicant::RxFilterType;
 using aidl::android::hardware::wifi::supplicant::SignalPollResult;
 using aidl::android::hardware::wifi::supplicant::UsdBaseConfig;
 using aidl::android::hardware::wifi::supplicant::UsdCapabilities;
@@ -972,6 +974,94 @@ TEST_P(SupplicantStaIfaceAidlTest, GetSignalPollResults) {
 
     std::vector<SignalPollResult> results;
     EXPECT_TRUE(sta_iface_->getSignalPollResults(&results).isOk());
+}
+
+/*
+ * Test that we can add, remove, start, and stop an RX filter.
+ */
+TEST_P(SupplicantStaIfaceAidlTest, ConfigureRxFilter) {
+    RxFilterType filterType = RxFilterType::V4_MULTICAST;
+    EXPECT_TRUE(sta_iface_->addRxFilter(filterType).isOk());
+    EXPECT_TRUE(sta_iface_->startRxFilter().isOk());
+    EXPECT_TRUE(sta_iface_->stopRxFilter().isOk());
+    EXPECT_TRUE(sta_iface_->removeRxFilter(filterType).isOk());
+}
+
+/*
+ * Test that we can start and cancel all WPS methods.
+ */
+TEST_P(SupplicantStaIfaceAidlTest, StartAndCancelWps) {
+    std::vector<uint8_t> zeroMacAddr = {0, 0, 0, 0, 0, 0};
+    std::string pin = "12345678";
+
+    EXPECT_TRUE(sta_iface_->startWpsPbc(zeroMacAddr).isOk());
+    EXPECT_TRUE(sta_iface_->cancelWps().isOk());
+
+    std::string generatedPin;
+    EXPECT_TRUE(sta_iface_->startWpsPinDisplay(zeroMacAddr, &generatedPin).isOk());
+    EXPECT_TRUE(sta_iface_->cancelWps().isOk());
+
+    EXPECT_TRUE(sta_iface_->startWpsPinKeypad(pin).isOk());
+    EXPECT_TRUE(sta_iface_->cancelWps().isOk());
+
+    EXPECT_TRUE(sta_iface_->startWpsRegistrar(zeroMacAddr, pin).isOk());
+    EXPECT_TRUE(sta_iface_->cancelWps().isOk());
+}
+
+/*
+ * Test that we can add, list, get, and remove a network.
+ */
+TEST_P(SupplicantStaIfaceAidlTest, ManageNetwork) {
+    std::shared_ptr<ISupplicantStaNetwork> network;
+    EXPECT_TRUE(sta_iface_->addNetwork(&network).isOk());
+    EXPECT_NE(network, nullptr);
+
+    std::vector<int32_t> networkList;
+    EXPECT_TRUE(sta_iface_->listNetworks(&networkList).isOk());
+    EXPECT_EQ(networkList.size(), 1);
+
+    int networkId;
+    EXPECT_TRUE(network->getId(&networkId).isOk());
+    EXPECT_EQ(networkId, networkList[0]);
+
+    std::shared_ptr<ISupplicantStaNetwork> retrievedNetwork;
+    EXPECT_TRUE(sta_iface_->getNetwork(networkId, &retrievedNetwork).isOk());
+    EXPECT_NE(retrievedNetwork, nullptr);
+    EXPECT_TRUE(sta_iface_->removeNetwork(networkId).isOk());
+}
+
+/*
+ * EnableAutoReconnect
+ */
+TEST_P(SupplicantStaIfaceAidlTest, EnableAutoReconnect) {
+    EXPECT_TRUE(sta_iface_->enableAutoReconnect(true).isOk());
+    EXPECT_TRUE(sta_iface_->enableAutoReconnect(false).isOk());
+}
+
+/*
+ * SetQosPolicyFeatureEnabled
+ */
+TEST_P(SupplicantStaIfaceAidlTest, SetQosPolicyFeatureEnabled) {
+    EXPECT_TRUE(sta_iface_->setQosPolicyFeatureEnabled(true).isOk());
+    EXPECT_TRUE(sta_iface_->setQosPolicyFeatureEnabled(false).isOk());
+}
+
+/*
+ * GetConnectionMloLinksInfo
+ */
+TEST_P(SupplicantStaIfaceAidlTest, GetConnectionMloLinksInfo) {
+    MloLinksInfo mloInfo;
+    EXPECT_TRUE(sta_iface_->getConnectionMloLinksInfo(&mloInfo).isOk());
+}
+
+/*
+ * StopDppInitiator
+ */
+TEST_P(SupplicantStaIfaceAidlTest, StopDppInitiator) {
+    if (!keyMgmtSupported(sta_iface_, KeyMgmtMask::DPP)) {
+        GTEST_SKIP() << "Missing DPP support";
+    }
+    EXPECT_TRUE(sta_iface_->stopDppInitiator().isOk());
 }
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SupplicantStaIfaceAidlTest);

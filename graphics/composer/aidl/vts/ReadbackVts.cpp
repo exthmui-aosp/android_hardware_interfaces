@@ -37,6 +37,12 @@ void TestLayer::write(ComposerClientWriter& writer) {
     writer.setLayerBlendMode(mDisplay, mLayer, mBlendMode);
     writer.setLayerBrightness(mDisplay, mLayer, mBrightness);
     writer.setLayerDataspace(mDisplay, mLayer, mDataspace);
+    Luts luts{
+            .pfd = ::ndk::ScopedFileDescriptor(dup(mLuts.pfd.get())),
+            .offsets = mLuts.offsets,
+            .lutProperties = mLuts.lutProperties,
+    };
+    writer.setLayerLuts(mDisplay, mLayer, luts);
 }
 
 std::string ReadbackHelper::getColorModeString(ColorMode mode) {
@@ -103,6 +109,24 @@ LayerSettings TestLayer::toRenderEngineLayerSettings() {
     layerSettings.geometry.positionTransform = scale * translation;
     layerSettings.whitePointNits = mWhitePointNits;
     layerSettings.sourceDataspace = static_cast<::android::ui::Dataspace>(mDataspace);
+    if (mLuts.pfd.get() >= 0 && mLuts.offsets) {
+        std::vector<int32_t> dimensions;
+        std::vector<int32_t> sizes;
+        std::vector<int32_t> keys;
+        dimensions.reserve(mLuts.lutProperties.size());
+        sizes.reserve(mLuts.lutProperties.size());
+        keys.reserve(mLuts.lutProperties.size());
+
+        for (auto& l : mLuts.lutProperties) {
+            dimensions.emplace_back(static_cast<int32_t>(l.dimension));
+            sizes.emplace_back(static_cast<int32_t>(l.size));
+            keys.emplace_back(static_cast<int32_t>(l.samplingKeys[0]));
+        }
+
+        layerSettings.luts = std::make_shared<::android::gui::DisplayLuts>(
+                ::android::base::unique_fd(dup(mLuts.pfd.get())), *mLuts.offsets, dimensions, sizes,
+                keys);
+    }
 
     return layerSettings;
 }

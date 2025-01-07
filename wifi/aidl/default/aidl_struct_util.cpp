@@ -3883,7 +3883,8 @@ bool convertCachedScanResultToAidl(const legacy_hal::wifi_cached_scan_result& le
         return false;
     }
     *aidl_scan_result = {};
-    aidl_scan_result->timeStampInUs = ts_us - legacy_scan_result.age_ms * 1000;
+    aidl_scan_result->timeStampInUs =
+            ts_us - (static_cast<uint64_t>(legacy_scan_result.age_ms) * 1000);
     if (aidl_scan_result->timeStampInUs < 0) {
         aidl_scan_result->timeStampInUs = 0;
         return false;

@@ -179,8 +179,13 @@ ConversionResult<AudioHalProductStrategy> EngineConfigXmlConverter::convertProdu
         const eng_xsd::ProductStrategies::ProductStrategy& xsdcProductStrategy) {
     AudioHalProductStrategy aidlProductStrategy;
 
-    aidlProductStrategy.id =
-            VALUE_OR_FATAL(convertProductStrategyIdToAidl(xsdcProductStrategy.getId()));
+    if (xsdcProductStrategy.hasId()) {
+        aidlProductStrategy.id =
+                VALUE_OR_FATAL(convertProductStrategyIdToAidl(xsdcProductStrategy.getId()));
+    } else {
+        aidlProductStrategy.id =
+                VALUE_OR_FATAL(convertProductStrategyNameToAidl(xsdcProductStrategy.getName()));
+    }
     aidlProductStrategy.name = xsdcProductStrategy.getName();
 
     if (xsdcProductStrategy.hasAttributesGroup()) {
