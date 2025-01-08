@@ -26,6 +26,7 @@ namespace hardware {
 namespace automotive {
 namespace vehicle {
 
+using ::aidl::android::hardware::automotive::vehicle::HasSupportedValueInfo;
 using ::aidl::android::hardware::automotive::vehicle::RawPropValues;
 using ::aidl::android::hardware::automotive::vehicle::VehicleAreaConfig;
 using ::aidl::android::hardware::automotive::vehicle::VehiclePropConfig;
@@ -801,6 +802,108 @@ TEST_F(JsonConfigLoaderUnitTest, testAccess_areaOverrideGlobal) {
     const VehicleAreaConfig& areaConfig2 = config.areaConfigs[1];
     ASSERT_EQ(areaConfig2.access, VehiclePropertyAccess::READ);
     ASSERT_EQ(areaConfig2.areaId, 1);
+}
+
+TEST_F(JsonConfigLoaderUnitTest, testHasSupportedValueInfo_allTrue) {
+    std::istringstream iss(R"(
+    {
+        "properties": [{
+            "property": "VehicleProperty::CABIN_LIGHTS_SWITCH",
+            "areas": [{
+                "access": "VehiclePropertyAccess::WRITE",
+                "areaId": 0,
+                "hasSupportedValueInfo": {
+                    "hasMinSupportedValue": true,
+                    "hasMaxSupportedValue": true,
+                    "hasSupportedValuesList": true
+                }
+            }],
+            "access": "VehiclePropertyAccess::READ",
+        }]
+    }
+    )");
+
+    auto result = mLoader.loadPropConfig(iss);
+    ASSERT_TRUE(result.ok());
+
+    auto configs = result.value();
+    ASSERT_EQ(configs.size(), 1u);
+
+    const VehiclePropConfig& config = configs.begin()->second.config;
+    ASSERT_EQ(config.access, VehiclePropertyAccess::READ);
+    ASSERT_EQ(config.areaConfigs.size(), 1u);
+
+    const VehicleAreaConfig& areaConfig = config.areaConfigs[0];
+    ASSERT_EQ(areaConfig.hasSupportedValueInfo, HasSupportedValueInfo({
+                                                        .hasMinSupportedValue = true,
+                                                        .hasMaxSupportedValue = true,
+                                                        .hasSupportedValuesList = true,
+                                                }));
+}
+
+TEST_F(JsonConfigLoaderUnitTest, testHasSupportedValueInfo_allFalse) {
+    std::istringstream iss(R"(
+    {
+        "properties": [{
+            "property": "VehicleProperty::CABIN_LIGHTS_SWITCH",
+            "areas": [{
+                "access": "VehiclePropertyAccess::WRITE",
+                "areaId": 0,
+                "hasSupportedValueInfo": {
+                    "hasMinSupportedValue": false,
+                    "hasMaxSupportedValue": false,
+                    "hasSupportedValuesList": false
+                }
+            }],
+            "access": "VehiclePropertyAccess::READ",
+        }]
+    }
+    )");
+
+    auto result = mLoader.loadPropConfig(iss);
+    ASSERT_TRUE(result.ok());
+
+    auto configs = result.value();
+    ASSERT_EQ(configs.size(), 1u);
+
+    const VehiclePropConfig& config = configs.begin()->second.config;
+    ASSERT_EQ(config.access, VehiclePropertyAccess::READ);
+    ASSERT_EQ(config.areaConfigs.size(), 1u);
+
+    const VehicleAreaConfig& areaConfig = config.areaConfigs[0];
+    ASSERT_EQ(areaConfig.hasSupportedValueInfo, HasSupportedValueInfo({
+                                                        .hasMinSupportedValue = false,
+                                                        .hasMaxSupportedValue = false,
+                                                        .hasSupportedValuesList = false,
+                                                }));
+}
+
+TEST_F(JsonConfigLoaderUnitTest, testHasSupportedValueInfo_unspecified) {
+    std::istringstream iss(R"(
+    {
+        "properties": [{
+            "property": "VehicleProperty::CABIN_LIGHTS_SWITCH",
+            "areas": [{
+                "access": "VehiclePropertyAccess::WRITE",
+                "areaId": 0
+            }],
+            "access": "VehiclePropertyAccess::READ",
+        }]
+    }
+    )");
+
+    auto result = mLoader.loadPropConfig(iss);
+    ASSERT_TRUE(result.ok());
+
+    auto configs = result.value();
+    ASSERT_EQ(configs.size(), 1u);
+
+    const VehiclePropConfig& config = configs.begin()->second.config;
+    ASSERT_EQ(config.access, VehiclePropertyAccess::READ);
+    ASSERT_EQ(config.areaConfigs.size(), 1u);
+
+    const VehicleAreaConfig& areaConfig = config.areaConfigs[0];
+    ASSERT_EQ(areaConfig.hasSupportedValueInfo, std::nullopt);
 }
 
 }  // namespace vehicle

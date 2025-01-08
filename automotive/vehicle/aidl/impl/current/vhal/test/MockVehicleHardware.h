@@ -62,6 +62,8 @@ class MockVehicleHardware final : public IVehicleHardware {
     void registerOnPropertyChangeEvent(
             std::unique_ptr<const PropertyChangeCallback> callback) override;
     void registerOnPropertySetErrorEvent(std::unique_ptr<const PropertySetErrorCallback>) override;
+    void registerSupportedValueChangeCallback(
+            std::unique_ptr<const SupportedValueChangeCallback>) override;
     aidl::android::hardware::automotive::vehicle::StatusCode subscribe(
             aidl::android::hardware::automotive::vehicle::SubscribeOptions options) override;
     aidl::android::hardware::automotive::vehicle::StatusCode unsubscribe(int32_t propId,
@@ -112,6 +114,7 @@ class MockVehicleHardware final : public IVehicleHardware {
     void setDumpResult(DumpResult result);
     void sendOnPropertySetErrorEvent(const std::vector<SetValueErrorEvent>& errorEvents);
     void setPropertyOnChangeEventBatchingWindow(std::chrono::nanoseconds window);
+    void sendSupportedValueChangeEvent(const std::vector<PropIdAreaId>& propIdAreaIds);
 
     std::set<std::pair<int32_t, int32_t>> getSubscribedOnChangePropIdAreaIds();
     std::set<std::pair<int32_t, int32_t>> getSubscribedContinuousPropIdAreaIds();
@@ -150,6 +153,8 @@ class MockVehicleHardware final : public IVehicleHardware {
     int64_t mSleepTime GUARDED_BY(mLock) = 0;
     std::unique_ptr<const PropertyChangeCallback> mPropertyChangeCallback GUARDED_BY(mLock);
     std::unique_ptr<const PropertySetErrorCallback> mPropertySetErrorCallback GUARDED_BY(mLock);
+    std::unique_ptr<const SupportedValueChangeCallback> mSupportedValueChangeCallback
+            GUARDED_BY(mLock);
     std::function<aidl::android::hardware::automotive::vehicle::StatusCode(
             std::shared_ptr<const GetValuesCallback>,
             const std::vector<aidl::android::hardware::automotive::vehicle::GetValueRequest>&)>

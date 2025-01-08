@@ -139,12 +139,12 @@ class AECParamTest : public ::testing::TestWithParam<AECParamTestParam>, public 
 };
 
 TEST_P(AECParamTest, SetAndGetEchoDelay) {
-    EXPECT_NO_FATAL_FAILURE(addEchoDelayParam(mEchoDelay));
+    addEchoDelayParam(mEchoDelay);
     SetAndGetParameters();
 }
 
 TEST_P(AECParamTest, SetAndGetMobileMode) {
-    EXPECT_NO_FATAL_FAILURE(addMobileModeParam(mMobileMode));
+    addMobileModeParam(mMobileMode);
     SetAndGetParameters();
 }
 

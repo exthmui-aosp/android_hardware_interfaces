@@ -99,12 +99,15 @@
                 {
                     "defaultValue": {
                         "int32Values": [
-                            1
+                            2
                         ]
                     },
                     "areaId": "VehicleAreaWindow::FRONT_WINDSHIELD",
-                    "minInt32Value": -100,
-                    "maxInt32Value": 100
+                    "hasSupportedValueInfo": {
+                        "hasMinSupportedValue": true,
+                        "hasMaxSupportedValue": true,
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "defaultValue": {

@@ -542,7 +542,7 @@ class DynamicsProcessingTestEngineArchitecture
 };
 
 TEST_P(DynamicsProcessingTestEngineArchitecture, SetAndGetEngineArch) {
-    EXPECT_NO_FATAL_FAILURE(addEngineConfig(mCfg));
+    addEngineConfig(mCfg);
     ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
 }
 
@@ -594,7 +594,7 @@ class DynamicsProcessingTestInputGain
 };
 
 TEST_P(DynamicsProcessingTestInputGain, SetAndGetInputGain) {
-    EXPECT_NO_FATAL_FAILURE(addInputGain(mInputGain));
+    addInputGain(mInputGain);
     ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
 }
 
@@ -652,7 +652,7 @@ TEST_P(DynamicsProcessingInputGainDataTest, SetAndGetInputGain) {
             mInputGain.push_back(DynamicsProcessing::InputGain(i, gainDb));
         }
         std::vector<float> output(mInput.size());
-        EXPECT_NO_FATAL_FAILURE(addInputGain(mInputGain));
+        addInputGain(mInputGain);
         EXPECT_NO_FATAL_FAILURE(setParamsAndProcess(mInput, output));
         if (!isAllParamsValid()) {
             continue;
@@ -719,8 +719,8 @@ class DynamicsProcessingTestLimiterConfig
 };
 
 TEST_P(DynamicsProcessingTestLimiterConfig, SetAndGetLimiterConfig) {
-    EXPECT_NO_FATAL_FAILURE(addEngineConfig(mEngineConfigPreset));
-    EXPECT_NO_FATAL_FAILURE(addLimiterConfig(mLimiterConfigList));
+    addEngineConfig(mEngineConfigPreset);
+    addLimiterConfig(mLimiterConfigList);
     ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
 }
 
@@ -782,8 +782,8 @@ class DynamicsProcessingLimiterConfigDataTest
     }
 
     void setLimiterParamsAndProcess(std::vector<float>& input, std::vector<float>& output) {
-        EXPECT_NO_FATAL_FAILURE(addEngineConfig(mEngineConfigPreset));
-        EXPECT_NO_FATAL_FAILURE(addLimiterConfig(mLimiterConfigList));
+        addEngineConfig(mEngineConfigPreset);
+        addLimiterConfig(mLimiterConfigList);
         EXPECT_NO_FATAL_FAILURE(setParamsAndProcess(input, output));
     }
 
@@ -937,20 +937,20 @@ class DynamicsProcessingTestChannelConfig
 };
 
 TEST_P(DynamicsProcessingTestChannelConfig, SetAndGetPreEqChannelConfig) {
-    EXPECT_NO_FATAL_FAILURE(addEngineConfig(mEngineConfigPreset));
-    EXPECT_NO_FATAL_FAILURE(addPreEqChannelConfig(mCfg));
+    addEngineConfig(mEngineConfigPreset);
+    addPreEqChannelConfig(mCfg);
     ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
 }
 
 TEST_P(DynamicsProcessingTestChannelConfig, SetAndGetPostEqChannelConfig) {
-    EXPECT_NO_FATAL_FAILURE(addEngineConfig(mEngineConfigPreset));
-    EXPECT_NO_FATAL_FAILURE(addPostEqChannelConfig(mCfg));
+    addEngineConfig(mEngineConfigPreset);
+    addPostEqChannelConfig(mCfg);
     ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
 }
 
 TEST_P(DynamicsProcessingTestChannelConfig, SetAndGetMbcChannelConfig) {
-    EXPECT_NO_FATAL_FAILURE(addEngineConfig(mEngineConfigPreset));
-    EXPECT_NO_FATAL_FAILURE(addMbcChannelConfig(mCfg));
+    addEngineConfig(mEngineConfigPreset);
+    addMbcChannelConfig(mCfg);
     ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
 }
 
@@ -1018,27 +1018,27 @@ class DynamicsProcessingTestEqBandConfig : public ::testing::TestWithParam<EqBan
 
 TEST_P(DynamicsProcessingTestEqBandConfig, SetAndGetPreEqBandConfig) {
     mEngineConfigPreset.preEqStage.bandCount = mCfgs.size();
-    EXPECT_NO_FATAL_FAILURE(addEngineConfig(mEngineConfigPreset));
+    addEngineConfig(mEngineConfigPreset);
     std::vector<DynamicsProcessing::ChannelConfig> cfgs(mChannelCount);
     for (int i = 0; i < mChannelCount; i++) {
         cfgs[i].channel = i;
         cfgs[i].enable = true;
     }
-    EXPECT_NO_FATAL_FAILURE(addPreEqChannelConfig(cfgs));
-    EXPECT_NO_FATAL_FAILURE(addPreEqBandConfigs(mCfgs));
+    addPreEqChannelConfig(cfgs);
+    addPreEqBandConfigs(mCfgs);
     ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
 }
 
 TEST_P(DynamicsProcessingTestEqBandConfig, SetAndGetPostEqBandConfig) {
     mEngineConfigPreset.postEqStage.bandCount = mCfgs.size();
-    EXPECT_NO_FATAL_FAILURE(addEngineConfig(mEngineConfigPreset));
+    addEngineConfig(mEngineConfigPreset);
     std::vector<DynamicsProcessing::ChannelConfig> cfgs(mChannelCount);
     for (int i = 0; i < mChannelCount; i++) {
         cfgs[i].channel = i;
         cfgs[i].enable = true;
     }
-    EXPECT_NO_FATAL_FAILURE(addPostEqChannelConfig(cfgs));
-    EXPECT_NO_FATAL_FAILURE(addPostEqBandConfigs(mCfgs));
+    addPostEqChannelConfig(cfgs);
+    addPostEqBandConfigs(mCfgs);
     ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
 }
 
@@ -1185,14 +1185,14 @@ class DynamicsProcessingTestMbcBandConfig
 
 TEST_P(DynamicsProcessingTestMbcBandConfig, SetAndGetMbcBandConfig) {
     mEngineConfigPreset.mbcStage.bandCount = mCfgs.size();
-    EXPECT_NO_FATAL_FAILURE(addEngineConfig(mEngineConfigPreset));
+    addEngineConfig(mEngineConfigPreset);
     std::vector<DynamicsProcessing::ChannelConfig> cfgs(mChannelCount);
     for (int i = 0; i < mChannelCount; i++) {
         cfgs[i].channel = i;
         cfgs[i].enable = true;
     }
-    EXPECT_NO_FATAL_FAILURE(addMbcChannelConfig(cfgs));
-    EXPECT_NO_FATAL_FAILURE(addMbcBandConfigs(mCfgs));
+    addMbcChannelConfig(cfgs);
+    addMbcBandConfigs(mCfgs);
     ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
 }
 

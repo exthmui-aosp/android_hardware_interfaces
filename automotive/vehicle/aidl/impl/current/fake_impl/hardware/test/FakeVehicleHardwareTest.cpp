@@ -3884,6 +3884,44 @@ TEST_F(FakeVehicleHardwareTest, testOverrideApPowerStateReqConfig) {
     }
 }
 
+TEST_F(FakeVehicleHardwareTest, testGetMinMaxSupportedValues) {
+    auto results = getHardware()->getMinMaxSupportedValues({
+            PropIdAreaId{.propId = toInt(TestVendorProperty::VENDOR_EXTENSION_INT_PROPERTY),
+                         .areaId = 0},
+            PropIdAreaId{.propId = toInt(VehicleProperty::HVAC_TEMPERATURE_SET), .areaId = 0},
+    });
+
+    ASSERT_EQ(results.size(), 2u);
+    EXPECT_EQ(results[0].status, StatusCode::OK);
+    EXPECT_NE(results[0].minSupportedValue, std::nullopt);
+    EXPECT_EQ(results[0].minSupportedValue.value(), RawPropValues{.int32Values = {0}});
+    EXPECT_NE(results[0].maxSupportedValue, std::nullopt);
+    EXPECT_EQ(results[0].maxSupportedValue.value(), RawPropValues{.int32Values = {10}});
+    EXPECT_EQ(results[1].status, StatusCode::INVALID_ARG);
+}
+
+TEST_F(FakeVehicleHardwareTest, testGetSupportedValuesLists) {
+    auto results = getHardware()->getSupportedValuesLists({
+            PropIdAreaId{.propId = toInt(TestVendorProperty::VENDOR_EXTENSION_INT_PROPERTY),
+                         .areaId = 0},
+            PropIdAreaId{.propId = toInt(VehicleProperty::HVAC_TEMPERATURE_SET), .areaId = 0},
+    });
+
+    ASSERT_EQ(results.size(), 2u);
+    EXPECT_EQ(results[0].status, StatusCode::OK);
+    EXPECT_NE(results[0].supportedValuesList, std::nullopt);
+    EXPECT_NE((results[0].supportedValuesList)->size(), 0u);
+    EXPECT_EQ(results[0].supportedValuesList.value(), std::vector<std::optional<RawPropValues>>({
+                                                              RawPropValues{.int32Values = {0}},
+                                                              RawPropValues{.int32Values = {2}},
+                                                              RawPropValues{.int32Values = {4}},
+                                                              RawPropValues{.int32Values = {6}},
+                                                              RawPropValues{.int32Values = {8}},
+                                                              RawPropValues{.int32Values = {10}},
+                                                      }));
+    EXPECT_EQ(results[1].status, StatusCode::INVALID_ARG);
+}
+
 }  // namespace fake
 }  // namespace vehicle
 }  // namespace automotive

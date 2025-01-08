@@ -32,7 +32,7 @@
 // later when a module using the interface is updated, e.g., Mainline modules.
 
 package android.hardware.automotive.vehicle;
-@Backing(type="int") @VintfStability
+@Backing(type="int") @JavaDerive(toString=true) @VintfStability
 enum VehicleProperty {
   INVALID = 0x00000000,
   INFO_VIN = (((0x0100 + 0x10000000) + 0x01000000) + 0x00100000) /* 286261504 */,

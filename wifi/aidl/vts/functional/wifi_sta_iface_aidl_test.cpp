@@ -36,6 +36,7 @@ using aidl::android::hardware::wifi::MacAddress;
 using aidl::android::hardware::wifi::Ssid;
 using aidl::android::hardware::wifi::StaApfPacketFilterCapabilities;
 using aidl::android::hardware::wifi::StaBackgroundScanCapabilities;
+using aidl::android::hardware::wifi::StaBackgroundScanParameters;
 using aidl::android::hardware::wifi::StaLinkLayerStats;
 using aidl::android::hardware::wifi::StaRoamingCapabilities;
 using aidl::android::hardware::wifi::StaRoamingConfig;
@@ -46,6 +47,12 @@ using aidl::android::hardware::wifi::WifiBand;
 using aidl::android::hardware::wifi::WifiDebugRxPacketFateReport;
 using aidl::android::hardware::wifi::WifiDebugTxPacketFateReport;
 using aidl::android::hardware::wifi::WifiStatusCode;
+
+namespace {
+const int kTestCmdId = 123;
+const std::array<uint8_t, 6> kTestMacAddr1 = {0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f};
+const std::array<uint8_t, 6> kTestMacAddr2 = {0x4a, 0x5b, 0x6c, 0x7d, 0x8e, 0x9f};
+}  // namespace
 
 class WifiStaIfaceAidlTest : public testing::TestWithParam<std::string> {
   public:
@@ -521,6 +528,52 @@ TEST_P(WifiStaIfaceAidlTest, TwtSessionResume) {
     // Expecting a IWifiStaIfaceEventCallback.onTwtFailure() with INVALID_PARAMS
     // as the error code.
     EXPECT_TRUE(wifi_sta_iface_->twtSessionResume(1, 10).isOk());
+}
+
+/*
+ * GetName
+ */
+TEST_P(WifiStaIfaceAidlTest, GetName) {
+    std::string ifaceName;
+    EXPECT_TRUE(wifi_sta_iface_->getName(&ifaceName).isOk());
+}
+
+/*
+ * SetDtimMultiplier
+ */
+TEST_P(WifiStaIfaceAidlTest, SetDtimMultiplier) {
+    // Multiplied value
+    EXPECT_TRUE(wifi_sta_iface_->setDtimMultiplier(2).isOk());
+    // Driver default value
+    EXPECT_TRUE(wifi_sta_iface_->setDtimMultiplier(0).isOk());
+}
+
+/*
+ * Start/Stop Background Scan
+ */
+TEST_P(WifiStaIfaceAidlTest, StartAndStopBackgroundScan) {
+    if (!isFeatureSupported(IWifiStaIface::FeatureSetMask::BACKGROUND_SCAN)) {
+        GTEST_SKIP() << "Background scan is not supported";
+    }
+    StaBackgroundScanParameters scanParams;
+    EXPECT_TRUE(wifi_sta_iface_->startBackgroundScan(kTestCmdId, scanParams).isOk());
+    EXPECT_TRUE(wifi_sta_iface_->stopBackgroundScan(kTestCmdId).isOk());
+}
+
+/*
+ * Start/Stop Sending Keep-Alive Packets
+ */
+TEST_P(WifiStaIfaceAidlTest, StartAndStopSendingKeepAlivePackets) {
+    std::vector<uint8_t> ipPacketData(20);
+    uint16_t etherType = 0x0800;  // IPv4
+    uint32_t periodInMs = 1000;   // 1 sec
+
+    // Expected to fail with test values
+    EXPECT_FALSE(wifi_sta_iface_
+                         ->startSendingKeepAlivePackets(kTestCmdId, ipPacketData, etherType,
+                                                        kTestMacAddr1, kTestMacAddr2, periodInMs)
+                         .isOk());
+    EXPECT_FALSE(wifi_sta_iface_->stopSendingKeepAlivePackets(kTestCmdId).isOk());
 }
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WifiStaIfaceAidlTest);

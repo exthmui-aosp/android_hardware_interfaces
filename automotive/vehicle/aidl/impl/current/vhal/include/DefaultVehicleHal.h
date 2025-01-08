@@ -219,7 +219,7 @@ class DefaultVehicleHal final : public aidlvhal::BnVehicle {
     // mBinderEvents.
     void onBinderDiedUnlinkedHandler();
 
-    size_t countSubscribeClients();
+    size_t countClients();
 
     // Handles the property change events in batch.
     void handleBatchedPropertyEvents(std::vector<aidlvhal::VehiclePropValue>&& batchedEvents);
@@ -254,6 +254,10 @@ class DefaultVehicleHal final : public aidlvhal::BnVehicle {
     static void onPropertySetErrorEvent(
             const std::weak_ptr<SubscriptionManager>& subscriptionManager,
             const std::vector<SetValueErrorEvent>& errorEvents);
+
+    static void onSupportedValueChange(
+            const std::weak_ptr<SubscriptionManager>& subscriptionManager,
+            const std::vector<PropIdAreaId>& updatedPropIdAreaIds);
 
     static void checkHealth(IVehicleHardware* hardware,
                             std::weak_ptr<SubscriptionManager> subscriptionManager);

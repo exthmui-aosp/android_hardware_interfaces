@@ -139,17 +139,17 @@ class AGC1ParamTest : public ::testing::TestWithParam<AGC1ParamTestParam>, publi
 };
 
 TEST_P(AGC1ParamTest, SetAndGetTargetPeakLevelParam) {
-    EXPECT_NO_FATAL_FAILURE(addTargetPeakLevelParam(mTargetPeakLevel));
+    addTargetPeakLevelParam(mTargetPeakLevel);
     SetAndGetParameters();
 }
 
 TEST_P(AGC1ParamTest, SetAndGetMaxCompressionGain) {
-    EXPECT_NO_FATAL_FAILURE(addMaxCompressionGainParam(mMaxCompressionGain));
+    addMaxCompressionGainParam(mMaxCompressionGain);
     SetAndGetParameters();
 }
 
 TEST_P(AGC1ParamTest, SetAndGetEnableLimiter) {
-    EXPECT_NO_FATAL_FAILURE(addEnableLimiterParam(mEnableLimiter));
+    addEnableLimiterParam(mEnableLimiter);
     SetAndGetParameters();
 }
 

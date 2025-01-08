@@ -108,6 +108,12 @@ class FakeVehicleHardware : public IVehicleHardware {
     aidl::android::hardware::automotive::vehicle::StatusCode unsubscribe(int32_t propId,
                                                                          int32_t areaId) override;
 
+    std::vector<aidlvhal::MinMaxSupportedValueResult> getMinMaxSupportedValues(
+            const std::vector<PropIdAreaId>& propIdAreaIds) override;
+
+    std::vector<aidlvhal::SupportedValuesListResult> getSupportedValuesLists(
+            const std::vector<PropIdAreaId>& propIdAreaIds) override;
+
   protected:
     // mValuePool is also used in mServerSidePropStore.
     const std::shared_ptr<VehiclePropValuePool> mValuePool;

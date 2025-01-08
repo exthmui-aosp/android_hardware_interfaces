@@ -145,17 +145,17 @@ class AGC2ParamTest : public ::testing::TestWithParam<AGC2ParamTestParam>, publi
 };
 
 TEST_P(AGC2ParamTest, SetAndGetDigitalGainParam) {
-    EXPECT_NO_FATAL_FAILURE(addDigitalGainParam(mGain));
+    addDigitalGainParam(mGain);
     SetAndGetParameters();
 }
 
 TEST_P(AGC2ParamTest, SetAndGetSaturationMargin) {
-    EXPECT_NO_FATAL_FAILURE(addSaturationMarginParam(mMargin));
+    addSaturationMarginParam(mMargin);
     SetAndGetParameters();
 }
 
 TEST_P(AGC2ParamTest, SetAndGetLevelEstimator) {
-    EXPECT_NO_FATAL_FAILURE(addLevelEstimatorParam(mLevelEstimator));
+    addLevelEstimatorParam(mLevelEstimator);
     SetAndGetParameters();
 }
 

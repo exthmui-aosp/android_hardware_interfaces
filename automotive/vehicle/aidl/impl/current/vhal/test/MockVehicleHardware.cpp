@@ -228,6 +228,12 @@ void MockVehicleHardware::registerOnPropertySetErrorEvent(
     mPropertySetErrorCallback = std::move(callback);
 }
 
+void MockVehicleHardware::registerSupportedValueChangeCallback(
+        std::unique_ptr<const SupportedValueChangeCallback> callback) {
+    std::scoped_lock<std::mutex> lockGuard(mLock);
+    mSupportedValueChangeCallback = std::move(callback);
+}
+
 void MockVehicleHardware::setPropertyConfigs(const std::vector<VehiclePropConfig>& configs) {
     std::scoped_lock<std::mutex> lockGuard(mLock);
     mPropertyConfigs = configs;
@@ -417,6 +423,12 @@ void MockVehicleHardware::sendOnPropertySetErrorEvent(
         const std::vector<SetValueErrorEvent>& errorEvents) {
     std::scoped_lock<std::mutex> lockGuard(mLock);
     (*mPropertySetErrorCallback)(errorEvents);
+}
+
+void MockVehicleHardware::sendSupportedValueChangeEvent(
+        const std::vector<PropIdAreaId>& propIdAreaIds) {
+    std::scoped_lock<std::mutex> lockGuard(mLock);
+    (*mSupportedValueChangeCallback)(propIdAreaIds);
 }
 
 bool MockVehicleHardware::getAllPropertyConfigsCalled() {

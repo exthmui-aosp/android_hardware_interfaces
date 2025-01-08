@@ -62,11 +62,13 @@ using ::aidl::android::hardware::automotive::vehicle::DriverDrowsinessAttentionW
 using ::aidl::android::hardware::automotive::vehicle::ErrorState;
 using ::aidl::android::hardware::automotive::vehicle::GetValueRequest;
 using ::aidl::android::hardware::automotive::vehicle::GetValueResult;
+using ::aidl::android::hardware::automotive::vehicle::MinMaxSupportedValueResult;
 using ::aidl::android::hardware::automotive::vehicle::RawPropValues;
 using ::aidl::android::hardware::automotive::vehicle::SetValueRequest;
 using ::aidl::android::hardware::automotive::vehicle::SetValueResult;
 using ::aidl::android::hardware::automotive::vehicle::StatusCode;
 using ::aidl::android::hardware::automotive::vehicle::SubscribeOptions;
+using ::aidl::android::hardware::automotive::vehicle::SupportedValuesListResult;
 using ::aidl::android::hardware::automotive::vehicle::toString;
 using ::aidl::android::hardware::automotive::vehicle::VehicleApPowerStateReport;
 using ::aidl::android::hardware::automotive::vehicle::VehicleApPowerStateReq;
@@ -2297,6 +2299,62 @@ StatusCode FakeVehicleHardware::subscribe(SubscribeOptions options) {
         }
     }
     return StatusCode::OK;
+}
+
+std::vector<MinMaxSupportedValueResult> FakeVehicleHardware::getMinMaxSupportedValues(
+        const std::vector<PropIdAreaId>& propIdAreaIds) {
+    std::vector<MinMaxSupportedValueResult> results;
+    // We only support VENDOR_EXTENSION_INT_PROPERTY
+    for (const auto& propIdAreaId : propIdAreaIds) {
+        int propId = propIdAreaId.propId;
+        int areaId = propIdAreaId.areaId;
+        if (propId != toInt(TestVendorProperty::VENDOR_EXTENSION_INT_PROPERTY)) {
+            results.push_back(MinMaxSupportedValueResult{
+                    .status = StatusCode::INVALID_ARG,
+            });
+            continue;
+        }
+        results.push_back(MinMaxSupportedValueResult{
+                .status = StatusCode::OK,
+                .minSupportedValue =
+                        RawPropValues{
+                                .int32Values = {0},
+                        },
+                .maxSupportedValue =
+                        RawPropValues{
+                                .int32Values = {10},
+                        },
+        });
+    }
+    return results;
+}
+
+std::vector<SupportedValuesListResult> FakeVehicleHardware::getSupportedValuesLists(
+        const std::vector<PropIdAreaId>& propIdAreaIds) {
+    std::vector<SupportedValuesListResult> results;
+    // We only support VENDOR_EXTENSION_INT_PROPERTY
+    for (const auto& propIdAreaId : propIdAreaIds) {
+        int propId = propIdAreaId.propId;
+        int areaId = propIdAreaId.areaId;
+        if (propId != toInt(TestVendorProperty::VENDOR_EXTENSION_INT_PROPERTY)) {
+            results.push_back(SupportedValuesListResult{
+                    .status = StatusCode::INVALID_ARG,
+            });
+            continue;
+        }
+        results.push_back(SupportedValuesListResult{
+                .status = StatusCode::OK,
+                .supportedValuesList = std::vector<std::optional<RawPropValues>>({
+                        RawPropValues{.int32Values = {0}},
+                        RawPropValues{.int32Values = {2}},
+                        RawPropValues{.int32Values = {4}},
+                        RawPropValues{.int32Values = {6}},
+                        RawPropValues{.int32Values = {8}},
+                        RawPropValues{.int32Values = {10}},
+                }),
+        });
+    }
+    return results;
 }
 
 bool FakeVehicleHardware::isVariableUpdateRateSupported(const VehiclePropConfig& vehiclePropConfig,

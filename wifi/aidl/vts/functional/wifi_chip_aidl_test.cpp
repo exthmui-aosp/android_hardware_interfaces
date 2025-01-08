@@ -30,6 +30,9 @@
 
 #include "wifi_aidl_test_utils.h"
 
+using aidl::android::hardware::wifi::AfcChannelAllowance;
+using aidl::android::hardware::wifi::AvailableAfcChannelInfo;
+using aidl::android::hardware::wifi::AvailableAfcFrequencyInfo;
 using aidl::android::hardware::wifi::BnWifiChipEventCallback;
 using aidl::android::hardware::wifi::IfaceType;
 using aidl::android::hardware::wifi::IWifiApIface;
@@ -268,6 +271,23 @@ TEST_P(WifiChipAidlTest, SetCountryCode) {
     configureChipForConcurrencyType(IfaceConcurrencyType::STA);
     std::array<uint8_t, 2> country_code = {0x55, 0x53};
     EXPECT_TRUE(wifi_chip_->setCountryCode(country_code).isOk());
+}
+
+/*
+ * Tests the setAfcChannelAllowance() API.
+ */
+TEST_P(WifiChipAidlTest, SetAfcChannelAllowance) {
+    configureChipForConcurrencyType(IfaceConcurrencyType::STA);
+    int32_t features = getChipFeatureSet(wifi_chip_);
+    AfcChannelAllowance allowance;
+    allowance.availableAfcChannelInfos = std::vector<AvailableAfcChannelInfo>();
+    allowance.availableAfcFrequencyInfos = std::vector<AvailableAfcFrequencyInfo>();
+    auto status = wifi_chip_->setAfcChannelAllowance(allowance);
+    if (features & static_cast<int32_t>(IWifiChip::FeatureSetMask::SET_AFC_CHANNEL_ALLOWANCE)) {
+        EXPECT_TRUE(status.isOk());
+    } else {
+        EXPECT_TRUE(checkStatusCode(&status, WifiStatusCode::ERROR_NOT_SUPPORTED));
+    }
 }
 
 /*

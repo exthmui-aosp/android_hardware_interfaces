@@ -160,6 +160,11 @@ DefaultVehicleHal::DefaultVehicleHal(std::unique_ptr<IVehicleHardware> vehicleHa
                     [subscriptionManagerCopy](std::vector<SetValueErrorEvent> errorEvents) {
                         onPropertySetErrorEvent(subscriptionManagerCopy, errorEvents);
                     }));
+    mVehicleHardware->registerSupportedValueChangeCallback(
+            std::make_unique<IVehicleHardware::SupportedValueChangeCallback>(
+                    [subscriptionManagerCopy](std::vector<PropIdAreaId> propIdAreaIds) {
+                        onSupportedValueChange(subscriptionManagerCopy, propIdAreaIds);
+                    }));
 
     // Register heartbeat event.
     mRecurrentAction = std::make_shared<std::function<void()>>(
@@ -207,7 +212,8 @@ void DefaultVehicleHal::batchPropertyChangeEvent(
         std::vector<VehiclePropValue>&& updatedValues) {
     auto batchedEventQueueStrong = batchedEventQueue.lock();
     if (batchedEventQueueStrong == nullptr) {
-        ALOGW("the batched property events queue is destroyed, DefaultVehicleHal is ending");
+        ALOGW("%s: the batched property events queue is destroyed, DefaultVehicleHal is ending",
+              __func__);
         return;
     }
     batchedEventQueueStrong->push(std::move(updatedValues));
@@ -223,7 +229,7 @@ void DefaultVehicleHal::onPropertyChangeEvent(
     ATRACE_CALL();
     auto manager = subscriptionManager.lock();
     if (manager == nullptr) {
-        ALOGW("the SubscriptionManager is destroyed, DefaultVehicleHal is ending");
+        ALOGW("%s: the SubscriptionManager is destroyed, DefaultVehicleHal is ending", __func__);
         return;
     }
     auto updatedValuesByClients = manager->getSubscribedClients(std::move(updatedValues));
@@ -237,12 +243,28 @@ void DefaultVehicleHal::onPropertySetErrorEvent(
         const std::vector<SetValueErrorEvent>& errorEvents) {
     auto manager = subscriptionManager.lock();
     if (manager == nullptr) {
-        ALOGW("the SubscriptionManager is destroyed, DefaultVehicleHal is ending");
+        ALOGW("%s: the SubscriptionManager is destroyed, DefaultVehicleHal is ending", __func__);
         return;
     }
     auto vehiclePropErrorsByClient = manager->getSubscribedClientsForErrorEvents(errorEvents);
     for (auto& [callback, vehiclePropErrors] : vehiclePropErrorsByClient) {
         SubscriptionClient::sendPropertySetErrors(callback, std::move(vehiclePropErrors));
+    }
+}
+
+void DefaultVehicleHal::onSupportedValueChange(
+        const std::weak_ptr<SubscriptionManager>& subscriptionManager,
+        const std::vector<PropIdAreaId>& propIdAreaIds) {
+    auto manager = subscriptionManager.lock();
+    if (manager == nullptr) {
+        ALOGW("%s: the SubscriptionManager is destroyed, DefaultVehicleHal is ending", __func__);
+        return;
+    }
+    auto updatedPropIdAreaIdsByClient =
+            manager->getSubscribedClientsForSupportedValueChange(propIdAreaIds);
+    for (auto& [callback, updatedPropIdAreaIds] : updatedPropIdAreaIdsByClient) {
+        SubscriptionClient::sendSupportedValueChangeEvents(callback,
+                                                           std::move(updatedPropIdAreaIds));
     }
 }
 
@@ -931,7 +953,9 @@ ScopedAStatus DefaultVehicleHal::subscribe(const CallbackType& callback,
     }
 
     {
-        // Lock to make sure onBinderDied would not be called concurrently.
+        // Lock to make sure onBinderDied would not be called concurrently
+        // (before subscribe). Without this, we may create a new subscription for an already dead
+        // client which will never be unsubscribed.
         std::scoped_lock lockGuard(mLock);
         if (!monitorBinderLifeCycleLocked(callback->asBinder().get())) {
             return ScopedAStatus::fromExceptionCodeWithMessage(EX_TRANSACTION_FAILED,
@@ -1156,14 +1180,24 @@ ScopedAStatus DefaultVehicleHal::registerSupportedValueChangeCallback(
     if (propIdAreaIdsToSubscribe.empty()) {
         return ScopedAStatus::ok();
     }
-    auto result =
-            mSubscriptionManager->subscribeSupportedValueChange(callback, propIdAreaIdsToSubscribe);
-    if (!result.ok()) {
-        ALOGW("registerSupportedValueChangeCallback: failed to subscribe supported value change"
-              " for %s, error: %s",
-              fmt::format("{}", propIdAreaIdsToSubscribe).c_str(),
-              result.error().message().c_str());
-        return toScopedAStatus(result);
+    {
+        // Lock to make sure onBinderDied would not be called concurrently
+        // (before subscribeSupportedValueChange). Without this, we may create a new subscription
+        // for an already dead client which will never be unsubscribed.
+        std::scoped_lock lockGuard(mLock);
+        if (!monitorBinderLifeCycleLocked(callback->asBinder().get())) {
+            return ScopedAStatus::fromExceptionCodeWithMessage(EX_TRANSACTION_FAILED,
+                                                               "client died");
+        }
+        auto result = mSubscriptionManager->subscribeSupportedValueChange(callback,
+                                                                          propIdAreaIdsToSubscribe);
+        if (!result.ok()) {
+            ALOGW("registerSupportedValueChangeCallback: failed to subscribe supported value change"
+                  " for %s, error: %s",
+                  fmt::format("{}", propIdAreaIdsToSubscribe).c_str(),
+                  result.error().message().c_str());
+            return toScopedAStatus(result);
+        }
     }
     return ScopedAStatus::ok();
 }
@@ -1302,15 +1336,19 @@ binder_status_t DefaultVehicleHal::dump(int fd, const char** args, uint32_t numA
         dprintf(fd, "Containing %zu property configs\n", configsByPropIdCopy.size());
         dprintf(fd, "Currently have %zu getValues clients\n", mGetValuesClients.size());
         dprintf(fd, "Currently have %zu setValues clients\n", mSetValuesClients.size());
-        dprintf(fd, "Currently have %zu subscribe clients\n", countSubscribeClients());
+        dprintf(fd, "Currently have %zu subscribe clients\n",
+                mSubscriptionManager->countPropertyChangeClients());
         dprintf(fd, "Currently have %zu supported values change subscribe clients\n",
                 mSubscriptionManager->countSupportedValueChangeClients());
     }
     return STATUS_OK;
 }
 
-size_t DefaultVehicleHal::countSubscribeClients() {
-    return mSubscriptionManager->countPropertyChangeClients();
+size_t DefaultVehicleHal::countClients() {
+    std::scoped_lock<std::mutex> lockGuard(mLock);
+    return mGetValuesClients.size() + mSetValuesClients.size() +
+           mSubscriptionManager->countPropertyChangeClients() +
+           mSubscriptionManager->countSupportedValueChangeClients();
 }
 
 }  // namespace vehicle

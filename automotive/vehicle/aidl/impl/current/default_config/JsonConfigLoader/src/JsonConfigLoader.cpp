@@ -58,6 +58,7 @@ using ::aidl::android::hardware::automotive::vehicle::FuelType;
 using ::aidl::android::hardware::automotive::vehicle::GsrComplianceRequirementType;
 using ::aidl::android::hardware::automotive::vehicle::HandsOnDetectionDriverState;
 using ::aidl::android::hardware::automotive::vehicle::HandsOnDetectionWarning;
+using ::aidl::android::hardware::automotive::vehicle::HasSupportedValueInfo;
 using ::aidl::android::hardware::automotive::vehicle::ImpactSensorLocation;
 using ::aidl::android::hardware::automotive::vehicle::LaneCenteringAssistCommand;
 using ::aidl::android::hardware::automotive::vehicle::LaneCenteringAssistState;
@@ -600,6 +601,22 @@ void JsonConfigParser::parseAreas(const Json::Value& parentJsonNode, const std::
         if (!supportedEnumValues.empty()) {
             areaConfig.supportedEnumValues = std::move(supportedEnumValues);
         }
+
+        if (jsonAreaConfig.isMember("hasSupportedValueInfo")) {
+            HasSupportedValueInfo hasSupportedValueInfo = HasSupportedValueInfo{};
+            const Json::Value& jsonHasSupportedValueInfo = jsonAreaConfig["hasSupportedValueInfo"];
+            tryParseJsonValueToVariable(jsonHasSupportedValueInfo, "hasMinSupportedValue",
+                                        /*optional=*/true,
+                                        &hasSupportedValueInfo.hasMinSupportedValue, errors);
+            tryParseJsonValueToVariable(jsonHasSupportedValueInfo, "hasMaxSupportedValue",
+                                        /*optional=*/true,
+                                        &hasSupportedValueInfo.hasMaxSupportedValue, errors);
+            tryParseJsonValueToVariable(jsonHasSupportedValueInfo, "hasSupportedValuesList",
+                                        /*optional=*/true,
+                                        &hasSupportedValueInfo.hasSupportedValuesList, errors);
+            areaConfig.hasSupportedValueInfo = std::move(hasSupportedValueInfo);
+        }
+
         config->config.areaConfigs.push_back(std::move(areaConfig));
 
         RawPropValues areaValue = {};

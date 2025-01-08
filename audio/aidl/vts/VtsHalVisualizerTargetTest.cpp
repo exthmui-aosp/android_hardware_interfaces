@@ -189,22 +189,22 @@ class VisualizerParamTest : public ::testing::TestWithParam<VisualizerTestParam>
 };
 
 TEST_P(VisualizerParamTest, SetAndGetCaptureSize) {
-    ASSERT_NO_FATAL_FAILURE(addCaptureSizeParam(mCaptureSize));
+    addCaptureSizeParam(mCaptureSize);
     ASSERT_NO_FATAL_FAILURE(SetAndGetParameters());
 }
 
 TEST_P(VisualizerParamTest, SetAndGetScalingMode) {
-    ASSERT_NO_FATAL_FAILURE(addScalingModeParam(mScalingMode));
+    addScalingModeParam(mScalingMode);
     ASSERT_NO_FATAL_FAILURE(SetAndGetParameters());
 }
 
 TEST_P(VisualizerParamTest, SetAndGetMeasurementMode) {
-    ASSERT_NO_FATAL_FAILURE(addMeasurementModeParam(mMeasurementMode));
+    addMeasurementModeParam(mMeasurementMode);
     ASSERT_NO_FATAL_FAILURE(SetAndGetParameters());
 }
 
 TEST_P(VisualizerParamTest, SetAndGetLatency) {
-    ASSERT_NO_FATAL_FAILURE(addLatencyParam(mLatency));
+    addLatencyParam(mLatency);
     ASSERT_NO_FATAL_FAILURE(SetAndGetParameters());
 }
 
@@ -212,10 +212,10 @@ TEST_P(VisualizerParamTest, testCaptureSampleBufferSizeAndOutput) {
     SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
 
     bool allParamsValid = true;
-    ASSERT_NO_FATAL_FAILURE(addCaptureSizeParam(mCaptureSize));
-    ASSERT_NO_FATAL_FAILURE(addScalingModeParam(mScalingMode));
-    ASSERT_NO_FATAL_FAILURE(addMeasurementModeParam(mMeasurementMode));
-    ASSERT_NO_FATAL_FAILURE(addLatencyParam(mLatency));
+    addCaptureSizeParam(mCaptureSize);
+    addScalingModeParam(mScalingMode);
+    addMeasurementModeParam(mMeasurementMode);
+    addLatencyParam(mLatency);
     ASSERT_NO_FATAL_FAILURE(SetAndGetParameters(&allParamsValid));
 
     Parameter getParam;
@@ -276,9 +276,9 @@ TEST_P(VisualizerDataTest, testScalingModeParameters) {
 
     for (float maxAudioSampleValue : testMaxAudioSampleValueList) {
         bool allParamsValid = true;
-        ASSERT_NO_FATAL_FAILURE(addCaptureSizeParam(mCaptureSize));
-        ASSERT_NO_FATAL_FAILURE(addScalingModeParam(mScalingMode));
-        ASSERT_NO_FATAL_FAILURE(addLatencyParam(mLatency));
+        addCaptureSizeParam(mCaptureSize);
+        addScalingModeParam(mScalingMode);
+        addLatencyParam(mLatency);
         ASSERT_NO_FATAL_FAILURE(SetAndGetParameters(&allParamsValid));
 
         generateSineWave(std::vector<int>{1000}, mInputBuffer, maxAudioSampleValue,

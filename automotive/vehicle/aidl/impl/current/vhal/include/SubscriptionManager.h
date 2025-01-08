@@ -118,6 +118,11 @@ class SubscriptionManager final {
                        std::vector<aidl::android::hardware::automotive::vehicle::VehiclePropError>>
     getSubscribedClientsForErrorEvents(const std::vector<SetValueErrorEvent>& errorEvents);
 
+    // For a list of [propId, areaId]s that has updated supported value, returns a map that maps
+    // subscribing clients to updated [propId, areaId]s.
+    std::unordered_map<CallbackType, std::vector<PropIdAreaId>>
+    getSubscribedClientsForSupportedValueChange(const std::vector<PropIdAreaId>& propIdAreaIds);
+
     // Subscribes to supported values change.
     VhalResult<void> subscribeSupportedValueChange(const CallbackType& callback,
                                                    const std::vector<PropIdAreaId>& propIdAreaIds);
@@ -141,6 +146,7 @@ class SubscriptionManager final {
   private:
     // Friend class for testing.
     friend class DefaultVehicleHalTest;
+    friend class SubscriptionManagerTest;
 
     IVehicleHardware* mVehicleHardware;
 

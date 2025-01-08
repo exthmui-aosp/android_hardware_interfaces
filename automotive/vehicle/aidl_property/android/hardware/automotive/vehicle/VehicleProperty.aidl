@@ -39,6 +39,7 @@ import android.hardware.automotive.vehicle.VehiclePropertyType;
  * in response to such ill formed requests.
  */
 @VintfStability
+@JavaDerive(toString=true)
 @Backing(type="int")
 enum VehicleProperty {
     /**
@@ -620,22 +621,15 @@ enum VehicleProperty {
      * }
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     *
      * {@code HasSupportedValueInfo.hasMinSupportedValue} and
      * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     *
-     * {@code MinMaxSupportedValueResult.minSupportedValue} represents the lower bound of the
-     * recommended tire pressure for the tire at the specified area ID.
-     *
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} represents the upper bound of the
-     * recommended tire pressure for the tire at the specified area ID.
-     *
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minFloatValue.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxFloatValue.
      * For example, if the recommended tire pressure of left_front tire is from 200.0 KILOPASCAL to
      * 240.0 KILOPASCAL, {@code getMinMaxSupportedValue} for
      * [propId=TIRE_PRESSURE, areaId=VehicleAreaWheel::LEFT_FRONT] must return a
      * {@code MinMaxSupportedValueResult} with OK status, 200.0 as minSupportedValue, 240.0 as
      * maxSupportedValue.
-     *
      * At boot, minFloatValue is equal to minSupportedValue, maxFloatValue is equal to
      * maxSupportedValue.
      *
@@ -784,10 +778,8 @@ enum VehicleProperty {
      * unless all bit flags of ImpactSensorLocation are supported.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     *
      * {@code getSupportedValuesList} must return a {@code SupportedValuesListResult} that contains
      * supported values unless all bit flags of ImpactSensorLocation are supported.
-     *
      * At boot, supportedEnumValues is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
@@ -825,22 +817,17 @@ enum VehicleProperty {
      * selected by the driver instead of simply GEAR_DRIVE.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     *
      * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
-     *
      * {@code getSupportedValuesList} for [GEAR_SELECTION, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList}.
-     *
      * The supportedValues must represent the list of supported gears for this vehicle. For example,
      * for an automatic transmission, the list can be {GEAR_NEUTRAL, GEAR_REVERSE, GEAR_PARK,
      * GEAR_DRIVE, GEAR_1, GEAR_2,...} and for manual transmission it can be {GEAR_NEUTRAL,
      * GEAR_REVERSE, GEAR_1, GEAR_2,...}.
-     *
      * In the case of an automatic transmission vehicle that allows the driver to select specific
      * gears on demand (i.e. "manual mode"), the GEAR_SELECTION property value must be set to the
      * specific gear selected by the driver instead of simply GEAR_DRIVE.
-     *
      * At boot, the config array's values are equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
@@ -866,20 +853,16 @@ enum VehicleProperty {
      * same as that of the supported gears reported in GEAR_SELECTION.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     *
      * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
-     *
      * {@code getSupportedValuesList} for [GEAR_SELECTION, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList}.
-     *
      * The supported values list must represent the list of supported gears
      * for this vehicle.  For example, for an automatic transmission, this list can be
      * {GEAR_NEUTRAL, GEAR_REVERSE, GEAR_PARK, GEAR_1, GEAR_2,...}
      * and for manual transmission the list can be
      * {GEAR_NEUTRAL, GEAR_REVERSE, GEAR_1, GEAR_2,...}. This list need not be the
      * same as that of the supported gears reported in GEAR_SELECTION.
-     *
      * At boot, the config array's values are equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
@@ -935,19 +918,12 @@ enum VehicleProperty {
      * All values between min and max supported value must be supported.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     *
      * {@code HasSupportedValueInfo.hasMinSupportedValue} and
      * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for global area ID(0)
-     *
-     * {@code MinMaxSupportedValueResult.minSupportedValue} must be 0.
-     *
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} indicates the setting for the maximum
-     * amount of energy regenerated from braking. The minSupportedValue indicates the setting for no
-     * regenerative braking.
-     *
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
-     *
      *
      * This property is a more granular form of EV_REGENERATIVE_BRAKING_STATE. It allows the user to
      * set a more specific level of regenerative braking if the states in EvRegenerativeBrakingState
@@ -1054,13 +1030,10 @@ enum VehicleProperty {
      * all enum values of EvStoppingMode are supported.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     *
      * For the global area ID (0), {@code getSupportedValuesList}
      * must return a {@code SupportedValuesListResult} that contains supported values unless all
      * enum values of EvStoppingMode are supported.
-     *
      * At boot, supportedEnumValues is equal to the supported values list.
-     *
      *
      * The EvStoppingMode enum may be extended to include more states in the future.
      *
@@ -1109,12 +1082,10 @@ enum VehicleProperty {
      * recommended) and ErrorState are supported.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     *
      * For the global area ID (0), {@code getSupportedValuesList}
      * must return a {@code SupportedValuesListResult} that contains supported values unless all
      * states of both ElectronicStabilityControlState (including OTHER, which is not
      * recommended) and ErrorState are supported.
-     *
      * At boot, supportedEnumValues is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
@@ -1232,23 +1203,18 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the lowest fan speed.
+     *
      * The maxInt32Value indicates the highest fan speed.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     *
      * {@code HasSupportedValueInfo.hasMinSupportedValue} and
      * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specific
      * area ID.
-     *
-     * {@code MinMaxSupportedValueResult.minSupportedValue} indicates the lowest fan speed.
-     *
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} indicates the highest fan speed.
-     *
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
-     *
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
-     *
      *
      * This property is not in any particular unit but in a specified range of relative speeds.
      *
@@ -1297,6 +1263,7 @@ enum VehicleProperty {
      * The minFloatValue and maxFloatValue in VehicleAreaConfig must be defined.
      *
      * The minFloatValue indicates the minimum temperature setting in Celsius.
+     *
      * The maxFloatValue indicates the maximum temperature setting in Celsius.
      *
      * If all the values between minFloatValue and maxFloatValue are not supported, the configArray
@@ -1336,6 +1303,19 @@ enum VehicleProperty {
      *
      * Any value set in between a valid value should be rounded to the closest valid value.
      *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specific
+     * area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minFloatValue.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxFloatValue.
+     * If not all the values between minSupportedValue and maxSupportedValue are supported,
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the
+     * specified area ID. At boot, supportedValuesList must be equal to what is described in
+     * config array.
+     * At boot, minFloatValue is equal to minSupportedValue, maxFloatValue is equal to
+     * maxSupportedValue.
+     *
      * It is highly recommended that the OEM also implement the HVAC_TEMPERATURE_VALUE_SUGGESTION
      * vehicle property because it provides applications a simple method for determining temperature
      * values that can be set for this vehicle and for converting values between Celsius and
@@ -1348,6 +1328,7 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @unit VehicleUnit.CELSIUS
+     * @require_min_max_supported_value
      * @version 2
      */
     HVAC_TEMPERATURE_SET = 0x0503 + 0x10000000 + 0x05000000
@@ -1508,9 +1489,20 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined.
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the maximum seat temperature heating setting.
      * The minInt32Value must be 0, unless the vehicle supports seat cooling as well. In this case,
      * minInt32Value indicates the maximum seat temperature cooling setting.
+     *
+     * The maxInt32Value indicates the maximum seat temperature heating setting.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specified
+     * area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit, but in a specified range of relative temperature
      * settings.
@@ -1521,6 +1513,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     HVAC_SEAT_TEMPERATURE = 0x050B + 0x10000000 + 0x05000000
@@ -1533,8 +1526,19 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined.
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value in the config data represents the maximum heating level.
      * The minInt32Value in the config data MUST be zero and indicates no heating.
+     *
+     * The maxInt32Value in the config data represents the maximum heating level.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specified
+     * area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative heating
      * settings.
@@ -1545,6 +1549,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     HVAC_SIDE_MIRROR_HEAT = 0x050C + 0x10000000 + 0x04000000
@@ -1557,9 +1562,19 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined.
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the maximum steering wheel heating setting.
      * The minInt32Value should be 0, unless the vehicle supports steering wheel cooling as well. In
      * such a case, the minInt32Value indicates the maximum steering wheel cooling setting.
+     *
+     * The maxInt32Value indicates the maximum steering wheel heating setting.
+     *
+     * If {@code HasSupportedValueInfo} is not null for the global area ID (0):
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of heating settings.
      *
@@ -1569,6 +1584,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     HVAC_STEERING_WHEEL_HEAT = 0x050D + 0x10000000 + 0x01000000
@@ -1576,11 +1592,20 @@ enum VehicleProperty {
     /**
      * Temperature units for display
      *
-     * Indicates whether the vehicle is displaying temperature to the user as
-     * Celsius or Fahrenheit.
+     * Indicates whether the vehicle is displaying temperature to the user as Celsius or Fahrenheit.
+     *
      * VehiclePropConfig.configArray is used to indicate the supported temperature display units.
+     *
      * For example: configArray[0] = CELSIUS
      *              configArray[1] = FAHRENHEIT
+     *
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * (0) must be {@code true}.
+     * {@code getSupportedValuesLists} for [HVAC_TEMPERATURE_DISPLAY_UNITS, areaId=0] must return a
+     * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
+     * e.g. [CELSIUS, FAHRENHEIT].
+     * At boot, the values in the config array are equal to the supported values list.
      *
      * This parameter MAY be used for displaying any HVAC temperature in the system.
      * Values must be one of VehicleUnit.CELSIUS or VehicleUnit.FAHRENHEIT
@@ -1596,6 +1621,8 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleUnit
+     * @require_supported_values_list
+     * @legacy_supported_values_in_config
      * @version 2
      */
     HVAC_TEMPERATURE_DISPLAY_UNITS = 0x050E + 0x10000000 + 0x01000000
@@ -1696,11 +1723,23 @@ enum VehicleProperty {
     /**
      * Seat ventilation
      *
-     * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined.
+     * The minInt32Value and maxInt32Value in VehicleAreaConfig must be defined.
+     *
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value must be 0.
+     *
      * The maxInt32Value indicates the maximum ventilation setting available for the seat.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specified
+     * area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in the specified range of ventilation
      * settings.
@@ -1715,6 +1754,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     HVAC_SEAT_VENTILATION = 0x0513 + 0x10000000 + 0x05000000
@@ -1800,6 +1840,14 @@ enum VehicleProperty {
      *              configArray[1] = KILOMETER
      *              configArray[2] = MILE
      *
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * (0) must be {@code true}.
+     * {@code getSupportedValuesLists} for [DISTANCE_DISPLAY_UNITS, areaId=0] must returns a
+     * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
+     * e.g. [METER, KILOMETER, MILE].
+     * At boot, the values in the config array are equal to the supported values list.
+     *
      * If updating DISTANCE_DISPLAY_UNITS affects the values of other *_DISPLAY_UNITS properties,
      * then their values must be updated and communicated to the AAOS framework as well.
      *
@@ -1810,6 +1858,8 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleUnit
+     * @require_supported_values_list
+     * @legacy_supported_values_in_config
      * @version 2
      */
     DISTANCE_DISPLAY_UNITS = 0x0600 + 0x10000000 + 0x01000000
@@ -1825,6 +1875,14 @@ enum VehicleProperty {
      * For example: configArray[0] = LITER
      *              configArray[1] = GALLON
      *
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * (0) must be {@code true}.
+     * {@code getSupportedValuesLists} for [FUEL_VOLUME_DISPLAY_UNITS, areaId=0] must return a
+     * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
+     * e.g. [LITER, GALLON].
+     * At boot, the values in the config array are equal to the supported values list.
+     *
      * If updating FUEL_VOLUME_DISPLAY_UNITS affects the values of other *_DISPLAY_UNITS properties,
      * then their values must be updated and communicated to the AAOS framework as well.
      *
@@ -1835,6 +1893,8 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleUnit
+     * @require_supported_values_list
+     * @legacy_supported_values_in_config
      * @version 2
      */
     FUEL_VOLUME_DISPLAY_UNITS = 0x0601 + 0x10000000 + 0x01000000
@@ -1851,6 +1911,14 @@ enum VehicleProperty {
      *              configArray[1] = PSI
      *              configArray[2] = BAR
      *
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * (0) must be {@code true}.
+     * {@code getSupportedValuesLists} for [TIRE_PRESSURE_DISPLAY_UNITS, areaId=0] must return a
+     * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
+     * e.g. [KILOPASCAL, PSI, BAR].
+     * At boot, the values in the config array are equal to the supported values list.
+     *
      * If updating TIRE_PRESSURE_DISPLAY_UNITS affects the values of other *_DISPLAY_UNITS
      * properties, then their values must be updated and communicated to the AAOS framework as well.
      *
@@ -1861,6 +1929,8 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleUnit
+     * @require_supported_values_list
+     * @legacy_supported_values_in_config
      * @version 2
      */
     TIRE_PRESSURE_DISPLAY_UNITS = 0x0602 + 0x10000000 + 0x01000000
@@ -1877,6 +1947,14 @@ enum VehicleProperty {
      *              configArray[1] = AMPERE_HOURS
      *              configArray[2] = KILOWATT_HOUR
      *
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * (0) must be {@code true}.
+     * {@code getSupportedValuesLists} for [EV_BATTERY_DISPLAY_UNITS, areaId=0] must return a
+     * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
+     * e.g. [WATT_HOUR, AMPERE_HOURS, KILOWATT_HOUR].
+     * At boot, the values in the config array are equal to the supported values list.
+     *
      * If updating EV_BATTERY_DISPLAY_UNITS affects the values of other *_DISPLAY_UNITS properties,
      * then their values must be updated and communicated to the AAOS framework as well.
      *
@@ -1887,6 +1965,8 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleUnit
+     * @require_supported_values_list
+     * @legacy_supported_values_in_config
      * @version 2
      */
     EV_BATTERY_DISPLAY_UNITS = 0x0603 + 0x10000000 + 0x01000000
@@ -1920,16 +2000,12 @@ enum VehicleProperty {
      *              configArray[2] = KILOMETERS_PER_HOUR
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     *
      * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
-     *
      * {@code getSupportedValuesLists} for [VEHICLE_SPEED_DISPLAY_UNITS, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
      * e.g. [METER_PER_SEC, MILES_PER_HOUR, KILOMETERS_PER_HOUR].
-     *
      * At boot, the values in the config array are equal to the supported values list.
-     *
      *
      * If updating VEHICLE_SPEED_DISPLAY_UNITS affects the values of other *_DISPLAY_UNITS
      * properties, then their values must be updated and communicated to the AAOS framework as well.
@@ -2357,10 +2433,20 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the door is closed. The minInt32Value must be 0.
+     *
      * The maxInt32Value indicates the door is fully open.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * closed and fully open positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -2373,6 +2459,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     DOOR_POS = 0x0B00 + 0x10000000 + 0x06000000
@@ -2383,12 +2470,22 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the door while opening.
      * The minInt32Value represents the maximum movement speed of the door while closing.
+     *
+     * The maxInt32Value represents the maximum movement speed of the door while opening.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the door reaches the positional limit, the value must reset to 0. If DOOR_MOVE's value is
      * currently 0, then that means there is no movement currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -2399,6 +2496,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     DOOR_MOVE = 0x0B01 + 0x10000000 + 0x06000000
@@ -2443,12 +2541,25 @@ enum VehicleProperty {
      *
      * The minInt32Value indicates the mirror is tilted completely downwards. This must be a
      * non-positive value.
+     *
      * The maxInt32Value indicates the mirror is tilted completely upwards. This must be a
      * non-negative value.
+     *
      * 0 indicates the mirror is not tilted in either direction.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * fully downward and fully upwards positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
+     * the fully downward and fully upwards positions.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -2458,6 +2569,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     MIRROR_Z_POS = 0x0B40 + 0x10000000 + 0x04000000
@@ -2468,13 +2580,23 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the mirror while tilting upwards.
      * The minInt32Value represents the maximum movement speed of the mirror while tilting
      * downwards.
+     *
+     * The maxInt32Value represents the maximum movement speed of the mirror while tilting upwards.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the mirror reaches the positional limit, the value must reset to 0. If MIRROR_Z_MOVE's value
      * is currently 0, then that means there is no movement currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -2485,6 +2607,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     MIRROR_Z_MOVE = 0x0B41 + 0x10000000 + 0x04000000
@@ -2497,12 +2620,25 @@ enum VehicleProperty {
      *
      * The minInt32Value indicates the mirror is tilted completely to the left. This must be a
      * non-positive value.
+     *
      * The maxInt32Value indicates the mirror is tilted completely to the right. This must be a
      * non-negative value.
+     *
      * 0 indicates the mirror is not tilted in either direction.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * left extreme and right extreme positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
+     * the fully downward and fully upwards positions.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -2512,6 +2648,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     MIRROR_Y_POS = 0x0B42 + 0x10000000 + 0x04000000
@@ -2522,12 +2659,22 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the mirror while tilting right.
      * The minInt32Value represents the maximum movement speed of the mirror while tilting left.
+     *
+     * The maxInt32Value represents the maximum movement speed of the mirror while tilting right.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the mirror reaches the positional limit, the value must reset to 0. If MIRROR_Y_MOVE's value
      * is currently 0, then that means there is no movement currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -2538,6 +2685,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     MIRROR_Y_MOVE = 0x0B43 + 0x10000000 + 0x04000000
@@ -2614,17 +2762,30 @@ enum VehicleProperty {
     /**
      * Seat memory select
      *
-     * This parameter selects the memory preset to use to select the seat position. The
-     * maxInt32Value and minInt32Value in VehicleAreaConfig must be defined. All integers between
-     * minInt32Value and maxInt32Value must be supported. The minInt32Value is always 0, and the
-     * maxInt32Value determines the number of seat preset memory slots available (i.e.
-     * numSeatPresets - 1).
+     * This parameter selects the memory preset to use to select the seat position.
+     *
+     * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined.
+     *
+     * All integers between minInt32Value and maxInt32Value must be supported.
+     *
+     * The minInt32Value is always 0, and the maxInt32Value determines the number of seat preset
+     * memory slots available (i.e. numSeatPresets - 1).
      *
      * For instance, if the driver's seat has 3 memory presets, the maxInt32Value will be 2. When
      * the user wants to select a preset, the desired preset number (0, 1, or 2) is set.
      *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.WRITE
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_MEMORY_SELECT = 0x0B80 + 0x10000000 + 0x05000000
@@ -2633,12 +2794,24 @@ enum VehicleProperty {
      * Seat memory set
      *
      * This setting allows the user to save the current seat position settings into the selected
-     * preset slot. The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined. The
-     * minInt32Value must be 0, and the maxInt32Value for each seat position must match the
+     * preset slot.
+     *
+     * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined.
+     *
+     * The minInt32Value must be 0, and the maxInt32Value for each seat position must match the
      * maxInt32Value for SEAT_MEMORY_SELECT.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.WRITE
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_MEMORY_SET = 0x0B81 + 0x10000000 + 0x05000000
@@ -2670,10 +2843,21 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the seat belt's shoulder anchor is at its lowest position.
+     *
      * The maxInt32Value indicates the seat belt's shoulder anchor is at its highest position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * lowest and highest positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
+     * the lowest and highest positions. All integers between minSupportedValue and
+     * maxSupportedValue must be supported. At boot, minInt32Value is equal to minSupportedValue,
+     * maxInt32Value is equal to maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -2683,6 +2867,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_BELT_HEIGHT_POS = 0x0B83 + 0x10000000 + 0x05000000
@@ -2693,15 +2878,25 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat belt's shoulder anchor
-     * while moving upwards.
      * The minInt32Value represents the maximum movement speed of the seat belt's shoulder anchor
      * while moving downwards.
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat belt's shoulder anchor
+     * while moving upwards.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat belt reaches the positional limit, the value must reset to 0. If
      * SEAT_BELT_HEIGHT_MOVE's value is currently 0, then that means there is no movement currently
      * occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -2712,6 +2907,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_BELT_HEIGHT_MOVE = 0x0B84 + 0x10000000 + 0x05000000
@@ -2725,10 +2921,20 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the seat is at its rearward-most linear position.
+     *
      * The maxInt32Value indicates the seat is at its forward-most linear position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * closest and farthest positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -2738,6 +2944,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_FORE_AFT_POS = 0x0B85 + 0x10000000 + 0x05000000
@@ -2750,12 +2957,22 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat while moving forward.
      * The minInt32Value represents the maximum movement speed of the seat while moving backward.
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat while moving forward.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat reaches the positional limit, the value must reset to 0. If SEAT_FORE_AFT_MOVE's
      * value is currently 0, then that means there is no movement currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -2766,6 +2983,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_FORE_AFT_MOVE = 0x0B86 + 0x10000000 + 0x05000000
@@ -2780,11 +2998,23 @@ enum VehicleProperty {
      *
      * The minInt32Value indicates the seat backrest's full recline position w.r.t the
      * actuator at the bottom of the seat.
+     *
      * The maxInt32Value indicates the seat backrest's most upright/forward position w.r.t the
      * actuator at the bottom of the seat.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * full recline and upright/forward positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
+     * the full recline and upright/forward positions.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -2794,6 +3024,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_BACKREST_ANGLE_1_POS = 0x0B87 + 0x10000000 + 0x05000000
@@ -2804,14 +3035,24 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
+     * The minInt32Value represents the maximum movement speed of the seat backrest while reclining.
+     *
      * The maxInt32Value represents the maximum movement speed of the seat backrest while angling
      * forward.
-     * The minInt32Value represents the maximum movement speed of the seat backrest while reclining.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat backrest reaches the positional limit, the value must reset to 0. If
      * SEAT_BACKREST_ANGLE_1_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -2822,6 +3063,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_BACKREST_ANGLE_1_MOVE = 0x0B88 + 0x10000000 + 0x05000000
@@ -2837,12 +3079,24 @@ enum VehicleProperty {
      * The minInt32Value indicates the seat backrest's full recline position w.r.t the next
      * actuator in the backrest from the one at the bottom of the seat (see
      * SEAT_BACKREST_ANGLE_1_POS for additional details).
+     *
      * The maxInt32Value indicates the seat backrest's most upright/forward position w.r.t the
      * next actuator in the backrest from the one at the bottom of the seat(see
      * SEAT_BACKREST_ANGLE_1_POS for additional details).
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * full recline and upright/forward positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} ihas the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
+     * the full recline and upright/forward positions.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -2852,6 +3106,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_BACKREST_ANGLE_2_POS = 0x0B89 + 0x10000000 + 0x05000000
@@ -2862,14 +3117,24 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
+     * The minInt32Value represents the maximum movement speed of the seat backrest while reclining.
+     *
      * The maxInt32Value represents the maximum movement speed of the seat backrest while angling
      * forward.
-     * The minInt32Value represents the maximum movement speed of the seat backrest while reclining.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat backrest reaches the positional limit, the value must reset to 0. If
      * SEAT_BACKREST_ANGLE_2_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -2880,6 +3145,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_BACKREST_ANGLE_2_MOVE = 0x0B8A + 0x10000000 + 0x05000000
@@ -2891,10 +3157,21 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the seat is in its lowest position.
+     *
      * The maxInt32Value indicates the seat is in its highest position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * lowest and highest positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * position.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -2904,6 +3181,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_HEIGHT_POS = 0x0B8B + 0x10000000 + 0x05000000
@@ -2914,12 +3192,22 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat while moving upward.
      * The minInt32Value represents the maximum movement speed of the seat while moving downward.
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat while moving upward.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat reaches the positional limit, the value must reset to 0. If SEAT_HEIGHT_MOVE's value
      * is currently 0, then that means there is no movement currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -2930,6 +3218,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_HEIGHT_MOVE = 0x0B8C + 0x10000000 + 0x05000000
@@ -2945,11 +3234,21 @@ enum VehicleProperty {
      * The minInt32Value indicates the seat is in its shallowest position (i.e. the position with
      * the smallest distance between the front edge of the seat cushion and the rear end of the
      * seat).
+     *
      * The maxInt32Value indicates the seat is in its deepest position (i.e. the position with the
      * largest distance between the front edge of the seat cushion and the rear end of the seat).
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * shallowest and deepest positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -2959,6 +3258,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_DEPTH_POS = 0x0B8D + 0x10000000 + 0x05000000
@@ -2969,13 +3269,23 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat while getting deeper
      * The minInt32Value represents the maximum movement speed of the seat while getting shallower.
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat while getting deeper.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat backrest reaches the positional limit, the value must reset to 0. If
      * SEAT_DEPTH_MOVE's value is currently 0, then that means there is no movement currently
      * occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -2986,6 +3296,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_DEPTH_MOVE = 0x0B8E + 0x10000000 + 0x05000000
@@ -2999,12 +3310,22 @@ enum VehicleProperty {
      * The minInt32Value indicates the seat bottom is angled at its lowest angular position. This
      * corresponds to the seat's front edge at its lowest possible position relative to the rear
      * end of the seat.
+     *
      * The maxInt32Value indicates the seat bottom is angled at its highest angular position. This
      * corresponds to the seat's front edge at its highest possible position relative to the rear
      * end of the seat.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * lowest and highest positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3014,6 +3335,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_TILT_POS = 0x0B8F + 0x10000000 + 0x05000000
@@ -3024,14 +3346,24 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the front edge of the seat while
-     * moving upward.
      * The minInt32Value represents the maximum movement speed of the front edge of the seat while
      * moving downward.
+     *
+     * The maxInt32Value represents the maximum movement speed of the front edge of the seat while
+     * moving upward.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat bottom reaches the positional limit, the value must reset to 0. If SEAT_TILT_MOVE's
      * value is currently 0, then that means there is no movement currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3042,6 +3374,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_TILT_MOVE = 0x0B90 + 0x10000000 + 0x05000000
@@ -3054,11 +3387,21 @@ enum VehicleProperty {
      *
      * The minInt32Value indicates the lumbar support is in its rearward most position (i.e. least
      * supportive position).
+     *
      * The maxInt32Value indicates the lumbar support is in its forward most position (i.e. most
      * supportive position).
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * forward and rearward positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3068,6 +3411,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_LUMBAR_FORE_AFT_POS = 0x0B91 + 0x10000000 + 0x05000000
@@ -3078,15 +3422,25 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat's lumbar support while
-     * moving forward.
      * The minInt32Value represents the maximum movement speed of the seat's lumbar support while
      * moving backward.
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat's lumbar support while
+     * moving forward.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat's lumbar support reaches the positional limit, the value must reset to 0. If
      * SEAT_LUMBAR_FORE_AFT_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3097,6 +3451,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_LUMBAR_FORE_AFT_MOVE = 0x0B92 + 0x10000000 + 0x05000000
@@ -3109,11 +3464,21 @@ enum VehicleProperty {
      *
      * The minInt32Value indicates the lumbar side support is in its thinnest position (i.e.
      * most support).
+     *
      * The maxInt32Value indicates the lumbar side support is in its widest position (i.e.
      * least support).
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * thinnest and widest positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3123,6 +3488,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_LUMBAR_SIDE_SUPPORT_POS = 0x0B93 + 0x10000000 + 0x05000000
@@ -3133,15 +3499,25 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat's lumbar side support
-     * while getting wider.
      * The minInt32Value represents the maximum movement speed of the seat's lumbar side support
      * while getting thinner.
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat's lumbar side support
+     * while getting wider.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat's lumbar side support reaches the positional limit, the value must reset to 0. If
      * SEAT_LUMBAR_SIDE_SUPPORT_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3152,6 +3528,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_LUMBAR_SIDE_SUPPORT_MOVE = 0x0B94 + 0x10000000 + 0x05000000
@@ -3188,10 +3565,20 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the headrest is in its lowest position.
+     *
      * The maxInt32Value indicates the headrest is in its highest position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * lowest and highest positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3201,6 +3588,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_HEADREST_HEIGHT_POS_V2 =
@@ -3212,15 +3600,25 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat's headrest while moving
-     * up.
      * The minInt32Value represents the maximum movement speed of the seat's headrest while moving
      * down.
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat's headrest while moving
+     * up.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat's headrest reaches the positional limit, the value must reset to 0. If
      * SEAT_HEADREST_HEIGHT_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3231,6 +3629,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_HEADREST_HEIGHT_MOVE = 0x0B96 + 0x10000000 + 0x05000000
@@ -3242,10 +3641,20 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the headrest is in its full recline position.
+     *
      * The maxInt32Value indicates the headrest is in its most upright/forward position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * full recline and most upright/forward positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3255,6 +3664,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_HEADREST_ANGLE_POS = 0x0B97 + 0x10000000 + 0x05000000
@@ -3265,15 +3675,25 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat's headrest while moving
-     * into an upright/forward position.
      * The minInt32Value represents the maximum movement speed of the seat's headrest while moving
      * into a shallow position.
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat's headrest while moving
+     * into an upright/forward position.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat's headrest reaches the positional limit, the value must reset to 0. If
      * SEAT_HEADREST_ANGLE_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3284,6 +3704,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_HEADREST_ANGLE_MOVE = 0x0B98 + 0x10000000 + 0x05000000
@@ -3295,10 +3716,20 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the headrest is in its rearward-most linear position.
+     *
      * The maxInt32Value indicates the headrest is in its forward-most linear position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * forward and rearward positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3308,6 +3739,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_HEADREST_FORE_AFT_POS = 0x0B99 + 0x10000000 + 0x05000000
@@ -3318,15 +3750,25 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat's headrest while moving
-     * forward.
      * The minInt32Value represents the maximum movement speed of the seat's headrest while moving
      * backward.
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat's headrest while moving
+     * forward.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat's headrest reaches the positional limit, the value must reset to 0. If
      * SEAT_HEADREST_FORE_AFT_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3337,6 +3779,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_HEADREST_FORE_AFT_MOVE = 0x0B9A + 0x10000000 + 0x05000000
@@ -3355,6 +3798,11 @@ enum VehicleProperty {
      *
      * For each supported area ID, the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of VehicleLightState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
+     * unless all enum values of VehicleLightState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -3377,6 +3825,11 @@ enum VehicleProperty {
      *
      * For each supported area ID, the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of VehicleLightSwitch are supported.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
+     * unless all enum values of VehicleLightSwitch are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
@@ -3443,6 +3896,12 @@ enum VehicleProperty {
      * all states of VehicleAirbagLocation are supported (including OTHER, which is not
      * recommended).
      *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
+     * unless all states of VehicleAirbagLocation are supported (including OTHER, which is not
+     * recommended).
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleAirbagLocation
@@ -3456,13 +3915,23 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the seat cushion side support is in its widest position (i.e.
-     * least support).
      * The minInt32Value indicates the seat cushion side support is in its thinnest position (i.e.
      * most support).
      *
+     * The maxInt32Value indicates the seat cushion side support is in its widest position (i.e.
+     * least support).
+     *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * thinnest and widest positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3472,6 +3941,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_CUSHION_SIDE_SUPPORT_POS =
@@ -3482,15 +3952,25 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value represents the maximum movement speed of the seat cushion side support when
-     * growing wider (i.e. support is decreasing).
      * The minInt32Value represents the maximum movement speed of the seat cushion side support when
      * growing thinner (i.e. support is increasing).
+     *
+     * The maxInt32Value represents the maximum movement speed of the seat cushion side support when
+     * growing wider (i.e. support is decreasing).
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat cushion side support reaches the positional limit, the value must reset to 0. If
      * SEAT_CUSHION_SIDE_SUPPORT_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3501,6 +3981,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_CUSHION_SIDE_SUPPORT_MOVE =
@@ -3511,11 +3992,21 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the lumbar support's highest position.
      * The minInt32Value indicates the lumbar support's lowest position.
+     *
+     * The maxInt32Value indicates the lumbar support's highest position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * lowest and highest positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3525,6 +4016,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_LUMBAR_VERTICAL_POS =
@@ -3535,13 +4027,23 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the lumbar support is moving at the fastest upward speed.
      * The minInt32Value indicates the lumbar support is moving at the fastest downward speed.
+     *
+     * The maxInt32Value indicates the lumbar support is moving at the fastest upward speed.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
      * the seat cushion side support reaches the positional limit, the value must reset to 0. If
      * SEAT_LUMBAR_VERTICAL_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3552,6 +4054,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_LUMBAR_VERTICAL_MOVE =
@@ -3563,10 +4066,20 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the normal seat position. The minInt32Value must be 0.
+     *
      * The maxInt32Value indicates the seat is in the full walk-in position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * normal and walk-in positions.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3579,6 +4092,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     SEAT_WALK_IN_POS =
@@ -3619,6 +4133,7 @@ enum VehicleProperty {
      * Window Position
      *
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined.
+     *
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates the window is closed/fully open out of plane. If the window
@@ -3626,6 +4141,7 @@ enum VehicleProperty {
      * and must be 0. If the window can open out of plane, the minInt32Value indicates the window
      * is fully open in its position out of plane and will be a negative value. See the example
      * below for a more detailed explanation.
+     *
      * The maxInt32Value indicates the window is fully open.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
@@ -3642,12 +4158,22 @@ enum VehicleProperty {
      *
      *    Note that in this mode, 0 indicates the window is closed.
      *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
+     *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     WINDOW_POS = 0x0BC0 + 0x10000000 + 0x03000000
@@ -3658,9 +4184,10 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in each VehicleAreaConfig must be defined. All integers
      * between minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the window is opening in plane/closing in the out of plane
-     * direction at the fastest speed.
      * The minInt32Value indicates the window is closing in plane/opening in the out of plane
+     * direction at the fastest speed.
+     *
+     * The maxInt32Value indicates the window is opening in plane/closing in the out of plane
      * direction at the fastest speed.
      *
      * Larger absolute values, either positive or negative, indicate a faster movement speed. Once
@@ -3685,12 +4212,22 @@ enum VehicleProperty {
      *   Max = open the sunroof, automatically stop when sunroof is fully open.
      *   Min = open the vent, automatically stop when vent is fully open.
      *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
+     *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     WINDOW_MOVE = 0x0BC1 + 0x10000000 + 0x03000000
@@ -3720,13 +4257,25 @@ enum VehicleProperty {
      * When an intermittent wiper setting is selected, this property value must be set to 0 during
      * the "pause" period of the intermittent wiping.
      *
-     * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined. The maxInt32Value
-     * for each area ID must specify the longest wiper period. The minInt32Value must be set to 0
-     * for each area ID.
+     * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined.
+     *
+     * The minInt32Value must be set to 0 for each area ID.
+     *
+     * The maxInt32Value for each area ID must specify the longest wiper period.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @unit VehicleUnit.MILLI_SECS
+     * @require_min_max_supported_value
      * @version 2
      */
     WINDSHIELD_WIPERS_PERIOD =
@@ -3746,6 +4295,12 @@ enum VehicleProperty {
      * unless all states in WindshieldWipersState are supported (including OTHER, which is not
      * recommended).
      *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
+     * unless all states in WindshieldWipersState are supported (including OTHER, which is not
+     * recommended).
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum WindshieldWipersState
@@ -3764,6 +4319,12 @@ enum VehicleProperty {
      * For each supported area ID, the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states in WindshieldWipersSwitch are supported (including OTHER, which is not
      * recommended).
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
+     * unless all states in WindshieldWipersSwitch are supported (including OTHER, which is not
+     * recommended).
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
@@ -3789,11 +4350,21 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined. All values between
      * minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the steering wheel position furthest from the driver.
      * The minInt32Value indicates the steering wheel position closest to the driver.
+     *
+     * The maxInt32Value indicates the steering wheel position furthest from the driver.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * closest and furthest positions.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3803,6 +4374,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     STEERING_WHEEL_DEPTH_POS =
@@ -3813,13 +4385,23 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined. All values between
      * minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the steering wheel moving away from the driver.
      * The minInt32Value indicates the steering wheel moving towards the driver.
+     *
+     * The maxInt32Value indicates the steering wheel moving away from the driver.
      *
      * Larger integers, either positive or negative, indicate a faster movement speed. Once the
      * steering wheel reaches the positional limit, the value must reset to 0. If
      * STEERING_WHEEL_DEPTH_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3830,6 +4412,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     STEERING_WHEEL_DEPTH_MOVE =
@@ -3840,11 +4423,21 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined. All values between
      * minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the steering wheel being in the highest position.
      * The minInt32Value indicates the steering wheel being in the lowest position.
+     *
+     * The maxInt32Value indicates the steering wheel being in the highest position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * lowest and highest positions.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3854,6 +4447,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     STEERING_WHEEL_HEIGHT_POS =
@@ -3864,13 +4458,23 @@ enum VehicleProperty {
      * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined. All values between
      * minInt32Value and maxInt32Value must be supported.
      *
-     * The maxInt32Value indicates the steering wheel moving upwards.
      * The minInt32Value indicates the steering wheel moving downwards.
+     *
+     * The maxInt32Value indicates the steering wheel moving upwards.
      *
      * Larger integers, either positive or negative, indicate a faster movement speed. Once the
      * steering wheel reaches the positional limit, the value must reset to 0. If
      * STEERING_WHEEL_HEIGHT_MOVE's value is currently 0, then that means there is no movement
      * currently occurring.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative movement
      * speeds.
@@ -3881,6 +4485,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     STEERING_WHEEL_HEIGHT_MOVE =
@@ -3939,10 +4544,20 @@ enum VehicleProperty {
      * All integers between minInt32Value and maxInt32Value must be supported.
      *
      * The minInt32Value indicates that the glove box door is closed. The minInt32Value must be 0.
+     *
      * The maxInt32Value indicates that the glove box door is in the fully open position.
      *
      * Values in between minInt32Value and maxInt32Value indicate a transition state between the
      * closed and fully open positions.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * All integers between minSupportedValue and maxSupportedValue must be supported.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * This property is not in any particular unit but in a specified range of relative positions.
      *
@@ -3956,6 +4571,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 2
      */
     GLOVE_BOX_DOOR_POS =
@@ -4530,6 +5146,11 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of VehicleLightState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all enum values of VehicleLightState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleLightState
@@ -4551,6 +5172,11 @@ enum VehicleProperty {
      *
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of VehicleLightSwitch are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all enum values of VehicleLightSwitch are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
@@ -5576,6 +6202,11 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of VehicleAutonomousState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all enum values of VehicleAutonomousState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleAutonomousState
@@ -5703,6 +6334,12 @@ enum VehicleProperty {
      * unless all states of both AutomaticEmergencyBrakingState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both AutomaticEmergencyBrakingState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum AutomaticEmergencyBrakingState
@@ -5744,6 +6381,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of both ForwardCollisionWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both ForwardCollisionWarningState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -5787,6 +6430,12 @@ enum VehicleProperty {
      * unless all states of both BlindSpotWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both BlindSpotWarningState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum BlindSpotWarningState
@@ -5829,6 +6478,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of both LaneDepartureWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both LaneDepartureWarningState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -5879,6 +6534,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of both LaneKeepAssistState (including OTHER, which is not
      * recommended) and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both LaneKeepAssistState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -5932,6 +6593,11 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of LaneCenteringAssistCommand are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all enum values of LaneCenteringAssistCommand are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * When this property is not available because LCA is disabled (i.e.
      * LANE_CENTERING_ASSIST_ENABLED is false), this property must return
      * StatusCode#NOT_AVAILABLE_DISABLED. If LANE_CENTERING_ASSIST_STATE is implemented and the
@@ -5961,6 +6627,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of both LaneCenteringAssistState (including OTHER, which is not
      * recommended) and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both LaneCenteringAssistState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -6006,6 +6678,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of EmergencyLaneKeepAssistState (including OTHER, which is not recommended)
      * and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of EmergencyLaneKeepAssistState (including OTHER, which is not recommended)
+     * and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -6054,6 +6732,12 @@ enum VehicleProperty {
      * unless all states of CruiseControlType (including OTHER, which is not recommended) and
      * ErrorState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of CruiseControlType (including OTHER, which is not recommended) and
+     * ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * Trying to write CruiseControlType#OTHER or an ErrorState to this property will throw an
      * IllegalArgumentException.
      *
@@ -6082,6 +6766,12 @@ enum VehicleProperty {
      * unless all states of CruiseControlState (including OTHER, which is not recommended) and
      * ErrorState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of CruiseControlState (including OTHER, which is not recommended) and
+     * ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum CruiseControlState
@@ -6099,6 +6789,11 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of CruiseControlState are supported. Any unsupported commands sent through
      * this property must return StatusCode#INVALID_ARG.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of CruiseControlState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * When this property is not available because CC is disabled (i.e. CRUISE_CONTROL_ENABLED is
      * false), this property must return StatusCode#NOT_AVAILABLE_DISABLED. If CRUISE_CONTROL_STATE
@@ -6240,6 +6935,12 @@ enum VehicleProperty {
      * unless all states of both HandsOnDetectionDriverState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both HandsOnDetectionDriverState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum HandsOnDetectionDriverState
@@ -6262,6 +6963,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of both HandsOnDetectionWarning (including OTHER, which is not recommended)
      * and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both HandsOnDetectionWarning (including OTHER, which is not recommended)
+     * and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -6313,6 +7020,12 @@ enum VehicleProperty {
      * unless all states of both DriverDrowsinessAttentionState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both DriverDrowsinessAttentionState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum DriverDrowsinessAttentionState
@@ -6359,6 +7072,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of both DriverDrowsinessAttentionWarning (including OTHER, which is not
      * recommended) and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both DriverDrowsinessAttentionWarning (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -6408,6 +7127,12 @@ enum VehicleProperty {
      * unless all states of both DriverDistractionState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both DriverDistractionState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum DriverDistractionState
@@ -6453,6 +7178,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of both DriverDistractionWarning (including OTHER, which is not
      * recommended) and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both DriverDistractionWarning (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -6503,6 +7234,12 @@ enum VehicleProperty {
      * unless all states of both LowSpeedCollisionWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both LowSpeedCollisionWarningState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
+     *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum LowSpeedCollisionWarningState
@@ -6545,6 +7282,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of both CrossTrafficMonitoringWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both CrossTrafficMonitoringWarningState (including OTHER, which is not
+     * recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
@@ -6599,6 +7342,12 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of both LowSpeedAutomaticEmergencyBrakingState (including OTHER, which is
      * not recommended) and ErrorState are supported.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
+     * unless all states of both LowSpeedAutomaticEmergencyBrakingState (including OTHER, which is
+     * not recommended) and ErrorState are supported.
+     * At boot, the supported values list is the same as supportedEnumValues.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ

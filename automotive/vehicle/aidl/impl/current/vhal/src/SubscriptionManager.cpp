@@ -478,7 +478,7 @@ VhalResult<void> SubscriptionManager::unsubscribeSupportedValueChangeLocked(
             mSupportedValueChangeClientsByPropIdAreaId.end()) {
             mSupportedValueChangeClientsByPropIdAreaId[propIdAreaId].erase(clientId);
         }
-        if (mSupportedValueChangeClientsByPropIdAreaId.empty()) {
+        if (mSupportedValueChangeClientsByPropIdAreaId[propIdAreaId].empty()) {
             mSupportedValueChangeClientsByPropIdAreaId.erase(propIdAreaId);
         }
         mSupportedValueChangePropIdAreaIdsByClient[clientId].erase(propIdAreaId);
@@ -579,6 +579,25 @@ SubscriptionManager::getSubscribedClientsForErrorEvents(
         }
     }
     return clients;
+}
+
+std::unordered_map<std::shared_ptr<IVehicleCallback>, std::vector<PropIdAreaId>>
+SubscriptionManager::getSubscribedClientsForSupportedValueChange(
+        const std::vector<PropIdAreaId>& propIdAreaIds) {
+    std::scoped_lock<std::mutex> lockGuard(mLock);
+    std::unordered_map<std::shared_ptr<IVehicleCallback>, std::vector<PropIdAreaId>>
+            propIdAreaIdsByClient;
+
+    for (const auto& propIdAreaId : propIdAreaIds) {
+        const auto clientIter = mSupportedValueChangeClientsByPropIdAreaId.find(propIdAreaId);
+        if (clientIter == mSupportedValueChangeClientsByPropIdAreaId.end()) {
+            continue;
+        }
+        for (const auto& [_, client] : clientIter->second) {
+            propIdAreaIdsByClient[client].push_back(propIdAreaId);
+        }
+    }
+    return propIdAreaIdsByClient;
 }
 
 bool SubscriptionManager::isEmpty() {
