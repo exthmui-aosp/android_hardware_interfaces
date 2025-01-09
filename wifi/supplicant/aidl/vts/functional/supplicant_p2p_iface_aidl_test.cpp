@@ -986,15 +986,16 @@ TEST_P(SupplicantP2pIfaceAidlTest, ReinvokePersistentGroup) {
  * Test the P2P network management functions.
  */
 TEST_P(SupplicantP2pIfaceAidlTest, ManageNetworks) {
-    std::shared_ptr<ISupplicantP2pNetwork> network;
-    EXPECT_TRUE(p2p_iface_->addNetwork(&network).isOk());
-    ASSERT_NE(network, nullptr);
+    // Create a persistent group to bring up a network
+    EXPECT_TRUE(p2p_iface_->addGroup(true /* persistent */, -1).isOk());
+    sleep(2);
 
     std::vector<int32_t> networkList;
     EXPECT_TRUE(p2p_iface_->listNetworks(&networkList).isOk());
     ASSERT_FALSE(networkList.empty());
 
     int networkId = networkList[0];
+    std::shared_ptr<ISupplicantP2pNetwork> network;
     EXPECT_TRUE(p2p_iface_->getNetwork(networkId, &network).isOk());
     ASSERT_NE(network, nullptr);
     EXPECT_TRUE(p2p_iface_->removeNetwork(networkId).isOk());

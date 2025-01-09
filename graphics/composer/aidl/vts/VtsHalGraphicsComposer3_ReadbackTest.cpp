@@ -543,6 +543,7 @@ void generateLuts(Luts* luts, LutProperties::Dimension dimension, int32_t size,
     luts->lutProperties = {LutProperties{dimension, size, {key}}};
 }
 
+// @VsrTest = 4.4-016
 TEST_P(GraphicsCompositionTest, Luts) {
     ASSERT_TRUE(
             mComposerClient->setClientTargetSlotCount(getPrimaryDisplayId(), kClientTargetSlotCount)

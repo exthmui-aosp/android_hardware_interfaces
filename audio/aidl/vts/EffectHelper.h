@@ -47,6 +47,7 @@ using aidl::android::hardware::audio::effect::getEffectTypeUuidSpatializer;
 using aidl::android::hardware::audio::effect::getRange;
 using aidl::android::hardware::audio::effect::IEffect;
 using aidl::android::hardware::audio::effect::isRangeValid;
+using aidl::android::hardware::audio::effect::kDrainSupportedVersion;
 using aidl::android::hardware::audio::effect::kEffectTypeUuidSpatializer;
 using aidl::android::hardware::audio::effect::kEventFlagDataMqNotEmpty;
 using aidl::android::hardware::audio::effect::kEventFlagDataMqUpdate;
@@ -195,8 +196,11 @@ class EffectHelper {
                 ASSERT_TRUE(expectState(effect, State::PROCESSING));
                 break;
             case CommandId::STOP:
-                ASSERT_TRUE(expectState(effect, State::IDLE) ||
-                            expectState(effect, State::DRAINING));
+                // Enforce the state checking after kDrainSupportedVersion
+                if (getHalVersion(effect) >= kDrainSupportedVersion) {
+                    ASSERT_TRUE(expectState(effect, State::IDLE) ||
+                                expectState(effect, State::DRAINING));
+                }
                 break;
             case CommandId::RESET:
                 ASSERT_TRUE(expectState(effect, State::IDLE));
@@ -516,6 +520,11 @@ class EffectHelper {
         for (size_t i = 0; i < inputSize; i++) {
             input[i] = sin(2 * M_PI * inputFrequency * i / samplingFrequency);
         }
+    }
+
+    static int getHalVersion(const std::shared_ptr<IEffect>& effect) {
+        int version = 0;
+        return (effect && effect->getInterfaceVersion(&version).isOk()) ? version : 0;
     }
 
     bool mIsSpatializer;

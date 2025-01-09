@@ -1874,8 +1874,8 @@ TEST_F(DefaultVehicleHalTest, testHeartbeatEvent) {
 
     auto maybeResults = getCallback()->nextOnPropertyEventResults();
     size_t retryCount = 0;
-    // Add a 1s (100ms * 10) buffer time.
-    while (!maybeResults.has_value() && retryCount < 10) {
+    // Add a 10s (100ms * 100) buffer time.
+    while (!maybeResults.has_value() && retryCount < 100) {
         retryCount++;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }

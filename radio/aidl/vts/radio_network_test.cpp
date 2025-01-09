@@ -2629,7 +2629,7 @@ TEST_P(RadioNetworkTest, setSatellitePlmn) {
     }
 
     serial = GetRandomSerialNumber();
-    radio_network->setSatellitePlmn(serial, 0, {"123456"}, {"123456, 3456789"});
+    radio_network->setSatellitePlmn(serial, {"123456"}, {"123456, 3456789"});
     EXPECT_EQ(std::cv_status::no_timeout, wait());
     EXPECT_EQ(RadioResponseType::SOLICITED, radioRsp_network->rspInfo.type);
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
@@ -2654,7 +2654,7 @@ TEST_P(RadioNetworkTest, setSatelliteEnabledForCarrier) {
 
     // Get current value
     serial = GetRandomSerialNumber();
-    radio_network->isSatelliteEnabledForCarrier(serial, 0);
+    radio_network->isSatelliteEnabledForCarrier(serial);
     EXPECT_EQ(std::cv_status::no_timeout, wait());
     bool originalSatelliteEnabledSetting = radioRsp_network->isSatelliteEnabledForCarrier;
 
@@ -2663,7 +2663,7 @@ TEST_P(RadioNetworkTest, setSatelliteEnabledForCarrier) {
     // for the right default value.
     bool valueToSet = !originalSatelliteEnabledSetting;
     serial = GetRandomSerialNumber();
-    radio_network->setSatelliteEnabledForCarrier(serial, 0, valueToSet);
+    radio_network->setSatelliteEnabledForCarrier(serial, valueToSet);
     EXPECT_EQ(std::cv_status::no_timeout, wait());
     EXPECT_EQ(RadioResponseType::SOLICITED, radioRsp_network->rspInfo.type);
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
@@ -2675,7 +2675,7 @@ TEST_P(RadioNetworkTest, setSatelliteEnabledForCarrier) {
     if (radioRsp_network->rspInfo.error == RadioError::NONE) {
         // Assert the value has changed
         serial = GetRandomSerialNumber();
-        ndk::ScopedAStatus res = radio_network->isSatelliteEnabledForCarrier(serial, 0);
+        ndk::ScopedAStatus res = radio_network->isSatelliteEnabledForCarrier(serial);
 
         ASSERT_OK(res);
         EXPECT_EQ(std::cv_status::no_timeout, wait());
@@ -2687,7 +2687,7 @@ TEST_P(RadioNetworkTest, setSatelliteEnabledForCarrier) {
         EXPECT_EQ(valueToSet, radioRsp_network->isSatelliteEnabledForCarrier);
 
         // Reset original state
-        radio_network->setSatelliteEnabledForCarrier(serial, 0, originalSatelliteEnabledSetting);
+        radio_network->setSatelliteEnabledForCarrier(serial, originalSatelliteEnabledSetting);
         EXPECT_EQ(std::cv_status::no_timeout, wait());
         EXPECT_EQ(RadioResponseType::SOLICITED, radioRsp_network->rspInfo.type);
         EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);

@@ -48,11 +48,22 @@ class SupplicantP2pNetworkAidlTest : public testing::TestWithParam<std::string> 
 
         EXPECT_TRUE(supplicant_->getP2pInterface(getP2pIfaceName(), &p2p_iface_).isOk());
         ASSERT_NE(p2p_iface_, nullptr);
-        EXPECT_TRUE(p2p_iface_->addNetwork(&p2p_network_).isOk());
+
+        // Create a persistent group to bring up a network
+        EXPECT_TRUE(p2p_iface_->addGroup(true /* persistent */, -1).isOk());
+        sleep(2);
+
+        std::vector<int32_t> networkList;
+        EXPECT_TRUE(p2p_iface_->listNetworks(&networkList).isOk());
+        ASSERT_FALSE(networkList.empty());
+
+        network_id_ = networkList[0];
+        EXPECT_TRUE(p2p_iface_->getNetwork(network_id_, &p2p_network_).isOk());
         ASSERT_NE(p2p_network_, nullptr);
     }
 
     void TearDown() override {
+        EXPECT_TRUE(p2p_iface_->removeNetwork(network_id_).isOk());
         stopSupplicantService();
         startWifiFramework();
     }
@@ -61,6 +72,7 @@ class SupplicantP2pNetworkAidlTest : public testing::TestWithParam<std::string> 
     std::shared_ptr<ISupplicant> supplicant_;
     std::shared_ptr<ISupplicantP2pIface> p2p_iface_;
     std::shared_ptr<ISupplicantP2pNetwork> p2p_network_;
+    int network_id_;
 };
 
 /*
@@ -130,7 +142,8 @@ TEST_P(SupplicantP2pNetworkAidlTest, IsCurrent) {
 TEST_P(SupplicantP2pNetworkAidlTest, IsGroupOwner) {
     bool isGroupOwner;
     EXPECT_TRUE(p2p_network_->isGroupOwner(&isGroupOwner).isOk());
-    EXPECT_FALSE(isGroupOwner);
+    // Configured network is a group owner
+    EXPECT_TRUE(isGroupOwner);
 }
 
 /*
@@ -139,7 +152,8 @@ TEST_P(SupplicantP2pNetworkAidlTest, IsGroupOwner) {
 TEST_P(SupplicantP2pNetworkAidlTest, IsPersistent) {
     bool isPersistent;
     EXPECT_TRUE(p2p_network_->isPersistent(&isPersistent).isOk());
-    EXPECT_FALSE(isPersistent);
+    // Configured network is persistent
+    EXPECT_TRUE(isPersistent);
 }
 
 /*

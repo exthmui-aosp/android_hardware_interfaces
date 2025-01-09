@@ -862,6 +862,20 @@ TEST_P(SupplicantStaNetworkAidlTest, SetVendorData) {
     EXPECT_TRUE(sta_network_->setVendorData(kTestVendorData).isOk());
 }
 
+/*
+ * Set/Get EDMG
+ */
+TEST_P(SupplicantStaNetworkAidlTest, SetGetEdmg) {
+    bool retrievedValue = false;
+    EXPECT_TRUE(sta_network_->setEdmg(true).isOk());
+    EXPECT_TRUE(sta_network_->getEdmg(&retrievedValue).isOk());
+    EXPECT_EQ(retrievedValue, true);
+
+    EXPECT_TRUE(sta_network_->setEdmg(false).isOk());
+    EXPECT_TRUE(sta_network_->getEdmg(&retrievedValue).isOk());
+    EXPECT_EQ(retrievedValue, false);
+}
+
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SupplicantStaNetworkAidlTest);
 INSTANTIATE_TEST_SUITE_P(Supplicant, SupplicantStaNetworkAidlTest,
                          testing::ValuesIn(android::getAidlHalInstanceNames(

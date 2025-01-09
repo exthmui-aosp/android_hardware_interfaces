@@ -29,7 +29,7 @@ parcelable VehicleAreaConfig {
     int areaId;
 
     /**
-     * @deprecated client should use {@code getMinMaxSupportedValue} instead.
+     * client should use {@code getMinMaxSupportedValue} instead.
      *
      * Only applicable for {@code INT32} type property. Ignored for other types.
      *
@@ -49,7 +49,7 @@ parcelable VehicleAreaConfig {
     int minInt32Value;
 
     /**
-     * @deprecated client should use {@code getMinMaxSupportedValue} instead.
+     * client should use {@code getMinMaxSupportedValue} instead.
      *
      * Only applicable for {@code INT32} type property. Ignored for other types.
      *
@@ -69,7 +69,7 @@ parcelable VehicleAreaConfig {
     int maxInt32Value;
 
     /**
-     * @deprecated client should use {@code getMinMaxSupportedValue} instead.
+     * client should use {@code getMinMaxSupportedValue} instead.
      *
      * Only applicable for {@code INT64} type property. Ignored for other types.
      *
@@ -89,7 +89,7 @@ parcelable VehicleAreaConfig {
     long minInt64Value;
 
     /**
-     * @deprecated client should use {@code getMinMaxSupportedValue} instead.
+     * client should use {@code getMinMaxSupportedValue} instead.
      *
      * Only applicable for {@code INT64} type property. Ignored for other types.
      *
@@ -109,7 +109,7 @@ parcelable VehicleAreaConfig {
     long maxInt64Value;
 
     /**
-     * @deprecated client should use {@code getMinMaxSupportedValue} instead.
+     * client should use {@code getMinMaxSupportedValue} instead.
      *
      * Only applicable for {@code FLOAT} type property. Ignored for other types.
      *
@@ -129,7 +129,7 @@ parcelable VehicleAreaConfig {
     float minFloatValue;
 
     /**
-     * @deprecated client should use {@code getMinMaxSupportedValue} instead.
+     * client should use {@code getMinMaxSupportedValue} instead.
      *
      * Only applicable for {@code FLOAT} type property. Ignored for other types.
      *
@@ -149,7 +149,7 @@ parcelable VehicleAreaConfig {
     float maxFloatValue;
 
     /**
-     * @deprecated client should use {@code getMinMaxSupportedValue} instead.
+     * client should use {@code getMinMaxSupportedValue} instead.
      *
      * Only applicable for property with {@code @data_enum} annotation. Ignored
      * for other properties.
