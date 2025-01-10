@@ -37,6 +37,8 @@ using aidl::android::hardware::wifi::IWifiRttController;
 using aidl::android::hardware::wifi::RttBw;
 using aidl::android::hardware::wifi::RttCapabilities;
 using aidl::android::hardware::wifi::RttConfig;
+using aidl::android::hardware::wifi::RttLciInformation;
+using aidl::android::hardware::wifi::RttLcrInformation;
 using aidl::android::hardware::wifi::RttPeerType;
 using aidl::android::hardware::wifi::RttPreamble;
 using aidl::android::hardware::wifi::RttResponder;
@@ -171,6 +173,7 @@ TEST_P(WifiRttControllerAidlTest, EnableResponder) {
     RttResponder responder = {};
     EXPECT_TRUE(wifi_rtt_controller_->getResponderInfo(&responder).isOk());
     EXPECT_TRUE(wifi_rtt_controller_->enableResponder(cmdId, channelInfo, 10, responder).isOk());
+    EXPECT_TRUE(wifi_rtt_controller_->disableResponder(cmdId).isOk());
 }
 
 /*
@@ -359,6 +362,31 @@ TEST_P(WifiRttControllerAidlTest, RangeRequest) {
 
     // Sleep for 2 seconds to wait for driver/firmware to complete RTT.
     sleep(2);
+}
+
+/*
+ * GetBoundIface
+ */
+TEST_P(WifiRttControllerAidlTest, GetBoundIface) {
+    std::shared_ptr<IWifiStaIface> boundIface;
+    EXPECT_TRUE(wifi_rtt_controller_->getBoundIface(&boundIface).isOk());
+    EXPECT_NE(boundIface, nullptr);
+}
+
+/*
+ * Set LCI and LCR
+ */
+TEST_P(WifiRttControllerAidlTest, SetLciAndLcr) {
+    RttCapabilities caps = getCapabilities();
+    if (!caps.responderSupported) {
+        GTEST_SKIP() << "Skipping because responder is not supported";
+    }
+
+    int cmdId = 55;
+    RttLciInformation lci = {};
+    RttLcrInformation lcr = {};
+    EXPECT_TRUE(wifi_rtt_controller_->setLci(cmdId, lci).isOk());
+    EXPECT_TRUE(wifi_rtt_controller_->setLcr(cmdId, lcr).isOk());
 }
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WifiRttControllerAidlTest);

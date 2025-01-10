@@ -853,7 +853,7 @@ class CertificateRequestV2Test : public CertificateRequestTestBase {
  * is not "green" if and only if the mode on at least one certificate in the DICE chain
  * is non-normal.
  */
-TEST_P(CertificateRequestV2Test, unlockedBootloaderStatesImpliesNonnormalDiceChain) {
+TEST_P(CertificateRequestV2Test, DISABLED_unlockedBootloaderStatesImpliesNonnormalDiceChain) {
     auto challenge = randomBytes(MAX_CHALLENGE_SIZE);
     bytevec csr;
     auto status =

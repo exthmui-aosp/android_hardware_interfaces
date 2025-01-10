@@ -110,14 +110,11 @@ class Bump(object):
             "kernel_configs", "-a", " ".join(next_kernel_configs), android_bp
         ])
 
-        # update the SYSTEM_MATRIX_DEPS variable and the phony module's
-        # product_variables entry.
+        # Replace the phony module's product_variables entry to add the new FCM
+        # to the development targets (trunk* configs).
         lines = []
         with open(android_bp) as f:
             for line in f:
-              if f"    \"{self.device_module_name}\",\n" in line:
-                  lines.append(f"    \"{self.current_module_name}\",\n")
-
               if f"                \"{self.current_module_name}\",\n" in line:
                   lines.append(f"                \"{self.next_module_name}\",\n")
               else:

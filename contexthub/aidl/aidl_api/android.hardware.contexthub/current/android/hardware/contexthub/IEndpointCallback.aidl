@@ -34,11 +34,11 @@
 package android.hardware.contexthub;
 @VintfStability
 interface IEndpointCallback {
-  void onEndpointStarted(in android.hardware.contexthub.EndpointInfo[] endpointInfos);
-  void onEndpointStopped(in android.hardware.contexthub.EndpointId[] endpointIds, android.hardware.contexthub.Reason reason);
-  void onMessageReceived(int sessionId, in android.hardware.contexthub.Message msg);
-  void onMessageDeliveryStatusReceived(int sessionId, in android.hardware.contexthub.MessageDeliveryStatus msgStatus);
-  void onEndpointSessionOpenRequest(int sessionId, in android.hardware.contexthub.EndpointId destination, in android.hardware.contexthub.EndpointId initiator, in @nullable String serviceDescriptor);
-  void onCloseEndpointSession(int sessionId, in android.hardware.contexthub.Reason reason);
-  void onEndpointSessionOpenComplete(int sessionId);
+  oneway void onEndpointStarted(in android.hardware.contexthub.EndpointInfo[] endpointInfos);
+  oneway void onEndpointStopped(in android.hardware.contexthub.EndpointId[] endpointIds, android.hardware.contexthub.Reason reason);
+  oneway void onMessageReceived(int sessionId, in android.hardware.contexthub.Message msg);
+  oneway void onMessageDeliveryStatusReceived(int sessionId, in android.hardware.contexthub.MessageDeliveryStatus msgStatus);
+  oneway void onEndpointSessionOpenRequest(int sessionId, in android.hardware.contexthub.EndpointId destination, in android.hardware.contexthub.EndpointId initiator, in @nullable String serviceDescriptor);
+  oneway void onCloseEndpointSession(int sessionId, in android.hardware.contexthub.Reason reason);
+  oneway void onEndpointSessionOpenComplete(int sessionId);
 }

@@ -3356,6 +3356,30 @@ TEST_P(GraphicsComposerAidlCommandV4Test, setLayerPictureProfileId_failsWithTooM
     }
 }
 
+// @NonApiTest = check the status if calling getLuts
+TEST_P(GraphicsComposerAidlCommandV4Test, GetLuts) {
+    for (auto& display : mDisplays) {
+        int64_t displayId = display.getDisplayId();
+        auto& writer = getWriter(displayId);
+        const auto layer = createOnScreenLayer(display);
+        const auto buffer = allocate(::android::PIXEL_FORMAT_RGBA_8888);
+        ASSERT_NE(nullptr, buffer->handle);
+        writer.setLayerBuffer(displayId, layer, /*slot*/ 0, buffer->handle,
+                              /*acquireFence*/ -1);
+        Buffer aidlbuffer;
+        aidlbuffer.handle = ::android::dupToAidl(buffer->handle);
+        std::vector<Buffer> buffers;
+        buffers.push_back(std::move(aidlbuffer));
+        const auto& [status, _] = mComposerClient->getLuts(displayId, buffers);
+        if (!status.isOk() && status.getExceptionCode() == EX_SERVICE_SPECIFIC &&
+            status.getServiceSpecificError() == IComposerClient::EX_UNSUPPORTED) {
+            GTEST_SKIP() << "getLuts is not supported";
+            return;
+        }
+        ASSERT_TRUE(status.isOk());
+    }
+}
+
 TEST_P(GraphicsComposerAidlCommandV4Test, SetUnsupportedLayerLuts) {
     auto& writer = getWriter(getPrimaryDisplayId());
     const auto& [layerStatus, layer] =

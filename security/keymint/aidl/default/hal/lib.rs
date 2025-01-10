@@ -20,6 +20,19 @@
 use kmr_hal::env::get_property;
 use log::error;
 
+/// Retrieve the most significant attestation property for `name`.
+fn attestation_property(name: &str) -> Vec<u8> {
+    let prop_val = get_property(&format!("ro.product.vendor.{}", name)).unwrap_or_default();
+    if !prop_val.is_empty() {
+        prop_val
+    } else {
+        get_property(&format!("ro.product.{}", name))
+            .unwrap_or_else(|prop_name| format!("{} unavailable", prop_name))
+    }
+    .as_bytes()
+    .to_vec()
+}
+
 /// Populate attestation ID information based on properties (where available).
 /// Retrieving the serial number requires SELinux permission.
 pub fn attestation_id_info() -> kmr_wire::AttestationIdInfo {
@@ -30,12 +43,12 @@ pub fn attestation_id_info() -> kmr_wire::AttestationIdInfo {
             .to_vec()
     };
     kmr_wire::AttestationIdInfo {
-        brand: prop("ro.product.brand"),
-        device: prop("ro.product.device"),
-        product: prop("ro.product.name"),
+        brand: attestation_property("brand"),
+        device: attestation_property("device"),
+        product: attestation_property("name"),
         serial: prop("ro.serialno"),
-        manufacturer: prop("ro.product.manufacturer"),
-        model: prop("ro.product.model"),
+        manufacturer: attestation_property("manufacturer"),
+        model: attestation_property("model"),
         // Currently modem_simulator always returns one fixed value. See `handleGetIMEI` in
         // device/google/cuttlefish/host/commands/modem_simulator/misc_service.cpp for more details.
         // TODO(b/263188546): Use device-specific IMEI values when available.

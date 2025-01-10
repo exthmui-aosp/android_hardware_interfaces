@@ -1615,6 +1615,7 @@ class GraphicsColorManagementCompositionTest
     std::shared_ptr<TestBufferLayer> mLayer;
 };
 
+// @VsrTest = 4.4-015
 TEST_P(GraphicsColorManagementCompositionTest, ColorConversion) {
     for (ColorMode mode : mTestColorModes) {
         EXPECT_TRUE(mComposerClient

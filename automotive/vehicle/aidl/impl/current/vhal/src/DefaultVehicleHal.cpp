@@ -263,8 +263,7 @@ void DefaultVehicleHal::onSupportedValueChange(
     auto updatedPropIdAreaIdsByClient =
             manager->getSubscribedClientsForSupportedValueChange(propIdAreaIds);
     for (auto& [callback, updatedPropIdAreaIds] : updatedPropIdAreaIdsByClient) {
-        SubscriptionClient::sendSupportedValueChangeEvents(callback,
-                                                           std::move(updatedPropIdAreaIds));
+        SubscriptionClient::sendSupportedValueChangeEvents(callback, updatedPropIdAreaIds);
     }
 }
 

@@ -100,6 +100,9 @@ class FakeVehicleHardware : public IVehicleHardware {
     void registerOnPropertySetErrorEvent(
             std::unique_ptr<const PropertySetErrorCallback> callback) override;
 
+    void registerSupportedValueChangeCallback(
+            std::unique_ptr<const SupportedValueChangeCallback> callback) override;
+
     // Subscribe to a new [propId, areaId] or change the update rate.
     aidl::android::hardware::automotive::vehicle::StatusCode subscribe(
             aidl::android::hardware::automotive::vehicle::SubscribeOptions options) override;
@@ -177,6 +180,7 @@ class FakeVehicleHardware : public IVehicleHardware {
     // Only allowed to set once.
     std::unique_ptr<const PropertyChangeCallback> mOnPropertyChangeCallback;
     std::unique_ptr<const PropertySetErrorCallback> mOnPropertySetErrorCallback;
+    std::unique_ptr<const SupportedValueChangeCallback> mOnSupportedValueChangeCallback;
 
     std::mutex mLock;
     std::unordered_map<PropIdAreaId, RefreshInfo, PropIdAreaIdHash> mRefreshInfoByPropIdAreaId
@@ -185,6 +189,10 @@ class FakeVehicleHardware : public IVehicleHardware {
     std::unordered_map<PropIdAreaId, VehiclePropValuePool::RecyclableType, PropIdAreaIdHash>
             mSavedProps GUARDED_BY(mLock);
     std::unordered_set<PropIdAreaId, PropIdAreaIdHash> mSubOnChangePropIdAreaIds GUARDED_BY(mLock);
+    int32_t mMinSupportedValueForTestIntProp GUARDED_BY(mLock) = 0;
+    int32_t mMaxSupportedValueForTestIntProp GUARDED_BY(mLock) = 10;
+    std::vector<int32_t> mSupportedValuesListForTestIntProp GUARDED_BY(mLock) = {0, 2, 4, 6, 8, 10};
+
     // PendingRequestHandler is thread-safe.
     mutable PendingRequestHandler<GetValuesCallback,
                                   aidl::android::hardware::automotive::vehicle::GetValueRequest>
@@ -281,6 +289,8 @@ class FakeVehicleHardware : public IVehicleHardware {
     std::string dumpRestoreProperty(const std::vector<std::string>& options);
     std::string dumpInjectEvent(const std::vector<std::string>& options);
     std::string dumpSubscriptions();
+    std::string dumpSetSupportedValues(const std::vector<std::string>& options);
+    std::string dumpSetMinMaxValue(const std::vector<std::string>& options);
 
     std::vector<std::string> getOptionValues(const std::vector<std::string>& options,
                                              size_t* index);
@@ -310,6 +320,9 @@ class FakeVehicleHardware : public IVehicleHardware {
                                float sampleRateHz) REQUIRES(mLock);
     void unregisterRefreshLocked(PropIdAreaId propIdAreaId) REQUIRES(mLock);
     void refreshTimestampForInterval(int64_t intervalInNanos) EXCLUDES(mLock);
+    void triggerSupportedValueChange(
+            const aidl::android::hardware::automotive::vehicle::VehiclePropConfig& config)
+            EXCLUDES(mLock);
 
     static aidl::android::hardware::automotive::vehicle::VehiclePropValue createHwInputKeyProp(
             aidl::android::hardware::automotive::vehicle::VehicleHwKeyInputAction action,

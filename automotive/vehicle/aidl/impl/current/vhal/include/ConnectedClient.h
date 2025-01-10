@@ -119,7 +119,7 @@ class SubscriptionClient {
 
     // Invokes onSupportedValueChange callback.
     static void sendSupportedValueChangeEvents(CallbackType callback,
-                                               std::vector<PropIdAreaId> propIdAreaIds);
+                                               const std::vector<PropIdAreaId>& propIdAreaIds);
 };
 
 }  // namespace vehicle

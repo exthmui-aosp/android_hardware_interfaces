@@ -2759,6 +2759,86 @@ TEST_F(FakeVehicleHardwareTest, testDumpFakeUserHal) {
                               "response\nNo SetUserIdentificationAssociation response\n"));
 }
 
+TEST_F(FakeVehicleHardwareTest, testDumpSetMinMaxValue) {
+    std::vector<std::string> options = {"--set-minmaxvalue", "1", "100"};
+    std::vector<PropIdAreaId> changedPropIdAreaIds;
+
+    getHardware()->registerSupportedValueChangeCallback(
+            std::make_unique<IVehicleHardware::SupportedValueChangeCallback>(
+                    [&changedPropIdAreaIds](std::vector<PropIdAreaId> propIdAreaIds) {
+                        changedPropIdAreaIds = propIdAreaIds;
+                    }));
+
+    DumpResult result = getHardware()->dump(options);
+    ASSERT_FALSE(result.callerShouldDumpState);
+    ASSERT_THAT(result.buffer, ContainsRegex("Min/Max supported value .* set"));
+
+    ASSERT_EQ(changedPropIdAreaIds.size(), 1u);
+
+    auto results = getHardware()->getMinMaxSupportedValues({PropIdAreaId{
+            .propId = toInt(TestVendorProperty::VENDOR_EXTENSION_INT_PROPERTY), .areaId = 0}});
+
+    ASSERT_EQ(results.size(), 1u);
+    EXPECT_EQ(results[0].status, StatusCode::OK);
+    EXPECT_EQ(results[0].minSupportedValue.value(), RawPropValues{.int32Values = {1}});
+    EXPECT_EQ(results[0].maxSupportedValue.value(), RawPropValues{.int32Values = {100}});
+}
+
+TEST_F(FakeVehicleHardwareTest, testDumpSetMinMaxValue_invalidInt) {
+    std::vector<std::string> options = {"--set-minmaxvalue", "abc", "100"};
+
+    DumpResult result = getHardware()->dump(options);
+    ASSERT_THAT(result.buffer, ContainsRegex("Failed"));
+
+    options = {"--set-minmaxvalue", "1", "abc"};
+
+    result = getHardware()->dump(options);
+    ASSERT_THAT(result.buffer, ContainsRegex("Failed"));
+}
+
+TEST_F(FakeVehicleHardwareTest, testDumpSetMinMaxValue_minLargerThanMax) {
+    std::vector<std::string> options = {"--set-minmaxvalue", "2", "1"};
+
+    DumpResult result = getHardware()->dump(options);
+    ASSERT_THAT(result.buffer, ContainsRegex("Failed"));
+}
+
+TEST_F(FakeVehicleHardwareTest, testDumpSetSupportedValues) {
+    std::vector<std::string> options = {"--set-supportedvalues", "1", "2", "3"};
+    std::vector<PropIdAreaId> changedPropIdAreaIds;
+
+    getHardware()->registerSupportedValueChangeCallback(
+            std::make_unique<IVehicleHardware::SupportedValueChangeCallback>(
+                    [&changedPropIdAreaIds](std::vector<PropIdAreaId> propIdAreaIds) {
+                        changedPropIdAreaIds = propIdAreaIds;
+                    }));
+
+    DumpResult result = getHardware()->dump(options);
+    ASSERT_FALSE(result.callerShouldDumpState);
+    ASSERT_THAT(result.buffer, ContainsRegex("Supported values list .* set"));
+
+    ASSERT_EQ(changedPropIdAreaIds.size(), 1u);
+
+    auto results = getHardware()->getSupportedValuesLists({PropIdAreaId{
+            .propId = toInt(TestVendorProperty::VENDOR_EXTENSION_INT_PROPERTY), .areaId = 0}});
+
+    ASSERT_EQ(results.size(), 1u);
+    EXPECT_EQ(results[0].status, StatusCode::OK);
+    EXPECT_NE(results[0].supportedValuesList, std::nullopt);
+    EXPECT_EQ(results[0].supportedValuesList.value(), std::vector<std::optional<RawPropValues>>({
+                                                              RawPropValues{.int32Values = {1}},
+                                                              RawPropValues{.int32Values = {2}},
+                                                              RawPropValues{.int32Values = {3}},
+                                                      }));
+}
+
+TEST_F(FakeVehicleHardwareTest, testDumpSetSupportedValues_invalidInt) {
+    std::vector<std::string> options = {"--set-supportedvalues", "1", "2", "ab", "3"};
+
+    DumpResult result = getHardware()->dump(options);
+    ASSERT_THAT(result.buffer, ContainsRegex("Failed"));
+}
+
 struct SetPropTestCase {
     std::string test_name;
     std::vector<std::string> options;

@@ -200,6 +200,9 @@ class VtsComposerClient {
 
     std::pair<ScopedAStatus, int32_t> getMaxLayerPictureProfiles(int64_t display);
 
+    std::pair<ScopedAStatus, std::vector<Luts>> getLuts(int64_t display,
+                                                        const std::vector<Buffer>& buffers);
+
     static constexpr int32_t kMaxFrameIntervalNs = 50000000;  // 20fps
     static constexpr int32_t kNoFrameIntervalNs = 0;
 

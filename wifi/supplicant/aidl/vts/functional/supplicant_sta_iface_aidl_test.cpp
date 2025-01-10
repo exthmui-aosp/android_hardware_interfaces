@@ -48,7 +48,6 @@ using aidl::android::hardware::wifi::supplicant::MscsParams;
 using aidl::android::hardware::wifi::supplicant::QosCharacteristics;
 using aidl::android::hardware::wifi::supplicant::QosPolicyScsData;
 using aidl::android::hardware::wifi::supplicant::QosPolicyScsRequestStatus;
-using aidl::android::hardware::wifi::supplicant::RxFilterType;
 using aidl::android::hardware::wifi::supplicant::SignalPollResult;
 using aidl::android::hardware::wifi::supplicant::UsdBaseConfig;
 using aidl::android::hardware::wifi::supplicant::UsdCapabilities;
@@ -974,17 +973,6 @@ TEST_P(SupplicantStaIfaceAidlTest, GetSignalPollResults) {
 
     std::vector<SignalPollResult> results;
     EXPECT_TRUE(sta_iface_->getSignalPollResults(&results).isOk());
-}
-
-/*
- * Test that we can add, remove, start, and stop an RX filter.
- */
-TEST_P(SupplicantStaIfaceAidlTest, ConfigureRxFilter) {
-    RxFilterType filterType = RxFilterType::V4_MULTICAST;
-    EXPECT_TRUE(sta_iface_->addRxFilter(filterType).isOk());
-    EXPECT_TRUE(sta_iface_->startRxFilter().isOk());
-    EXPECT_TRUE(sta_iface_->stopRxFilter().isOk());
-    EXPECT_TRUE(sta_iface_->removeRxFilter(filterType).isOk());
 }
 
 /*

@@ -306,8 +306,9 @@ void SubscriptionClient::sendPropertySetErrors(std::shared_ptr<IVehicleCallback>
     }
 }
 
-void SubscriptionClient::sendSupportedValueChangeEvents(std::shared_ptr<IVehicleCallback> callback,
-                                                        std::vector<PropIdAreaId> propIdAreaIds) {
+void SubscriptionClient::sendSupportedValueChangeEvents(
+        std::shared_ptr<IVehicleCallback> callback,
+        const std::vector<PropIdAreaId>& propIdAreaIds) {
     if (propIdAreaIds.empty()) {
         return;
     }
@@ -323,8 +324,7 @@ void SubscriptionClient::sendSupportedValueChangeEvents(std::shared_ptr<IVehicle
     if (ScopedAStatus callbackStatus = callback->onSupportedValueChange(vhalPropIdAreaIds);
         !callbackStatus.isOk()) {
         ALOGE("subscribe: failed to call onSupportedValueChange callback, client ID: %p, error: "
-              "%s, "
-              "exception: %d, service specific error: %d",
+              "%s, exception: %d, service specific error: %d",
               callback->asBinder().get(), callbackStatus.getMessage(),
               callbackStatus.getExceptionCode(), callbackStatus.getServiceSpecificError());
     }
