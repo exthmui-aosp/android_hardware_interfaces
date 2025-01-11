@@ -242,7 +242,7 @@ TEST_F(VirtualHalTest, setOthers) {
     mVhal->setLockoutEnable(false);
     mVhal->setSensorId(5);
     mVhal->setMaxEnrollmentPerUser(6);
-    mVhal->setNavigationGuesture(false);
+    mVhal->setNavigationGesture(false);
     mVhal->setDetectInteraction(false);
     mVhal->setDisplayTouch(false);
     mVhal->setControlIllumination(false);

@@ -55,8 +55,12 @@ aidl_interface {
             version: "4",
             imports: [],
         },
+        {
+            version: "5",
+            imports: [],
+        },
 
     ],
-    frozen: false,
+    frozen: true,
 
 }

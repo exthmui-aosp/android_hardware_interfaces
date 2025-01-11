@@ -36,6 +36,7 @@ SYSTEM_MATRIX_DEPS = [
     "framework_compatibility_matrix.7.xml",
     "framework_compatibility_matrix.8.xml",
     "framework_compatibility_matrix.202404.xml",
+    "framework_compatibility_matrix.202504.xml",
     "framework_compatibility_matrix.device.xml",
 ]
 
