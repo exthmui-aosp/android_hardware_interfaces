@@ -86,7 +86,7 @@ static const std::vector<int32_t> kChannels = {
 
 class DownmixEffectHelper : public EffectHelper {
   public:
-    void SetUpDownmix(int32_t inputBufferLayout = AudioChannelLayout::LAYOUT_STEREO) {
+    void SetUpDownmix(int32_t inputBufferLayout = kDefaultChannelLayout) {
         ASSERT_NE(nullptr, mFactory);
         ASSERT_NO_FATAL_FAILURE(create(mFactory, mEffect, mDescriptor));
 

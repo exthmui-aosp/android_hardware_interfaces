@@ -139,6 +139,7 @@ static std::vector<TagValuePair> buildSetAndGetTestParams() {
 
     return valueTag;
 }
+
 /**
  * Tests do the following:
  * - Testing parameter range supported by the effect. Range is verified with IEffect.getDescriptor()
@@ -282,10 +283,10 @@ class EnvironmentalReverbHelper : public EffectHelper {
     static constexpr int kDurationMilliSec = 500;
     static constexpr int kBufferSize = kSamplingFrequency * kDurationMilliSec / 1000;
     static constexpr int kInputFrequency = 2000;
+    static constexpr int mChannelLayout = AudioChannelLayout::LAYOUT_STEREO;
 
-    int mStereoChannelCount =
-            getChannelCount(AudioChannelLayout::make<AudioChannelLayout::layoutMask>(
-                    AudioChannelLayout::LAYOUT_STEREO));
+    int mStereoChannelCount = getChannelCount(
+            AudioChannelLayout::make<AudioChannelLayout::layoutMask>(mChannelLayout));
     int mFrameCount = kBufferSize / mStereoChannelCount;
 
     std::shared_ptr<IFactory> mFactory;
@@ -344,10 +345,11 @@ class EnvironmentalReverbDataTest
         : EnvironmentalReverbHelper(std::get<DESCRIPTOR_INDEX>(GetParam())) {
         std::tie(mTag, mParamValues) = std::get<TAG_VALUE_PAIR>(GetParam());
         mInput.resize(kBufferSize);
-        generateSineWave(kInputFrequency, mInput);
     }
     void SetUp() override {
         SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
+        ASSERT_NO_FATAL_FAILURE(
+                generateSineWave(kInputFrequency, mInput, 1.0, kSamplingFrequency, mChannelLayout));
         SetUpReverb();
     }
     void TearDown() override {
@@ -434,7 +436,8 @@ class EnvironmentalReverbMinimumParamTest
 
 TEST_P(EnvironmentalReverbMinimumParamTest, MinimumValueTest) {
     std::vector<float> input(kBufferSize);
-    generateSineWave(kInputFrequency, input);
+    ASSERT_NO_FATAL_FAILURE(
+            generateSineWave(kInputFrequency, input, 1.0, kSamplingFrequency, mChannelLayout));
     std::vector<float> output(kBufferSize);
     setParameterAndProcess(input, output, mValue, mTag);
     float energy = computeOutputEnergy(input, output);
@@ -470,10 +473,11 @@ class EnvironmentalReverbDiffusionTest
         : EnvironmentalReverbHelper(std::get<DESCRIPTOR_INDEX>(GetParam())) {
         std::tie(mTag, mParamValues) = std::get<TAG_VALUE_PAIR>(GetParam());
         mInput.resize(kBufferSize);
-        generateSineWave(kInputFrequency, mInput);
     }
     void SetUp() override {
         SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
+        ASSERT_NO_FATAL_FAILURE(
+                generateSineWave(kInputFrequency, mInput, 1.0, kSamplingFrequency, mChannelLayout));
         SetUpReverb();
     }
     void TearDown() override {
@@ -546,14 +550,15 @@ class EnvironmentalReverbDensityTest
         mParamValues = std::get<PARAM_DENSITY_VALUE>(GetParam());
         mIsInputMute = (std::get<IS_INPUT_MUTE>(GetParam()));
         mInput.resize(kBufferSize);
-        if (mIsInputMute) {
-            std::fill(mInput.begin(), mInput.end(), 0);
-        } else {
-            generateSineWave(kInputFrequency, mInput);
-        }
     }
     void SetUp() override {
         SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
+        if (mIsInputMute) {
+            std::fill(mInput.begin(), mInput.end(), 0);
+        } else {
+            ASSERT_NO_FATAL_FAILURE(generateSineWave(kInputFrequency, mInput, 1.0,
+                                                     kSamplingFrequency, mChannelLayout));
+        }
         SetUpReverb();
     }
     void TearDown() override {

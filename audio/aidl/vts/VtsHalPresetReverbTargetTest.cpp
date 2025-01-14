@@ -133,11 +133,11 @@ class PresetReverbProcessTest : public ::testing::TestWithParam<PresetReverbProc
     PresetReverbProcessTest() {
         std::tie(mFactory, mDescriptor) = GetParam();
         mInput.resize(kBufferSize);
-        generateSineWave(1000 /*Input Frequency*/, mInput);
     }
 
     void SetUp() override {
         SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
+        ASSERT_NO_FATAL_FAILURE(generateSineWave(1000 /*Input Frequency*/, mInput));
         ASSERT_NO_FATAL_FAILURE(SetUpPresetReverb());
     }
     void TearDown() override {

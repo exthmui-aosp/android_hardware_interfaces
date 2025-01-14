@@ -68,9 +68,14 @@ class VisualizerTestHelper : public EffectHelper {
         ASSERT_NE(nullptr, mFactory);
         ASSERT_NO_FATAL_FAILURE(create(mFactory, mEffect, mDescriptor));
 
+        AudioChannelLayout inputLayout = AudioChannelLayout::make<AudioChannelLayout::layoutMask>(
+                AudioChannelLayout::LAYOUT_MONO);
+        AudioChannelLayout outputLayout = inputLayout;
+
         Parameter::Common common = createParamCommon(
-                0 /* session */, 1 /* ioHandle */, 44100 /* iSampleRate */, 44100 /* oSampleRate */,
-                kInputFrameCount /* iFrameCount */, kOutputFrameCount /* oFrameCount */);
+                0 /* session */, 1 /* ioHandle */, mBufferSizeInFrames /* iSampleRate */,
+                mBufferSizeInFrames /* oSampleRate */, kInputFrameCount /* iFrameCount */,
+                kOutputFrameCount /* oFrameCount */, inputLayout, outputLayout);
         ASSERT_NO_FATAL_FAILURE(open(mEffect, common, std::nullopt, &mOpenEffectReturn, EX_NONE));
         ASSERT_NE(nullptr, mEffect);
         mVersion = EffectFactoryHelper::getHalVersion(mFactory);
@@ -261,7 +266,8 @@ TEST_P(VisualizerDataTest, testScalingModeParameters) {
 
     constexpr float kPowerToleranceDb = 0.5;
 
-    generateSineWave(std::vector<int>{1000}, mInputBuffer, 1.0, mBufferSizeInFrames);
+    ASSERT_NO_FATAL_FAILURE(generateSineWave(1000, mInputBuffer, 1.0, mBufferSizeInFrames,
+                                             AudioChannelLayout::LAYOUT_MONO));
     const float expectedPowerNormalized = audio_utils_compute_power_mono(
             mInputBuffer.data(), AUDIO_FORMAT_PCM_FLOAT, mInputBuffer.size());
 
@@ -281,8 +287,9 @@ TEST_P(VisualizerDataTest, testScalingModeParameters) {
         addLatencyParam(mLatency);
         ASSERT_NO_FATAL_FAILURE(SetAndGetParameters(&allParamsValid));
 
-        generateSineWave(std::vector<int>{1000}, mInputBuffer, maxAudioSampleValue,
-                         mBufferSizeInFrames);
+        ASSERT_NO_FATAL_FAILURE(generateSineWave(std::vector<int>{1000}, mInputBuffer,
+                                                 maxAudioSampleValue, mBufferSizeInFrames,
+                                                 AudioChannelLayout::LAYOUT_MONO));
 
         // The stop and reset calls to the effect are made towards the end in order to fetch the
         // captureSampleBuffer values

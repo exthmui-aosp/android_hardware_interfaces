@@ -119,6 +119,7 @@ void static nfaVSCallback(uint8_t event, uint16_t /* param_len */, uint8_t* p_pa
         case NCI_MSG_PROP_ANDROID: {
             uint8_t android_sub_opcode = p_param[3];
             switch (android_sub_opcode) {
+                case NCI_ANDROID_SET_PASSIVE_OBSERVER_TECH:
                 case NCI_ANDROID_PASSIVE_OBSERVE: {
                     sVSCmdStatus = p_param[4];
                     LOG(INFO) << StringPrintf("Observe mode RSP: status: %x", sVSCmdStatus);
@@ -157,7 +158,7 @@ tNFA_STATUS static nfaObserveModeEnable(bool enable) {
                      static_cast<uint8_t>(enable ? NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE
                                                  : NCI_ANDROID_PASSIVE_OBSERVE_PARAM_DISABLE)};
 
-    status = NFA_SendRawVsCommand(sizeof(cmd), cmd, nfaVSCallback);
+    status = NFA_SendVsCommand(NCI_MSG_PROP_ANDROID, sizeof(cmd), cmd, nfaVSCallback);
 
     if (status == NFA_STATUS_OK) {
         if (!sNfaVsCommand.wait(1000)) {

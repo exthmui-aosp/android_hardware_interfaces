@@ -153,9 +153,8 @@ class LoudnessEnhancerDataTest : public ::testing::TestWithParam<LoudnessEnhance
   public:
     LoudnessEnhancerDataTest() {
         std::tie(mFactory, mDescriptor) = GetParam();
-        size_t channelCount =
-                getChannelCount(AudioChannelLayout::make<AudioChannelLayout::layoutMask>(
-                        AudioChannelLayout::LAYOUT_STEREO));
+        size_t channelCount = getChannelCount(
+                AudioChannelLayout::make<AudioChannelLayout::layoutMask>(kDefaultChannelLayout));
         mBufferSizeInFrames = kFrameCount * channelCount;
         mInputBuffer.resize(mBufferSizeInFrames);
         generateInputBuffer(mInputBuffer, 0, true, channelCount, kMaxAudioSampleValue);

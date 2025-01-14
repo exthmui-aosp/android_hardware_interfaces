@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <format>
 #include <iomanip>
 #include <iterator>
 #include <memory>
@@ -535,7 +536,7 @@ ErrMsgOr<std::unique_ptr<cppbor::Map>> parseAndValidateDeviceInfo(
     switch (rpcHardwareInfo.versionNumber) {
         case 3:
             if (isTeeDeviceInfo(*parsed) && parsed->size() != kNumTeeDeviceInfoEntries) {
-                error += fmt::format(
+                error += std::format(
                         "Err: Incorrect number of device info entries. Expected {} but got "
                         "{}\n",
                         kNumTeeDeviceInfoEntries, parsed->size());
@@ -544,7 +545,7 @@ ErrMsgOr<std::unique_ptr<cppbor::Map>> parseAndValidateDeviceInfo(
             // may omit `os_version`
             if (!isTeeDeviceInfo(*parsed) && (parsed->size() != kNumTeeDeviceInfoEntries &&
                                               parsed->size() != kNumTeeDeviceInfoEntries - 1)) {
-                error += fmt::format(
+                error += std::format(
                         "Err: Incorrect number of device info entries. Expected {} or {} but got "
                         "{}\n",
                         kNumTeeDeviceInfoEntries - 1, kNumTeeDeviceInfoEntries, parsed->size());
