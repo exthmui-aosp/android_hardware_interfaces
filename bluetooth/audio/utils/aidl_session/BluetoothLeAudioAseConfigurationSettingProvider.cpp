@@ -674,14 +674,14 @@ void AudioSetConfigurationProviderJson::PopulateAseConfigurationFromFlat(
         configurationFlags.bitmask |=
             ConfigurationFlags::ALLOW_ASYMMETRIC_CONFIGURATIONS;
       }
+    }
+  } else {
+    if (codec_cfg == nullptr) {
+      LOG(ERROR) << "No codec config matching key " << codec_config_key.c_str()
+                 << " found";
     } else {
-      if (codec_cfg == nullptr) {
-        LOG(ERROR) << "No codec config matching key "
-                   << codec_config_key.c_str() << " found";
-      } else {
-        LOG(ERROR) << "Configuration '" << flat_cfg->name()->c_str()
-                   << "' has no valid subconfigurations.";
-      }
+      LOG(ERROR) << "Configuration '" << flat_cfg->name()->c_str()
+                 << "' has no valid subconfigurations.";
     }
   }
 }

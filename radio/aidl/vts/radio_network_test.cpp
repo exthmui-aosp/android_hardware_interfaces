@@ -30,9 +30,17 @@ const RadioAccessSpecifierBands EUTRAN_BAND_17 =
 const RadioAccessSpecifierBands EUTRAN_BAND_20 =
         RadioAccessSpecifierBands::make<RadioAccessSpecifierBands::eutranBands>(
                 {EutranBands::BAND_20});
+
+// Specifiers with valid channel numbers
 const RadioAccessSpecifier EUTRAN_SPECIFIER_17 = {
-        .accessNetwork = AccessNetwork::EUTRAN, .bands = EUTRAN_BAND_17, .channels = {1, 2}};
+        .accessNetwork = AccessNetwork::EUTRAN, .bands = EUTRAN_BAND_17, .channels = {5755}};
 const RadioAccessSpecifier EUTRAN_SPECIFIER_20 = {
+        .accessNetwork = AccessNetwork::EUTRAN, .bands = EUTRAN_BAND_20, .channels = {6250, 6300}};
+
+// Specifiers with invalid channel numbers
+const RadioAccessSpecifier INVALID_EUTRAN_SPECIFIER_17 = {
+        .accessNetwork = AccessNetwork::EUTRAN, .bands = EUTRAN_BAND_17, .channels = {1, 2}};
+const RadioAccessSpecifier INVALID_EUTRAN_SPECIFIER_20 = {
         .accessNetwork = AccessNetwork::EUTRAN, .bands = EUTRAN_BAND_20, .channels = {128, 129}};
 }  // namespace
 
@@ -1008,14 +1016,14 @@ TEST_P(RadioNetworkTest, setSystemSelectionChannels) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("setSystemSelectionChannels, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
-    ASSERT_TRUE(CheckAnyOfErrors(
-            radioRsp_network->rspInfo.error,
-            {RadioError::NONE, RadioError::RADIO_NOT_AVAILABLE, RadioError::INTERNAL_ERR}));
+    ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
+                                 {RadioError::NONE, RadioError::RADIO_NOT_AVAILABLE,
+                                  RadioError::INTERNAL_ERR, RadioError::INVALID_ARGUMENTS}));
 
+    // If the channels were set successfully, then return them to the original values.
     if (radioRsp_network->rspInfo.error == RadioError::NONE) {
         serial = GetRandomSerialNumber();
-        res = radio_network->setSystemSelectionChannels(
-                serial, false, {::EUTRAN_SPECIFIER_17, ::EUTRAN_SPECIFIER_20});
+        res = radio_network->setSystemSelectionChannels(serial, true, originalSpecifiers);
         ASSERT_OK(res);
         EXPECT_EQ(std::cv_status::no_timeout, wait());
         EXPECT_EQ(RadioResponseType::SOLICITED, radioRsp_network->rspInfo.type);
@@ -1024,12 +1032,6 @@ TEST_P(RadioNetworkTest, setSystemSelectionChannels) {
               toString(radioRsp_network->rspInfo.error).c_str());
         EXPECT_EQ(RadioError::NONE, radioRsp_network->rspInfo.error);
     }
-
-    serial = GetRandomSerialNumber();
-    res = radio_network->setSystemSelectionChannels(serial, true, originalSpecifiers);
-    EXPECT_EQ(std::cv_status::no_timeout, wait());
-    EXPECT_EQ(RadioResponseType::SOLICITED, radioRsp_network->rspInfo.type);
-    EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
 }
 
 /*
@@ -1092,9 +1094,19 @@ TEST_P(RadioNetworkTest, startNetworkScan_InvalidArgument) {
         }
     }
 
+    // get aidl version
+    int32_t aidl_version;
+    ndk::ScopedAStatus aidl_status = radio_network->getInterfaceVersion(&aidl_version);
+    ASSERT_OK(aidl_status);
+
     serial = GetRandomSerialNumber();
 
-    NetworkScanRequest request = {.type = NetworkScanRequest::SCAN_TYPE_ONE_SHOT, .interval = 60};
+    // no specifier
+    NetworkScanRequest request = {.type = NetworkScanRequest::SCAN_TYPE_ONE_SHOT,
+                                  .interval = 60,
+                                  .maxSearchTime = 360,
+                                  .incrementalResults = false,
+                                  .incrementalResultsPeriodicity = 10};
 
     ndk::ScopedAStatus res = radio_network->startNetworkScan(serial, request);
     ASSERT_OK(res);
@@ -1110,6 +1122,37 @@ TEST_P(RadioNetworkTest, startNetworkScan_InvalidArgument) {
     } else if (cardStatus.cardState == CardStatus::STATE_PRESENT) {
         ASSERT_TRUE(
                 CheckAnyOfErrors(radioRsp_network->rspInfo.error, {RadioError::INVALID_ARGUMENTS}));
+    }
+
+    // invalid specifier
+    request = {.type = NetworkScanRequest::SCAN_TYPE_ONE_SHOT,
+               .interval = 60,
+               .specifiers = {::INVALID_EUTRAN_SPECIFIER_17, ::INVALID_EUTRAN_SPECIFIER_20},
+               .maxSearchTime = 360,
+               .incrementalResults = false,
+               .incrementalResultsPeriodicity = 10};
+
+    res = radio_network->startNetworkScan(serial, request);
+    ASSERT_OK(res);
+    EXPECT_EQ(std::cv_status::no_timeout, wait());
+    EXPECT_EQ(RadioResponseType::SOLICITED, radioRsp_network->rspInfo.type);
+    EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
+    ALOGI("startNetworkScan_InvalidArgument, rspInfo.error = %s\n",
+          toString(radioRsp_network->rspInfo.error).c_str());
+
+    if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
+        ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
+                                     {RadioError::SIM_ABSENT, RadioError::INVALID_ARGUMENTS}));
+    } else if (cardStatus.cardState == CardStatus::STATE_PRESENT) {
+        // Older HAL versions are known to silently accept invalid EUTRAN channels in the network
+        // network scan request.
+        if (aidl_version < 5) {
+            ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
+                                         {RadioError::NONE, RadioError::INVALID_ARGUMENTS}));
+        } else {
+            ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
+                                         {RadioError::INVALID_ARGUMENTS}));
+        }
     }
 }
 

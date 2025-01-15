@@ -46,7 +46,7 @@ phony {
     product_variables: {
         release_aidl_use_unfrozen: {
             required: [
-                "framework_compatibility_matrix.202504.xml",
+                "framework_compatibility_matrix.202604.xml",
             ],
         },
     },
@@ -69,7 +69,7 @@ phony {
     product_variables: {
         release_aidl_use_unfrozen: {
             required: [
-                "framework_compatibility_matrix.202504.xml",
+                "framework_compatibility_matrix.202604.xml",
             ],
         },
     },
@@ -150,4 +150,11 @@ vintf_compatibility_matrix {
     kernel_configs: [
         "kernel_config_b_6.12",
     ],
+}
+
+vintf_compatibility_matrix {
+    name: "framework_compatibility_matrix.202604.xml",
+    stem: "compatibility_matrix.202604.xml",
+    srcs: ["compatibility_matrix.202604.xml"],
+    kernel_configs: ["kernel_config_c_6.12"],
 }

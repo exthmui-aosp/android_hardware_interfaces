@@ -37,6 +37,51 @@ import android.hardware.automotive.vehicle.VehiclePropertyType;
  *
  * Properties set to values out of range must be ignored and no action taken
  * in response to such ill formed requests.
+ *
+ * Used custom annotation:
+ *
+ * change_mode:
+ * Required (except for INVALID). The change mode.
+ *
+ * access:
+ * Required (except for INVALID). The allowed access mode, can be specified multiple
+ * times to list multiple allowed access mode. Vendor must implement one of them.
+ *
+ * unit:
+ * Optional. the unit for the property.
+ *
+ * data_enum:
+ * Optional. If specified, the property is an enum-type property. Its value must be one of the
+ * enum values (unless it has data_enum_bit_flag annotation, see below). Can be specified multiple
+ * times to specify two separated enum types are supported.
+ *
+ * data_enum_bit_flag:
+ * Optional. Its value must be one or more enum values bit-ored together.
+ *
+ * version:
+ * Required (except for INVALID). Since which VHAL version is this property introduced in.
+ *
+ * require_min_max_supported_value:
+ * Optional. The property must specify min value and max value for all supported area IDs in the
+ * vehicle area config.
+ * If {@code HasSupportedValueInfo} in the vehicle area config is not {@code null},
+ * {@code HasSupportedValueInfo.hasMinSupportedValue} and
+ * {@code HasSupportedValueInfo.hasMinSupportedValue} must be {@code true}.
+ *
+ * require_supported_values_list:
+ * Optional. The property must expose the supported values list through some way. If the property
+ * has data_enum annotation, it must specify {@code supportedEnumValues} in the vehicle area config
+ * unless all possible enum values (or all possible enum combination for data_enum_bit_flags) are
+ * supported.
+ * For certain properties, they must use the config array to specify supported values (see
+ * legacy_supported_values_in_config)
+ * If {@code HasSupportedValueInfo} in the vehicle area config is not {@code null},
+ * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}.
+ *
+ * legacy_supported_values_in_config:
+ * For certain legacy properties, they must use config array to specify supported values. For
+ * properties introduced later than V4, this is no longer used since the supported values can
+ * be specified via {@code getSupportedValuesLists} instead.
  */
 @VintfStability
 @JavaDerive(toString=true)
@@ -621,10 +666,10 @@ enum VehicleProperty {
      * }
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minFloatValue.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxFloatValue.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minFloatValue.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxFloatValue.
      * For example, if the recommended tire pressure of left_front tire is from 200.0 KILOPASCAL to
      * 240.0 KILOPASCAL, {@code getMinMaxSupportedValue} for
      * [propId=TIRE_PRESSURE, areaId=VehicleAreaWheel::LEFT_FRONT] must return a
@@ -736,17 +781,27 @@ enum VehicleProperty {
      *   scenario, this property must be set to -20 for all wheels except for the front left, which
      *   must be set to 10.
      *
-     * HasSupportedValueInfo.hasMinSupportedValue and HasSupportedValueInfo.hasMaxSupportedValue
-     * must be true for all areas.
+     * {@code minInt32Value} and {@code maxInt32Value} in {@code VehicleAreaConfig} must be
+     * specified for all supported area IDs.
      *
-     * MinMaxSupportedValueResult.minSupportedValue represents the lower bound of the suspension
-     * height for the wheel at the specified area ID.
+     * {@code minInt32Value} represents the lower bound of the suspension height for the wheel at
+     * the specified area ID.
      *
-     * MinMaxSupportedValueResult.maxSupportedValue represents the upper bound of the suspension
-     * height for the wheel at the specified area ID.
+     * {@code maxInt32Value} represents the upper bound of the suspension height for the wheel at
+     * the specified area ID.
+     *
+     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the specified
+     * area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
+     * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
+     * maxSupportedValue.
      *
      * @change_mode VehiclePropertyChangeMode.CONTINUOUS
      * @access VehiclePropertyAccess.READ
+     * @require_min_max_supported_value
      * @version 4
      */
     VEHICLE_PASSIVE_SUSPENSION_HEIGHT =
@@ -778,13 +833,14 @@ enum VehicleProperty {
      * unless all bit flags of ImpactSensorLocation are supported.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code getSupportedValuesList} must return a {@code SupportedValuesListResult} that contains
-     * supported values unless all bit flags of ImpactSensorLocation are supported.
-     * At boot, supportedEnumValues is equal to the supported values list.
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum ImpactSensorLocation
+     * @data_enum_bit_flags
+     * @require_supported_values_list
      * @version 3
      */
     IMPACT_DETECTED =
@@ -817,7 +873,7 @@ enum VehicleProperty {
      * selected by the driver instead of simply GEAR_DRIVE.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * {@code VehicleAreaConfig.HasSupportedValueInfo#hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
      * {@code getSupportedValuesList} for [GEAR_SELECTION, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList}.
@@ -853,7 +909,7 @@ enum VehicleProperty {
      * same as that of the supported gears reported in GEAR_SELECTION.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * {@code VehicleAreaConfig.HasSupportedValueInfo#hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
      * {@code getSupportedValuesList} for [GEAR_SELECTION, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList}.
@@ -918,10 +974,10 @@ enum VehicleProperty {
      * All values between min and max supported value must be supported.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for global area ID(0)
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for global area ID(0)
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
      *
@@ -1030,10 +1086,8 @@ enum VehicleProperty {
      * all enum values of EvStoppingMode are supported.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * For the global area ID (0), {@code getSupportedValuesList}
-     * must return a {@code SupportedValuesListResult} that contains supported values unless all
-     * enum values of EvStoppingMode are supported.
-     * At boot, supportedEnumValues is equal to the supported values list.
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * The EvStoppingMode enum may be extended to include more states in the future.
      *
@@ -1044,6 +1098,7 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @data_enum EvStoppingMode
+     * @require_supported_values_list
      * @version 2
      */
     EV_STOPPING_MODE =
@@ -1082,16 +1137,14 @@ enum VehicleProperty {
      * recommended) and ErrorState are supported.
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * For the global area ID (0), {@code getSupportedValuesList}
-     * must return a {@code SupportedValuesListResult} that contains supported values unless all
-     * states of both ElectronicStabilityControlState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, supportedEnumValues is equal to the supported values list.
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum ElectronicStabilityControlState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 3
      */
     ELECTRONIC_STABILITY_CONTROL_STATE =
@@ -1124,6 +1177,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleTurnSignal
+     * @data_enum_bit_flags
      * @version 4
      */
     TURN_SIGNAL_LIGHT_STATE =
@@ -1207,11 +1261,11 @@ enum VehicleProperty {
      * The maxInt32Value indicates the highest fan speed.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specific
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the specific
      * area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -1304,13 +1358,13 @@ enum VehicleProperty {
      * Any value set in between a valid value should be rounded to the closest valid value.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specific
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the specific
      * area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minFloatValue.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxFloatValue.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minFloatValue.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxFloatValue.
      * If not all the values between minSupportedValue and maxSupportedValue are supported,
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true} for the
      * specified area ID. At boot, supportedValuesList must be equal to what is described in
      * config array.
      * At boot, minFloatValue is equal to minSupportedValue, maxFloatValue is equal to
@@ -1355,7 +1409,6 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
-     * @config_flags Supported areaIds
      * @version 2
      */
     HVAC_AC_ON = 0x0505 + 0x10000000 + 0x05000000
@@ -1495,11 +1548,11 @@ enum VehicleProperty {
      * The maxInt32Value indicates the maximum seat temperature heating setting.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specified
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the specified
      * area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -1531,11 +1584,11 @@ enum VehicleProperty {
      * The maxInt32Value in the config data represents the maximum heating level.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specified
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the specified
      * area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -1568,10 +1621,10 @@ enum VehicleProperty {
      * The maxInt32Value indicates the maximum steering wheel heating setting.
      *
      * If {@code HasSupportedValueInfo} is not null for the global area ID (0):
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -1600,7 +1653,7 @@ enum VehicleProperty {
      *              configArray[1] = FAHRENHEIT
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * {@code VehicleAreaConfig.HasSupportedValueInfo#hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
      * {@code getSupportedValuesLists} for [HVAC_TEMPERATURE_DISPLAY_UNITS, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
@@ -1699,6 +1752,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.STATIC
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleHvacFanDirection
+     * @data_enum_bit_flags
      * @version 2
      */
     HVAC_FAN_DIRECTION_AVAILABLE = 0x0511 + 0x10000000 + 0x05000000
@@ -1732,11 +1786,11 @@ enum VehicleProperty {
      * The maxInt32Value indicates the maximum ventilation setting available for the seat.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the specified
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the specified
      * area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -1841,7 +1895,7 @@ enum VehicleProperty {
      *              configArray[2] = MILE
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * {@code VehicleAreaConfig.HasSupportedValueInfo#hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
      * {@code getSupportedValuesLists} for [DISTANCE_DISPLAY_UNITS, areaId=0] must returns a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
@@ -1876,7 +1930,7 @@ enum VehicleProperty {
      *              configArray[1] = GALLON
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * {@code VehicleAreaConfig.HasSupportedValueInfo#hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
      * {@code getSupportedValuesLists} for [FUEL_VOLUME_DISPLAY_UNITS, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
@@ -1912,7 +1966,7 @@ enum VehicleProperty {
      *              configArray[2] = BAR
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * {@code VehicleAreaConfig.HasSupportedValueInfo#hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
      * {@code getSupportedValuesLists} for [TIRE_PRESSURE_DISPLAY_UNITS, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
@@ -1948,7 +2002,7 @@ enum VehicleProperty {
      *              configArray[2] = KILOWATT_HOUR
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * {@code VehicleAreaConfig.HasSupportedValueInfo#hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
      * {@code getSupportedValuesLists} for [EV_BATTERY_DISPLAY_UNITS, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
@@ -2000,7 +2054,7 @@ enum VehicleProperty {
      *              configArray[2] = KILOMETERS_PER_HOUR
      *
      * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
-     * {@code VehicleAreaConfig.HasSupportedValueInfo.hasSupportedValuesList} for the global area ID
+     * {@code VehicleAreaConfig.HasSupportedValueInfo#hasSupportedValuesList} for the global area ID
      * (0) must be {@code true}.
      * {@code getSupportedValuesLists} for [VEHICLE_SPEED_DISPLAY_UNITS, areaId=0] must return a
      * {@code SupportedValuesListResult} that contains non-null {@code supportedValuesList},
@@ -2297,7 +2351,6 @@ enum VehicleProperty {
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
-     * @config_flags
      * @version 2
      */
     HW_KEY_INPUT = 0x0A10 + 0x10000000 + 0x01000000
@@ -2320,7 +2373,6 @@ enum VehicleProperty {
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
-     * @config_flags
      * @version 2
      */
     HW_KEY_INPUT_V2 =
@@ -2355,7 +2407,6 @@ enum VehicleProperty {
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
-     * @config_flags
      * @version 2
      */
     HW_MOTION_INPUT =
@@ -2408,6 +2459,7 @@ enum VehicleProperty {
      */
     HW_CUSTOM_INPUT = 0X0A30 + 0x10000000 + 0x01000000
             + 0x00410000, // VehiclePropertyGroup:SYSTEM,VehicleArea:GLOBAL,VehiclePropertyType:INT32_VEC
+
     /***************************************************************************
      * Most Car Cabin properties have both a POSition and MOVE parameter.  These
      * are used to control the various movements for seats, doors, and windows
@@ -2440,10 +2492,10 @@ enum VehicleProperty {
      * closed and fully open positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -2479,10 +2531,10 @@ enum VehicleProperty {
      * currently 0, then that means there is no movement currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -2551,10 +2603,10 @@ enum VehicleProperty {
      * fully downward and fully upwards positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
      * the fully downward and fully upwards positions.
@@ -2590,10 +2642,10 @@ enum VehicleProperty {
      * is currently 0, then that means there is no movement currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -2630,10 +2682,10 @@ enum VehicleProperty {
      * left extreme and right extreme positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
      * the fully downward and fully upwards positions.
@@ -2668,10 +2720,10 @@ enum VehicleProperty {
      * is currently 0, then that means there is no movement currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -2736,7 +2788,6 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ
      * @version 2
      */
-
     MIRROR_AUTO_FOLD_ENABLED =
             0x0B46 + VehiclePropertyGroup.SYSTEM + VehicleArea.MIRROR + VehiclePropertyType.BOOLEAN,
 
@@ -2755,7 +2806,6 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ
      * @version 2
      */
-
     MIRROR_AUTO_TILT_ENABLED =
             0x0B47 + VehiclePropertyGroup.SYSTEM + VehicleArea.MIRROR + VehiclePropertyType.BOOLEAN,
 
@@ -2775,10 +2825,10 @@ enum VehicleProperty {
      * the user wants to select a preset, the desired preset number (0, 1, or 2) is set.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -2802,10 +2852,10 @@ enum VehicleProperty {
      * maxInt32Value for SEAT_MEMORY_SELECT.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
      *
@@ -2850,10 +2900,10 @@ enum VehicleProperty {
      * lowest and highest positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
      * the lowest and highest positions. All integers between minSupportedValue and
      * maxSupportedValue must be supported. At boot, minInt32Value is equal to minSupportedValue,
@@ -2890,10 +2940,10 @@ enum VehicleProperty {
      * occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -2928,10 +2978,10 @@ enum VehicleProperty {
      * closest and farthest positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -2966,10 +3016,10 @@ enum VehicleProperty {
      * value is currently 0, then that means there is no movement currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3006,10 +3056,10 @@ enum VehicleProperty {
      * full recline and upright/forward positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
      * the full recline and upright/forward positions.
@@ -3046,10 +3096,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3088,10 +3138,10 @@ enum VehicleProperty {
      * full recline and upright/forward positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} ihas the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} ihas the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * Values in between minSupportedValue and maxSupportedValue indicate a transition state between
      * the full recline and upright/forward positions.
@@ -3128,10 +3178,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3164,10 +3214,10 @@ enum VehicleProperty {
      * lowest and highest positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * position.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
@@ -3201,10 +3251,10 @@ enum VehicleProperty {
      * is currently 0, then that means there is no movement currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3242,10 +3292,10 @@ enum VehicleProperty {
      * shallowest and deepest positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3279,10 +3329,10 @@ enum VehicleProperty {
      * occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3319,10 +3369,10 @@ enum VehicleProperty {
      * lowest and highest positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3357,10 +3407,10 @@ enum VehicleProperty {
      * value is currently 0, then that means there is no movement currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3395,10 +3445,10 @@ enum VehicleProperty {
      * forward and rearward positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3434,10 +3484,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3472,10 +3522,10 @@ enum VehicleProperty {
      * thinnest and widest positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3511,10 +3561,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3572,10 +3622,10 @@ enum VehicleProperty {
      * lowest and highest positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3612,10 +3662,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3648,10 +3698,10 @@ enum VehicleProperty {
      * full recline and most upright/forward positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3687,10 +3737,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3723,10 +3773,10 @@ enum VehicleProperty {
      * forward and rearward positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3762,10 +3812,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3799,14 +3849,14 @@ enum VehicleProperty {
      * For each supported area ID, the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of VehicleLightState are supported.
      *
-     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
-     * unless all enum values of VehicleLightState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for a specifc area ID:
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleLightState
+     * @require_supported_values_list
      * @version 2
      */
     SEAT_FOOTWELL_LIGHTS_STATE =
@@ -3826,10 +3876,9 @@ enum VehicleProperty {
      * For each supported area ID, the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of VehicleLightSwitch are supported.
      *
-     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
-     * unless all enum values of VehicleLightSwitch are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for a specifc area ID:
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
@@ -3838,6 +3887,7 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleLightSwitch
+     * @require_supported_values_list
      * @version 2
      */
     SEAT_FOOTWELL_LIGHTS_SWITCH =
@@ -3896,15 +3946,14 @@ enum VehicleProperty {
      * all states of VehicleAirbagLocation are supported (including OTHER, which is not
      * recommended).
      *
-     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
-     * unless all states of VehicleAirbagLocation are supported (including OTHER, which is not
-     * recommended).
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for a specifc area ID:
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleAirbagLocation
+     * @require_supported_values_list
      * @version 3
      */
     SEAT_AIRBAGS_DEPLOYED =
@@ -3925,10 +3974,10 @@ enum VehicleProperty {
      * thinnest and widest positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -3964,10 +4013,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4000,10 +4049,10 @@ enum VehicleProperty {
      * lowest and highest positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4037,10 +4086,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4073,10 +4122,10 @@ enum VehicleProperty {
      * normal and walk-in positions.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4159,10 +4208,10 @@ enum VehicleProperty {
      *    Note that in this mode, 0 indicates the window is closed.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4213,10 +4262,10 @@ enum VehicleProperty {
      *   Min = open the vent, automatically stop when vent is fully open.
      *
      * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true} for the area ID.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the area ID.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4264,10 +4313,10 @@ enum VehicleProperty {
      * The maxInt32Value for each area ID must specify the longest wiper period.
      *
      * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4295,15 +4344,14 @@ enum VehicleProperty {
      * unless all states in WindshieldWipersState are supported (including OTHER, which is not
      * recommended).
      *
-     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
-     * unless all states in WindshieldWipersState are supported (including OTHER, which is not
-     * recommended).
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for a specifc area ID:
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum WindshieldWipersState
+     * @require_supported_values_list
      * @version 2
      */
     WINDSHIELD_WIPERS_STATE =
@@ -4320,11 +4368,9 @@ enum VehicleProperty {
      * unless all states in WindshieldWipersSwitch are supported (including OTHER, which is not
      * recommended).
      *
-     * If {@code HasSupportedValueInfo} for a specific area ID is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true} for the area ID
-     * unless all states in WindshieldWipersSwitch are supported (including OTHER, which is not
-     * recommended).
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for a specifc area ID:
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
@@ -4337,6 +4383,7 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @data_enum WindshieldWipersSwitch
+     * @require_supported_values_list
      * @version 2
      */
     WINDSHIELD_WIPERS_SWITCH =
@@ -4358,10 +4405,10 @@ enum VehicleProperty {
      * closest and furthest positions.
      *
      * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4395,10 +4442,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4431,10 +4478,10 @@ enum VehicleProperty {
      * lowest and highest positions.
      *
      * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4468,10 +4515,10 @@ enum VehicleProperty {
      * currently occurring.
      *
      * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -4551,10 +4598,10 @@ enum VehicleProperty {
      * closed and fully open positions.
      *
      * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasMinSupportedValue} and
-     * {@code HasSupportedValueInfo.hasMaxSupportedValue} must be {@code true}.
-     * {@code MinMaxSupportedValueResult.minSupportedValue} has the same meaning as minInt32Value.
-     * {@code MinMaxSupportedValueResult.maxSupportedValue} has the same meaning as maxInt32Value.
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      * All integers between minSupportedValue and maxSupportedValue must be supported.
      * At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to
      * maxSupportedValue.
@@ -5146,14 +5193,14 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of VehicleLightState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all enum values of VehicleLightState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleLightState
+     * @require_supported_values_list
      * @version 2
      */
     STEERING_WHEEL_LIGHTS_STATE =
@@ -5173,10 +5220,9 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of VehicleLightSwitch are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all enum values of VehicleLightSwitch are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
@@ -5185,6 +5231,7 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleLightSwitch
+     * @require_supported_values_list
      * @version 2
      */
     STEERING_WHEEL_LIGHTS_SWITCH =
@@ -5689,7 +5736,7 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.WRITE
      * @version 2
      */
-    WATCHDOG_ALIVE = 0xF31 + 0x10000000 + 0x01000000
+    WATCHDOG_ALIVE = 0x0F31 + 0x10000000 + 0x01000000
             + 0x00500000, // VehiclePropertyGroup:SYSTEM,VehicleArea:GLOBAL,VehiclePropertyType:INT64
     /**
      * Defines a process terminated by car watchdog and the reason of termination.
@@ -5920,8 +5967,20 @@ enum VehicleProperty {
     /**
      * Indicates the maximum current draw threshold for charging set by the user
      *
-     * configArray[0] is used to specify the max current draw allowed by
-     * the vehicle in Amperes.
+     * configArray[0] is used to specify the max current draw allowed by the vehicle in Amperes at
+     * boot time.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null},
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} specifies the max current draw allowed
+     * by the vehicle in Amperes at the current moment.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} must be 0.
+     * At boot, configArray[0] is equal to maxSupportedValue.
+     *
+     * If the max current draw allowed by the vehicle may change dynamically,
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} and
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} must be implemented.
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
@@ -5940,11 +5999,21 @@ enum VehicleProperty {
      *
      * Returns a float value from 0 to 100.
      *
-     * configArray is used to specify the valid values.
+     * configArray is used to specify the valid values at boot time.
      *   For example, if the vehicle supports the following charge percent limit values:
      *     [20, 40, 60, 80, 100]
      *   then the configArray should be {20, 40, 60, 80, 100}
      * If the configArray is empty then all values from 0 to 100 must be valid.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null},
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * {@code SupportedValuesListResult#supportedValuesList} specifies the
+     * valid maximum charge percent threshold options at the current moment.
+     * At boot, configArray content must match the supported values list.
+     *
+     * If the valid values may change dynamically,
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true} and
+     * {@code SupportedValuesListResult#supportedValuesList} must be implemented.
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
@@ -5952,6 +6021,8 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
+     * @require_supported_values_list
+     * @legacy_supported_values_in_config
      * @version 2
      */
     EV_CHARGE_PERCENT_LIMIT = 0x0F40 + 0x10000000 + 0x01000000
@@ -6202,14 +6273,14 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
      * unless all states of VehicleAutonomousState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all enum values of VehicleAutonomousState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleAutonomousState
+     * @require_supported_values_list
      * @version 3
      */
     VEHICLE_DRIVING_AUTOMATION_CURRENT_LEVEL =
@@ -6229,9 +6300,14 @@ enum VehicleProperty {
      * and is currently in the target level of autonomy, this property must be equal to the value of
      * VEHICLE_DRIVING_AUTOMATION_CURRENT_LEVEL.
      *
-     * For the global area ID (0), the SupportedValuesListResult#supportedValuesList array must be
-     * defined unless all states of VehicleAutonomousState are supported. These values must match
-     * the values in supportedValuesList of VEHICLE_DRIVING_AUTOMATION_CURRENT_LEVEL.
+     * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined
+     * unless all states of VehicleAutonomousState are supported. The supported values for this
+     * property must be the same as the supported values for
+     * VEHICLE_DRIVING_AUTOMATION_CURRENT_LEVEL.
+     *
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * For the property that communicates the current state of autonomy, see
      * VEHICLE_DRIVING_AUTOMATION_CURRENT_LEVEL.
@@ -6239,6 +6315,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum VehicleAutonomousState
+     * @require_supported_values_list
      * @version 4
      */
     VEHICLE_DRIVING_AUTOMATION_TARGET_LEVEL =
@@ -6334,16 +6411,15 @@ enum VehicleProperty {
      * unless all states of both AutomaticEmergencyBrakingState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both AutomaticEmergencyBrakingState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum AutomaticEmergencyBrakingState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     AUTOMATIC_EMERGENCY_BRAKING_STATE =
@@ -6382,16 +6458,15 @@ enum VehicleProperty {
      * unless all states of both ForwardCollisionWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both ForwardCollisionWarningState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum ForwardCollisionWarningState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     FORWARD_COLLISION_WARNING_STATE =
@@ -6430,16 +6505,15 @@ enum VehicleProperty {
      * unless all states of both BlindSpotWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both BlindSpotWarningState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum BlindSpotWarningState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     BLIND_SPOT_WARNING_STATE =
@@ -6479,16 +6553,15 @@ enum VehicleProperty {
      * unless all states of both LaneDepartureWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both LaneDepartureWarningState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum LaneDepartureWarningState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     LANE_DEPARTURE_WARNING_STATE =
@@ -6535,16 +6608,15 @@ enum VehicleProperty {
      * unless all states of both LaneKeepAssistState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both LaneKeepAssistState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum LaneKeepAssistState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     LANE_KEEP_ASSIST_STATE =
@@ -6593,10 +6665,9 @@ enum VehicleProperty {
      * For the global area ID (0), the VehicleAreaConfig#supportedEnumValues must be defined unless
      * all enum values of LaneCenteringAssistCommand are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all enum values of LaneCenteringAssistCommand are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * When this property is not available because LCA is disabled (i.e.
      * LANE_CENTERING_ASSIST_ENABLED is false), this property must return
@@ -6609,6 +6680,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.WRITE
      * @data_enum LaneCenteringAssistCommand
+     * @require_supported_values_list
      * @version 2
      */
     LANE_CENTERING_ASSIST_COMMAND =
@@ -6628,16 +6700,15 @@ enum VehicleProperty {
      * unless all states of both LaneCenteringAssistState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both LaneCenteringAssistState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum LaneCenteringAssistState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     LANE_CENTERING_ASSIST_STATE =
@@ -6679,16 +6750,15 @@ enum VehicleProperty {
      * unless all states of EmergencyLaneKeepAssistState (including OTHER, which is not recommended)
      * and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of EmergencyLaneKeepAssistState (including OTHER, which is not recommended)
-     * and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum EmergencyLaneKeepAssistState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     EMERGENCY_LANE_KEEP_ASSIST_STATE =
@@ -6732,11 +6802,9 @@ enum VehicleProperty {
      * unless all states of CruiseControlType (including OTHER, which is not recommended) and
      * ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of CruiseControlType (including OTHER, which is not recommended) and
-     * ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * Trying to write CruiseControlType#OTHER or an ErrorState to this property will throw an
      * IllegalArgumentException.
@@ -6749,6 +6817,7 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ
      * @data_enum CruiseControlType
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     CRUISE_CONTROL_TYPE =
@@ -6766,16 +6835,15 @@ enum VehicleProperty {
      * unless all states of CruiseControlState (including OTHER, which is not recommended) and
      * ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of CruiseControlState (including OTHER, which is not recommended) and
-     * ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum CruiseControlState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     CRUISE_CONTROL_STATE =
@@ -6790,10 +6858,9 @@ enum VehicleProperty {
      * unless all states of CruiseControlState are supported. Any unsupported commands sent through
      * this property must return StatusCode#INVALID_ARG.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of CruiseControlState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * When this property is not available because CC is disabled (i.e. CRUISE_CONTROL_ENABLED is
      * false), this property must return StatusCode#NOT_AVAILABLE_DISABLED. If CRUISE_CONTROL_STATE
@@ -6805,6 +6872,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.WRITE
      * @data_enum CruiseControlCommand
+     * @require_supported_values_list
      * @version 2
      */
     CRUISE_CONTROL_COMMAND =
@@ -6816,8 +6884,15 @@ enum VehicleProperty {
      * OEMs should set the minFloatValue and maxFloatValue values for this property to define the
      * min and max target speed values. These values must be non-negative.
      *
-     * The maxFloatValue represents the upper bound of the target speed.
      * The minFloatValue represents the lower bound of the target speed.
+     *
+     * The maxFloatValue represents the upper bound of the target speed.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minFloatValue.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxFloatValue.
      *
      * When this property is not available because CC is disabled (i.e. CRUISE_CONTROL_ENABLED is
      * false), this property must return StatusCode#NOT_AVAILABLE_DISABLED. If CRUISE_CONTROL_STATE
@@ -6829,6 +6904,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @unit VehicleUnit.METER_PER_SEC
+     * @require_min_max_supported_value
      * @version 2
      */
     CRUISE_CONTROL_TARGET_SPEED =
@@ -6843,9 +6919,17 @@ enum VehicleProperty {
      * vehicle's front-most point. The actual time gap from a leading vehicle can be above or below
      * this value.
      *
-     * The possible values to set for the target time gap should be specified in configArray in
-     * ascending order. All values must be positive. If the property is writable, all values must be
-     * writable.
+     * The possible values to set for the target time gap at boot time should be specified in
+     * configArray in ascending order. All values must be positive. If the property is writable, all
+     * values must be writable.
+     *
+     * If {@code HasSupportedValueInfo} is not {@code null},
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. The supported
+     * values list represents the possible values to set at the current moment.
+     *
+     * If the possible values to set may change dynamically,
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true} and the supported
+     * values list must be implemented.
      *
      * When this property is not available because CC is disabled (i.e. CRUISE_CONTROL_ENABLED is
      * false), this property must return StatusCode#NOT_AVAILABLE_DISABLED. If CRUISE_CONTROL_STATE
@@ -6861,6 +6945,8 @@ enum VehicleProperty {
      * @access VehiclePropertyAccess.READ_WRITE
      * @access VehiclePropertyAccess.READ
      * @unit VehicleUnit.MILLI_SECS
+     * @require_supported_values_list
+     * @legacy_supported_values_in_config
      * @version 2
      */
     ADAPTIVE_CRUISE_CONTROL_TARGET_TIME_GAP =
@@ -6874,9 +6960,17 @@ enum VehicleProperty {
      * vehicle and the front-most point of the ACC vehicle.
      *
      * The maxInt32Value and minInt32Value in VehicleAreaConfig must be defined.
+     *
      * The minInt32Value should be 0.
+     *
      * The maxInt32Value should be populated with the maximum range the distance sensor can support.
      * This value should be non-negative.
+     *
+     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
+     * {@code HasSupportedValueInfo#hasMinSupportedValue} and
+     * {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true}.
+     * {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value.
+     * {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value.
      *
      * When no lead vehicle is detected (that is, when there is no leading vehicle or the leading
      * vehicle is too far away for the sensor to detect), this property should return
@@ -6892,6 +6986,7 @@ enum VehicleProperty {
      * @change_mode VehiclePropertyChangeMode.CONTINUOUS
      * @access VehiclePropertyAccess.READ
      * @unit VehicleUnit.MILLIMETER
+     * @require_min_max_supported_value
      * @version 2
      */
     ADAPTIVE_CRUISE_CONTROL_LEAD_VEHICLE_MEASURED_DISTANCE =
@@ -6935,16 +7030,15 @@ enum VehicleProperty {
      * unless all states of both HandsOnDetectionDriverState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both HandsOnDetectionDriverState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum HandsOnDetectionDriverState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     HANDS_ON_DETECTION_DRIVER_STATE =
@@ -6964,16 +7058,15 @@ enum VehicleProperty {
      * unless all states of both HandsOnDetectionWarning (including OTHER, which is not recommended)
      * and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both HandsOnDetectionWarning (including OTHER, which is not recommended)
-     * and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum HandsOnDetectionWarning
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 2
      */
     HANDS_ON_DETECTION_WARNING =
@@ -7020,16 +7113,15 @@ enum VehicleProperty {
      * unless all states of both DriverDrowsinessAttentionState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both DriverDrowsinessAttentionState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum DriverDrowsinessAttentionState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 3
      */
     DRIVER_DROWSINESS_ATTENTION_STATE =
@@ -7073,16 +7165,15 @@ enum VehicleProperty {
      * unless all states of both DriverDrowsinessAttentionWarning (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both DriverDrowsinessAttentionWarning (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum DriverDrowsinessAttentionWarning
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 3
      */
     DRIVER_DROWSINESS_ATTENTION_WARNING =
@@ -7127,16 +7218,15 @@ enum VehicleProperty {
      * unless all states of both DriverDistractionState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both DriverDistractionState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum DriverDistractionState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 3
      */
     DRIVER_DISTRACTION_STATE =
@@ -7179,16 +7269,15 @@ enum VehicleProperty {
      * unless all states of both DriverDistractionWarning (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both DriverDistractionWarning (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum DriverDistractionWarning
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 3
      */
     DRIVER_DISTRACTION_WARNING =
@@ -7234,16 +7323,15 @@ enum VehicleProperty {
      * unless all states of both LowSpeedCollisionWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both LowSpeedCollisionWarningState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum LowSpeedCollisionWarningState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 3
      */
     LOW_SPEED_COLLISION_WARNING_STATE =
@@ -7283,16 +7371,15 @@ enum VehicleProperty {
      * unless all states of both CrossTrafficMonitoringWarningState (including OTHER, which is not
      * recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both CrossTrafficMonitoringWarningState (including OTHER, which is not
-     * recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum CrossTrafficMonitoringWarningState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 3
      */
     CROSS_TRAFFIC_MONITORING_WARNING_STATE =
@@ -7343,16 +7430,15 @@ enum VehicleProperty {
      * unless all states of both LowSpeedAutomaticEmergencyBrakingState (including OTHER, which is
      * not recommended) and ErrorState are supported.
      *
-     * If {@code HasSupportedValueInfo} for the global area ID (0) is not {@code null}:
-     * {@code HasSupportedValueInfo.hasSupportedValuesList} must be {@code true}
-     * unless all states of both LowSpeedAutomaticEmergencyBrakingState (including OTHER, which is
-     * not recommended) and ErrorState are supported.
-     * At boot, the supported values list is the same as supportedEnumValues.
+     * If {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0):
+     * {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}.
+     * At boot, supportedEnumValues (if defined) is equal to the supported values list.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ
      * @data_enum LowSpeedAutomaticEmergencyBrakingState
      * @data_enum ErrorState
+     * @require_supported_values_list
      * @version 3
      */
     LOW_SPEED_AUTOMATIC_EMERGENCY_BRAKING_STATE =

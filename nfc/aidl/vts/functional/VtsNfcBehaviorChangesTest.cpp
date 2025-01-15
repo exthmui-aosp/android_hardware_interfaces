@@ -114,17 +114,26 @@ static void nfaConnectionCallback(uint8_t connEvent, tNFA_CONN_EVT_DATA* eventDa
     }
 }
 
-void static nfaVSCallback(uint8_t event, uint16_t /* param_len */, uint8_t* p_param) {
+void static nfaVSCallback(uint8_t event, uint16_t param_len, uint8_t* p_param) {
     switch (event & NCI_OID_MASK) {
         case NCI_MSG_PROP_ANDROID: {
             uint8_t android_sub_opcode = p_param[3];
             switch (android_sub_opcode) {
-                case NCI_ANDROID_SET_PASSIVE_OBSERVER_TECH:
                 case NCI_ANDROID_PASSIVE_OBSERVE: {
-                    sVSCmdStatus = p_param[4];
-                    LOG(INFO) << StringPrintf("Observe mode RSP: status: %x", sVSCmdStatus);
-                    SyncEventGuard guard(sNfaVsCommand);
-                    sNfaVsCommand.notifyOne();
+                    if (param_len == 5) {
+                        if ((p_param[0] & NCI_MT_MASK) == (NCI_MT_RSP << NCI_MT_SHIFT)) {
+                            sVSCmdStatus = p_param[4];
+                            LOG(INFO) << StringPrintf("Observe mode RSP: status: %x", sVSCmdStatus);
+                            SyncEventGuard guard(sNfaVsCommand);
+                            sNfaVsCommand.notifyOne();
+                        } else {
+                            LOG(WARNING) << StringPrintf(
+                                    "Observe Mode RSP has incorrect message type: %x", p_param[0]);
+                        }
+                    } else {
+                        LOG(WARNING) << StringPrintf("Observe Mode RSP has incorrect length: %d",
+                                                     param_len);
+                    }
                 } break;
                 case NCI_ANDROID_POLLING_FRAME_NTF: {
                     // TODO
@@ -153,8 +162,7 @@ tNFA_STATUS static nfaObserveModeEnable(bool enable) {
         }
     }
 
-    uint8_t cmd[] = {(NCI_MT_CMD << NCI_MT_SHIFT) | NCI_GID_PROP, NCI_MSG_PROP_ANDROID,
-                     NCI_ANDROID_PASSIVE_OBSERVE_PARAM_SIZE, NCI_ANDROID_PASSIVE_OBSERVE,
+    uint8_t cmd[] = {NCI_ANDROID_PASSIVE_OBSERVE,
                      static_cast<uint8_t>(enable ? NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE
                                                  : NCI_ANDROID_PASSIVE_OBSERVE_PARAM_DISABLE)};
 
