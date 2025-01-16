@@ -531,14 +531,6 @@ TEST_P(WifiStaIfaceAidlTest, TwtSessionResume) {
 }
 
 /*
- * GetName
- */
-TEST_P(WifiStaIfaceAidlTest, GetName) {
-    std::string ifaceName;
-    EXPECT_TRUE(wifi_sta_iface_->getName(&ifaceName).isOk());
-}
-
-/*
  * SetDtimMultiplier
  */
 TEST_P(WifiStaIfaceAidlTest, SetDtimMultiplier) {

@@ -48,6 +48,12 @@ cc_defaults {
 }
 
 cc_test {
+    name: "VtsHalWifiTargetTest",
+    defaults: ["wifi_vendor_hal_vts_test_defaults"],
+    srcs: ["wifi_aidl_test.cpp"],
+}
+
+cc_test {
     name: "VtsHalWifiChipTargetTest",
     defaults: ["wifi_vendor_hal_vts_test_defaults"],
     srcs: ["wifi_chip_aidl_test.cpp"],

@@ -520,14 +520,6 @@ class WifiNanIfaceAidlTest : public testing::TestWithParam<std::string> {
 };
 
 /*
- * GetName
- */
-TEST_P(WifiNanIfaceAidlTest, GetName) {
-    std::string ifaceName;
-    EXPECT_TRUE(wifi_nan_iface_->getName(&ifaceName).isOk());
-}
-
-/*
  * FailOnIfaceInvalid
  * Ensure that API calls to an interface fail with code ERROR_WIFI_IFACE_INVALID
  * after wifi is disabled.

@@ -526,6 +526,9 @@ TEST_P(WifiChipAidlTest, StartLoggingToDebugRingBuffer) {
     status = wifi_chip_->startLoggingToDebugRingBuffer(
             ring_name, WifiDebugRingBufferVerboseLevel::VERBOSE, 5, 1024);
     EXPECT_TRUE(status.isOk() || checkStatusCode(&status, WifiStatusCode::ERROR_NOT_SUPPORTED));
+
+    status = wifi_chip_->stopLoggingToDebugRingBuffer();
+    EXPECT_TRUE(status.isOk() || checkStatusCode(&status, WifiStatusCode::ERROR_NOT_SUPPORTED));
 }
 
 /*

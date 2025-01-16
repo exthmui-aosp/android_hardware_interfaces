@@ -84,3 +84,9 @@ cc_test {
     defaults: ["supplicant_vts_test_defaults"],
     srcs: ["supplicant_p2p_network_aidl_test.cpp"],
 }
+
+cc_test {
+    name: "VtsHalWifiSupplicantTargetTest",
+    defaults: ["supplicant_vts_test_defaults"],
+    srcs: ["supplicant_aidl_test.cpp"],
+}

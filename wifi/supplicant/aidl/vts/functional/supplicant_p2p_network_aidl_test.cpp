@@ -63,7 +63,9 @@ class SupplicantP2pNetworkAidlTest : public testing::TestWithParam<std::string> 
     }
 
     void TearDown() override {
-        EXPECT_TRUE(p2p_iface_->removeNetwork(network_id_).isOk());
+        if (p2p_iface_ != nullptr) {
+            EXPECT_TRUE(p2p_iface_->removeNetwork(network_id_).isOk());
+        }
         stopSupplicantService();
         startWifiFramework();
     }
