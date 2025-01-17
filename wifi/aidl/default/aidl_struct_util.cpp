@@ -1863,7 +1863,9 @@ bool convertAidlNanPublishRequestToLegacy(const NanPublishRequest& aidl_request,
     legacy_request->ranging_auto_response = aidl_request.baseConfigs.rangingRequired
                                                     ? legacy_hal::NAN_RANGING_AUTO_RESPONSE_ENABLE
                                                     : legacy_hal::NAN_RANGING_AUTO_RESPONSE_DISABLE;
-    legacy_request->sdea_params.range_report = legacy_hal::NAN_DISABLE_RANGE_REPORT;
+    legacy_request->sdea_params.range_report = aidl_request.rangingResultsRequired
+                                                       ? legacy_hal::NAN_ENABLE_RANGE_REPORT
+                                                       : legacy_hal::NAN_DISABLE_RANGE_REPORT;
     legacy_request->publish_type = convertAidlNanPublishTypeToLegacy(aidl_request.publishType);
     legacy_request->tx_type = convertAidlNanTxTypeToLegacy(aidl_request.txType);
     legacy_request->service_responder_policy = aidl_request.autoAcceptDataPathRequests
@@ -1992,6 +1994,17 @@ bool convertAidlNanSubscribeRequestToLegacy(const NanSubscribeRequest& aidl_requ
     legacy_request->ranging_cfg.distance_ingress_mm =
             aidl_request.baseConfigs.distanceIngressCm * 10;
     legacy_request->ranging_cfg.distance_egress_mm = aidl_request.baseConfigs.distanceEgressCm * 10;
+    legacy_request->ranging_cfg.rtt_burst_size = aidl_request.baseConfigs.rttBurstSize;
+    legacy_request->ranging_cfg.preamble =
+            convertAidlRttPreambleToLegacy(aidl_request.baseConfigs.preamble);
+    if (aidl_request.baseConfigs.channelInfo.has_value()) {
+        if (!convertAidlWifiChannelInfoToLegacy(aidl_request.baseConfigs.channelInfo.value(),
+                                                &legacy_request->ranging_cfg.channel_info)) {
+            LOG(ERROR) << "convertAidlNanSubscribeRequestToLegacy: "
+                          "Unable to convert aidl channel info to legacy";
+            return false;
+        }
+    }
     legacy_request->ranging_auto_response = aidl_request.baseConfigs.rangingRequired
                                                     ? legacy_hal::NAN_RANGING_AUTO_RESPONSE_ENABLE
                                                     : legacy_hal::NAN_RANGING_AUTO_RESPONSE_DISABLE;
@@ -2300,10 +2313,9 @@ bool convertLegacyNanCapabilitiesResponseToAidl(const legacy_hal::NanCapabilitie
     aidl_response->supportsPairing = legacy_response.is_pairing_supported;
     aidl_response->supportsSetClusterId = legacy_response.is_set_cluster_id_supported;
     aidl_response->supportsSuspension = legacy_response.is_suspension_supported;
-    // TODO: Retrieve values from the legacy HAL
-    aidl_response->supportsPeriodicRanging = false;
-    aidl_response->maxSupportedBandwidth = RttBw::BW_UNSPECIFIED;
-    aidl_response->maxNumRxChainsSupported = 2;
+    aidl_response->supportsPeriodicRanging = legacy_response.is_periodic_ranging_supported;
+    aidl_response->maxSupportedBandwidth = convertLegacyRttBwToAidl(legacy_response.supported_bw);
+    aidl_response->maxNumRxChainsSupported = legacy_response.num_rx_chains_supported;
 
     return true;
 }
