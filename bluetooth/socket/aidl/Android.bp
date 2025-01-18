@@ -31,6 +31,9 @@ aidl_interface {
     ],
     stability: "vintf",
     backend: {
+        rust: {
+            enabled: true,
+        },
         java: {
             enabled: false,
         },
