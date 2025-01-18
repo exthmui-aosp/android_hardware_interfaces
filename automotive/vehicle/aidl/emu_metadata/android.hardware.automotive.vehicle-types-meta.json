@@ -153,7 +153,7 @@
                     "VehicleOilLevel"
                 ],
                 "data_enum": "VehicleOilLevel",
-                "description": "Engine oil level"
+                "description": "Engine oil level\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleOilLevel are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Temperature of engine oil",
@@ -328,7 +328,7 @@
                     "VehicleIgnitionState"
                 ],
                 "data_enum": "VehicleIgnitionState",
-                "description": "Represents ignition state"
+                "description": "Represents ignition state\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleIgnitionState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "ABS is active",
@@ -371,7 +371,7 @@
                     "VehicleTurnSignal"
                 ],
                 "data_enum": "VehicleTurnSignal",
-                "description": "Turn signal light state.\nThis property must communicate the actual state of the turn signal lights.\nExamples: 1) Left turn signal light is currently pulsing, right turn signal light is currently off. This property must return VehicleTurnSignal.LEFT while the light is on during the pulse, and VehicleTurnSignal.NONE when it is off during the pulse. 2) Right turn signal light is currently pulsing, left turn signal light is currently off. This property must return VehicleTurnSignal.RIGHT while the light is on during the pulse, and VehicleTurnSignal.NONE when it is off during the pulse. 3) Both turn signal lights are currently pulsing (e.g. when hazard lights switch is on). This property must return VehicleTurnSignal.LEFT | VehicleTurnSignal.RIGHT while the lights are on during the pulse, and VehicleTurnSignal.NONE when they are off during the pulse.\nNote that this property uses VehicleTurnSignal as a bit flag, unlike TURN_SIGNAL_SWITCH, which uses it like a regular enum. This means this property can support ORed together values in VehicleTurnSignal.\nThis is different from the function of TURN_SIGNAL_SWITCH, which must communicate the state of the turn signal lever\/switch.\nThis property is a replacement to the TURN_SIGNAL_STATE property, which is now deprecated."
+                "description": "Turn signal light state.\nThis property must communicate the actual state of the turn signal lights.\nExamples: 1) Left turn signal light is currently pulsing, right turn signal light is currently off. This property must return VehicleTurnSignal.LEFT while the light is on during the pulse, and VehicleTurnSignal.NONE when it is off during the pulse. 2) Right turn signal light is currently pulsing, left turn signal light is currently off. This property must return VehicleTurnSignal.RIGHT while the light is on during the pulse, and VehicleTurnSignal.NONE when it is off during the pulse. 3) Both turn signal lights are currently pulsing (e.g. when hazard lights switch is on). This property must return VehicleTurnSignal.LEFT | VehicleTurnSignal.RIGHT while the lights are on during the pulse, and VehicleTurnSignal.NONE when they are off during the pulse.\nNote that this property uses VehicleTurnSignal as a bit flag, unlike TURN_SIGNAL_SWITCH, which uses it like a regular enum. This means this property can support ORed together values in VehicleTurnSignal.\nThis is different from the function of TURN_SIGNAL_SWITCH, which must communicate the state of the turn signal lever\/switch.\nThis property is a replacement to the TURN_SIGNAL_STATE property, which is now deprecated.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined to list all supported combinations of VehicleTurnSignal unless all combinations are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Turn signal switch.",
@@ -380,7 +380,7 @@
                     "VehicleTurnSignal"
                 ],
                 "data_enum": "VehicleTurnSignal",
-                "description": "Turn signal switch.\nThis property must communicate the state of the turn signal lever\/switch. This is different from the function of TURN_SIGNAL_LIGHT_STATE, which must communicate the actual state of the turn signal lights.\nNote that this property uses VehicleTurnSignal as a regular enum, unlike TURN_SIGNAL_LIGHT_STATE, which uses it like a bit flag. This means this property cannot support ORed together values in VehicleTurnSignal.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
+                "description": "Turn signal switch.\nThis property must communicate the state of the turn signal lever\/switch. This is different from the function of TURN_SIGNAL_LIGHT_STATE, which must communicate the actual state of the turn signal lights.\nNote that this property uses VehicleTurnSignal as a regular enum, unlike TURN_SIGNAL_LIGHT_STATE, which uses it like a bit flag. This means this property cannot support ORed together values in VehicleTurnSignal.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleTurnSignal are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Fan speed setting",
@@ -916,7 +916,7 @@
                     "VehicleSeatOccupancyState"
                 ],
                 "data_enum": "VehicleSeatOccupancyState",
-                "description": "Seat Occupancy\nIndicates whether a particular seat is occupied or not, to the best of the car's ability to determine. Valid values are from the VehicleSeatOccupancyState enum."
+                "description": "Seat Occupancy\nIndicates whether a particular seat is occupied or not, to the best of the car's ability to determine. Valid values are from the VehicleSeatOccupancyState enum.\nFor each supported area ID, the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleSeatOccupancyState (including UNKNOWN) are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for a specifc area ID: {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Window Position",
@@ -1068,7 +1068,7 @@
                     "VehicleLightState"
                 ],
                 "data_enum": "VehicleLightState",
-                "description": "Headlights State\nReturn the current state of headlights."
+                "description": "Headlights State\nReturn the current state of headlights.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "High beam lights state",
@@ -1077,7 +1077,7 @@
                     "VehicleLightState"
                 ],
                 "data_enum": "VehicleLightState",
-                "description": "High beam lights state\nReturn the current state of high beam lights."
+                "description": "High beam lights state\nReturn the current state of high beam lights.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Fog light state",
@@ -1086,7 +1086,7 @@
                     "VehicleLightState"
                 ],
                 "data_enum": "VehicleLightState",
-                "description": "Fog light state\nReturn the current state of fog lights.\nIf the car has both front and rear fog lights: If front and rear fog lights can only be controlled together: FOG_LIGHTS_STATE must be implemented. FRONT_FOG_LIGHTS_STATE and REAR_FOG_LIGHTS_STATE must not be implemented.\nIf the front and rear fog lights can only be controlled independently: FOG_LIGHTS_STATE must not be implemented. FRONT_FOG_LIGHTS_STATE and REAR_FOG_LIGHTS_STATE must be implemented.\nIf the car has only front fog lights: Only one of FOG_LIGHTS_STATE or FRONT_FOG_LIGHTS_STATE must be implemented and not both. REAR_FOG_LIGHTS_STATE must not be implemented.\nIf the car has only rear fog lights: Only one of FOG_LIGHTS_STATE or REAR_FOG_LIGHTS_STATE must be implemented and not both. FRONT_FOG_LIGHTS_STATE must not be implemented."
+                "description": "Fog light state\nReturn the current state of fog lights.\nIf the car has both front and rear fog lights: If front and rear fog lights can only be controlled together: FOG_LIGHTS_STATE must be implemented. FRONT_FOG_LIGHTS_STATE and REAR_FOG_LIGHTS_STATE must not be implemented.\nIf the front and rear fog lights can only be controlled independently: FOG_LIGHTS_STATE must not be implemented. FRONT_FOG_LIGHTS_STATE and REAR_FOG_LIGHTS_STATE must be implemented.\nIf the car has only front fog lights: Only one of FOG_LIGHTS_STATE or FRONT_FOG_LIGHTS_STATE must be implemented and not both. REAR_FOG_LIGHTS_STATE must not be implemented.\nIf the car has only rear fog lights: Only one of FOG_LIGHTS_STATE or REAR_FOG_LIGHTS_STATE must be implemented and not both. FRONT_FOG_LIGHTS_STATE must not be implemented.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Hazard light status",
@@ -1095,7 +1095,7 @@
                     "VehicleLightState"
                 ],
                 "data_enum": "VehicleLightState",
-                "description": "Hazard light status\nReturn the current status of hazard lights."
+                "description": "Hazard light status\nReturn the current status of hazard lights.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Headlight switch",
@@ -1104,7 +1104,7 @@
                     "VehicleLightSwitch"
                 ],
                 "data_enum": "VehicleLightSwitch",
-                "description": "Headlight switch\nThe setting that the user wants.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
+                "description": "Headlight switch\nThe setting that the user wants.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightSwitch are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
                 "name": "High beam light switch",
@@ -1113,7 +1113,7 @@
                     "VehicleLightSwitch"
                 ],
                 "data_enum": "VehicleLightSwitch",
-                "description": "High beam light switch\nThe setting that the user wants.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
+                "description": "High beam light switch\nThe setting that the user wants.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightSwitch are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
                 "name": "Fog light switch",
@@ -1122,7 +1122,7 @@
                     "VehicleLightSwitch"
                 ],
                 "data_enum": "VehicleLightSwitch",
-                "description": "Fog light switch\nThe setting that the user wants.\nIf the car has both front and rear fog lights: If front and rear fog lights can only be controlled together: FOG_LIGHTS_SWITCH must be implemented. FRONT_FOG_LIGHTS_SWITCH and REAR_FOG_LIGHTS_SWITCH must not be implemented.\nIf the front and rear fog lights can only be controlled independently: FOG_LIGHTS_SWITCH must not be implemented. FRONT_FOG_LIGHTS_SWITCH and REAR_FOG_LIGHTS_SWITCH must be implemented.\nIf the car has only front fog lights: Only one of FOG_LIGHTS_SWITCH or FRONT_FOG_LIGHTS_SWITCH must be implemented and not both. REAR_FOG_LIGHTS_SWITCH must not be implemented.\nIf the car has only rear fog lights: Only one of FOG_LIGHTS_SWITCH or REAR_FOG_LIGHTS_SWITCH must be implemented and not both. FRONT_FOG_LIGHTS_SWITCH must not be implemented.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
+                "description": "Fog light switch\nThe setting that the user wants.\nIf the car has both front and rear fog lights: If front and rear fog lights can only be controlled together: FOG_LIGHTS_SWITCH must be implemented. FRONT_FOG_LIGHTS_SWITCH and REAR_FOG_LIGHTS_SWITCH must not be implemented.\nIf the front and rear fog lights can only be controlled independently: FOG_LIGHTS_SWITCH must not be implemented. FRONT_FOG_LIGHTS_SWITCH and REAR_FOG_LIGHTS_SWITCH must be implemented.\nIf the car has only front fog lights: Only one of FOG_LIGHTS_SWITCH or FRONT_FOG_LIGHTS_SWITCH must be implemented and not both. REAR_FOG_LIGHTS_SWITCH must not be implemented.\nIf the car has only rear fog lights: Only one of FOG_LIGHTS_SWITCH or REAR_FOG_LIGHTS_SWITCH must be implemented and not both. FRONT_FOG_LIGHTS_SWITCH must not be implemented.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightSwitch are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
                 "name": "Hazard light switch",
@@ -1131,7 +1131,7 @@
                     "VehicleLightSwitch"
                 ],
                 "data_enum": "VehicleLightSwitch",
-                "description": "Hazard light switch\nThe setting that the user wants.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
+                "description": "Hazard light switch\nThe setting that the user wants.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightSwitch are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
                 "name": "Cabin lights",
@@ -1140,7 +1140,7 @@
                     "VehicleLightState"
                 ],
                 "data_enum": "VehicleLightState",
-                "description": "Cabin lights\nReturn current status of cabin lights."
+                "description": "Cabin lights\nReturn current status of cabin lights.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Cabin lights switch",
@@ -1149,7 +1149,7 @@
                     "VehicleLightSwitch"
                 ],
                 "data_enum": "VehicleLightSwitch",
-                "description": "Cabin lights switch\nThe position of the physical switch which controls the cabin lights. This might be different than the CABIN_LIGHTS_STATE if the lights are on because a door is open or because of a voice command. For example, while the switch is in the \"off\" or \"automatic\" position.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
+                "description": "Cabin lights switch\nThe position of the physical switch which controls the cabin lights. This might be different than the CABIN_LIGHTS_STATE if the lights are on because a door is open or because of a voice command. For example, while the switch is in the \"off\" or \"automatic\" position.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightSwitch are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
                 "name": "Reading lights",
@@ -1158,7 +1158,7 @@
                     "VehicleLightState"
                 ],
                 "data_enum": "VehicleLightState",
-                "description": "Reading lights\nReturn current status of reading lights."
+                "description": "Reading lights\nReturn current status of reading lights.\nFor each supported area ID, the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for a specifc area ID: {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Reading lights switch",
@@ -1167,7 +1167,7 @@
                     "VehicleLightSwitch"
                 ],
                 "data_enum": "VehicleLightSwitch",
-                "description": "Reading lights switch\nThe position of the physical switch which controls the reading lights. This might be different than the READING_LIGHTS_STATE if the lights are on because a door is open or because of a voice command. For example, while the switch is in the \"off\" or \"automatic\" position.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
+                "description": "Reading lights switch\nThe position of the physical switch which controls the reading lights. This might be different than the READING_LIGHTS_STATE if the lights are on because a door is open or because of a voice command. For example, while the switch is in the \"off\" or \"automatic\" position.\nFor each supported area ID, the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightSwitch are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for a specifc area ID: {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
                 "name": "Steering wheel lights state",
@@ -1289,7 +1289,7 @@
                     "ElectronicTollCollectionCardType"
                 ],
                 "data_enum": "ElectronicTollCollectionCardType",
-                "description": "Electronic Toll Collection card type.\nThis property indicates the type of ETC card in this vehicle. If the head unit is aware of an ETC card attached to the vehicle, this property should return the type of card attached; otherwise, this property should be UNAVAILABLE."
+                "description": "Electronic Toll Collection card type.\nThis property indicates the type of ETC card in this vehicle. If the head unit is aware of an ETC card attached to the vehicle, this property should return the type of card attached; otherwise, this property should be UNAVAILABLE.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in ElectronicTollCollectionCardType are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "ELECTRONIC_TOLL_COLLECTION_CARD_STATUS",
@@ -1298,7 +1298,7 @@
                     "ElectronicTollCollectionCardStatus"
                 ],
                 "data_enum": "ElectronicTollCollectionCardStatus",
-                "description": "Electronic Toll Collection card status.\nThis property indicates the status of ETC card in this vehicle. If the head unit is aware of an ETC card attached to the vehicle, ELECTRONIC_TOLL_COLLECTION_CARD_TYPE gives that status of the card; otherwise, this property should be UNAVAILABLE."
+                "description": "Electronic Toll Collection card status.\nThis property indicates the status of ETC card in this vehicle. If the head unit is aware of an ETC card attached to the vehicle, ELECTRONIC_TOLL_COLLECTION_CARD_TYPE gives that status of the card; otherwise, this property should be UNAVAILABLE.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in ElectronicTollCollectionCardStatus are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Front fog lights state",
@@ -1307,7 +1307,7 @@
                     "VehicleLightState"
                 ],
                 "data_enum": "VehicleLightState",
-                "description": "Front fog lights state\nReturn the current state of the front fog lights. Only one of FOG_LIGHTS_STATE or FRONT_FOG_LIGHTS_STATE must be implemented. Please refer to the documentation on FOG_LIGHTS_STATE for more information."
+                "description": "Front fog lights state\nReturn the current state of the front fog lights. Only one of FOG_LIGHTS_STATE or FRONT_FOG_LIGHTS_STATE must be implemented. Please refer to the documentation on FOG_LIGHTS_STATE for more information.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Front fog lights switch",
@@ -1316,7 +1316,7 @@
                     "VehicleLightSwitch"
                 ],
                 "data_enum": "VehicleLightSwitch",
-                "description": "Front fog lights switch\nThe setting that the user wants. Only one of FOG_LIGHTS_SWITCH or FRONT_FOG_LIGHTS_SWITCH must be implemented. Please refer to the documentation on FOG_LIGHTS_SWITCH for more information.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
+                "description": "Front fog lights switch\nThe setting that the user wants. Only one of FOG_LIGHTS_SWITCH or FRONT_FOG_LIGHTS_SWITCH must be implemented. Please refer to the documentation on FOG_LIGHTS_SWITCH for more information.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightSwitch are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
                 "name": "Rear fog lights state",
@@ -1325,7 +1325,7 @@
                     "VehicleLightState"
                 ],
                 "data_enum": "VehicleLightState",
-                "description": "Rear fog lights state\nReturn the current state of the rear fog lights. Only one of FOG_LIGHTS_STATE or REAR_FOG_LIGHTS_STATE must be implemented. Please refer to the documentation on FOG_LIGHTS_STATE for more information."
+                "description": "Rear fog lights state\nReturn the current state of the rear fog lights. Only one of FOG_LIGHTS_STATE or REAR_FOG_LIGHTS_STATE must be implemented. Please refer to the documentation on FOG_LIGHTS_STATE for more information.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "Rear fog lights switch",
@@ -1334,7 +1334,7 @@
                     "VehicleLightSwitch"
                 ],
                 "data_enum": "VehicleLightSwitch",
-                "description": "Rear fog lights switch\nThe setting that the user wants. Only one of FOG_LIGHTS_SWITCH or REAR_FOG_LIGHTS_SWITCH must be implemented. Please refer to the documentation on FOG_LIGHTS_SWITCH for more information.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
+                "description": "Rear fog lights switch\nThe setting that the user wants. Only one of FOG_LIGHTS_SWITCH or REAR_FOG_LIGHTS_SWITCH must be implemented. Please refer to the documentation on FOG_LIGHTS_SWITCH for more information.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in VehicleLightSwitch are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
                 "name": "EV_CHARGE_CURRENT_DRAW_LIMIT",
@@ -1353,7 +1353,7 @@
                     "EvChargeState"
                 ],
                 "data_enum": "EvChargeState",
-                "description": "Charging state of the car\nReturns the current charging state of the car.\nIf the vehicle has a target charge percentage other than 100, this property must return EvChargeState::STATE_FULLY_CHARGED when the battery charge level has reached the target level. See EV_CHARGE_PERCENT_LIMIT for more context."
+                "description": "Charging state of the car\nReturns the current charging state of the car.\nIf the vehicle has a target charge percentage other than 100, this property must return EvChargeState::STATE_FULLY_CHARGED when the battery charge level has reached the target level. See EV_CHARGE_PERCENT_LIMIT for more context.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in EvChargeState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "EV_CHARGE_SWITCH",
@@ -1372,7 +1372,7 @@
                     "EvRegenerativeBrakingState"
                 ],
                 "data_enum": "EvRegenerativeBrakingState",
-                "description": "Regenerative braking or one-pedal drive setting of the car\nReturns the current setting associated with the regenerative braking setting in the car\nIf the OEM requires more setting than those provided in EvRegenerativeBrakingState, the EV_BRAKE_REGENERATION_LEVEL property can be used instead, which provides a more granular way of providing the same information."
+                "description": "Regenerative braking or one-pedal drive setting of the car\nReturns the current setting associated with the regenerative braking setting in the car\nIf the OEM requires more setting than those provided in EvRegenerativeBrakingState, the EV_BRAKE_REGENERATION_LEVEL property can be used instead, which provides a more granular way of providing the same information.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in EvRegenerativeBrakingState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "TRAILER_PRESENT",
@@ -1381,7 +1381,7 @@
                     "TrailerState"
                 ],
                 "data_enum": "TrailerState",
-                "description": "Indicates if there is a trailer present or not.\nReturns the trailer state of the car."
+                "description": "Indicates if there is a trailer present or not.\nReturns the trailer state of the car.\nFor the global area ID (0), the VehicleAreaConfig#supportedEnumValues array must be defined unless all states in TrailerState are supported.\nIf {@code HasSupportedValueInfo} is not {@code null} for the global area ID (0): {@code HasSupportedValueInfo#hasSupportedValuesList} must be {@code true}. At boot, supportedEnumValues (if defined) is equal to the supported values list."
             },
             {
                 "name": "VEHICLE_CURB_WEIGHT",

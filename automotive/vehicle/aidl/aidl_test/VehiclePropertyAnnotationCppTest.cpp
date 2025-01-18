@@ -15,16 +15,20 @@
  */
 
 #include <AccessForVehicleProperty.h>
+#include <AnnotationsForVehicleProperty.h>
 #include <ChangeModeForVehicleProperty.h>
 
 #include <aidl/android/hardware/automotive/vehicle/VehicleProperty.h>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <unordered_set>
 
 namespace aidl_vehicle = ::aidl::android::hardware::automotive::vehicle;
 using aidl_vehicle::AccessForVehicleProperty;
+using aidl_vehicle::AnnotationsForVehicleProperty;
 using aidl_vehicle::ChangeModeForVehicleProperty;
 using aidl_vehicle::VehicleProperty;
+using testing::IsEmpty;
 
 namespace {
     template<class T>
@@ -53,4 +57,12 @@ TEST(VehiclePropertyAnnotationCppTest, testAccess) {
     ASSERT_TRUE(doesAnnotationMapContainsAllProps(AccessForVehicleProperty))
             << "Outdated annotation-generated AIDL files. Please run "
             << "generate_annotation_enums.py to update.";
+}
+
+TEST(VehiclePropertyAnnotationCppTest, testAnnotations) {
+    for (const auto& [propertyId, annotations] : AnnotationsForVehicleProperty) {
+        ASSERT_THAT(annotations, Not(IsEmpty()))
+                << "annotations set for property: " << aidl_vehicle::toString(propertyId)
+                << " must not be empty";
+    }
 }
