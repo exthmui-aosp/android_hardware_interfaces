@@ -92,7 +92,9 @@ class GraphicsCompositionTestBase : public ::testing::Test {
     void TearDown() override {
         ASSERT_FALSE(mDisplays.empty());
         ASSERT_TRUE(mComposerClient->setPowerMode(getPrimaryDisplayId(), PowerMode::OFF).isOk());
-        ASSERT_TRUE(mComposerClient->tearDown(mWriter.get()));
+        std::unordered_map<int64_t, ComposerClientWriter*> displayWriters;
+        displayWriters.emplace(getPrimaryDisplayId(), mWriter.get());
+        ASSERT_TRUE(mComposerClient->tearDown(displayWriters));
         mComposerClient.reset();
         const auto errors = mReader.takeErrors();
         ASSERT_TRUE(mReader.takeErrors().empty());
