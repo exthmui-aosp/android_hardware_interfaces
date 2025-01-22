@@ -2,81 +2,62 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-cc_defaults {
-    name: "android.hardware.bluetooth-service-build-defaults",
-    cflags: [
-        "-Wall",
-        "-Wextra",
-    ],
-    shared_libs: [
-        "android.hardware.bluetooth-V1-ndk",
-        "libbase",
-        "libbinder_ndk",
-        "libcutils",
-        "libhidlbase",
-        "liblog",
-        "libutils",
-    ],
-    static_libs: [
-        "android.hardware.bluetooth.async",
-        "android.hardware.bluetooth.hci",
-    ],
-}
-
 cc_library_static {
     name: "libbluetoothhcihalimpl",
     vendor_available: true,
     host_supported: true,
-    defaults: ["android.hardware.bluetooth-service-build-defaults"],
     srcs: [
         "BluetoothHci.cpp",
         "net_bluetooth_mgmt.cpp",
     ],
-}
-
-cc_binary {
-    name: "android.hardware.bluetooth-service.default",
-    relative_install_path: "hw",
-    init_rc: ["bluetooth-service-default.rc"],
-    vintf_fragments: [":manifest_android.hardware.bluetooth-service.default.xml"],
-    vendor: true,
-    defaults: ["android.hardware.bluetooth-service-build-defaults"],
-    srcs: [
-        "service.cpp",
+    cflags: [
+        "-Wall",
+        "-Wextra",
     ],
-    shared_libs: [
-        "android.hardware.bluetooth-V1-ndk",
-        "libbase",
-        "libbinder_ndk",
-        "libhidlbase",
-        "libutils",
-        "liblog",
-    ],
-    static_libs: [
-        "libbluetoothhcihalimpl",
-    ],
-}
-
-cc_fuzz {
-    name: "android.hardware.bluetooth-service.default_fuzzer",
-    host_supported: true,
-    defaults: ["service_fuzzer_defaults"],
-    srcs: [
-        "test/fuzzer.cpp",
+    header_libs: [
+        "libbluetooth_offload_hal_headers",
     ],
     static_libs: [
         "android.hardware.bluetooth.async",
         "android.hardware.bluetooth.hci",
-        "android.hardware.bluetooth-V1-ndk",
-        "libbluetoothhcihalimpl",
-        "liblog",
     ],
-    fuzz_config: {
-        componentid: 27441,
-        cc: [
-            "mylesgw@google.com",
-        ],
-    },
+    shared_libs: [
+        "libbase",
+        "libcutils",
+        "liblog",
+        "libutils",
+    ],
+}
+
+rust_binary {
+    name: "android.hardware.bluetooth-service.default",
+    crate_name: "bluetooth_hci_hal_server",
+    relative_install_path: "hw",
+    init_rc: ["bluetooth-service-default.rc"],
+    vintf_fragments: [":manifest_android.hardware.bluetooth-service.default.xml"],
+    vendor: true,
+    prefer_rlib: true,
+    srcs: ["main.rs"],
+    rustlibs: [
+        "android.hardware.bluetooth-V1-rust",
+        "libbluetooth_offload_hal",
+        "libbluetooth_offload_leaudio_hci",
+        "libbinder_rs",
+        "liblogger",
+        "liblog_rust",
+    ],
+    static_libs: [
+        "android.hardware.bluetooth.async",
+        "android.hardware.bluetooth.hci",
+        "libbluetoothhcihalimpl",
+    ],
+    shared_libs: [
+        "libbase",
+        "libc++",
+        "libcutils",
+        "liblog",
+        "libutils",
+    ],
 }
 
 filegroup {

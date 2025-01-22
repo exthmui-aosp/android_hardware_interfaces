@@ -16,13 +16,6 @@ aidl_interface {
     srcs: ["android/hardware/bluetooth/*.aidl"],
     stability: "vintf",
     backend: {
-        cpp: {
-            // FIXME should this be disabled?
-            // prefer NDK backend which can be used anywhere
-            // If you disable this, you also need to delete the C++
-            // translate code.
-            enabled: true,
-        },
         rust: {
             enabled: true,
         },
@@ -44,5 +37,4 @@ aidl_interface {
         },
     ],
     frozen: true,
-
 }

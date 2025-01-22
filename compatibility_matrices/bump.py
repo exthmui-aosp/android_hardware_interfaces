@@ -60,6 +60,7 @@ class Bump(object):
         self.copy_matrix()
         self.edit_android_bp()
         self.bump_libvintf()
+        self.bump_libvts_vintf()
 
     def bump_kernel_configs(self):
         check_call([
@@ -154,6 +155,20 @@ class Bump(object):
                                         }} break;"""),
                             "    "*3))
 
+    def bump_libvts_vintf(self):
+      if not self.current_version:
+        print("Skip libvts_vintf update...")
+        return
+      try:
+        check_call(["grep", "-h",
+                    f"{self.next_level}, Level::{self.next_letter.upper()}",
+                    f"{self.top}/test/vts-testcase/hal/treble/vintf/libvts_vintf_test_common/common.cpp"])
+        print("libvts_vintf is already up-to-date")
+      except subprocess.CalledProcessError:
+        print("Adding new API level to libvts_vintf")
+        add_lines_below(f"{self.top}/test/vts-testcase/hal/treble/vintf/libvts_vintf_test_common/common.cpp",
+                        f"        {{{self.current_level}, Level::{self.current_letter.upper()}}},",
+                        f"        {{{self.next_level}, Level::{self.next_letter.upper()}}},\n")
 
 def add_lines_above(file, pattern, lines):
     with open(file, 'r+') as f:
@@ -168,6 +183,16 @@ def add_lines_above(file, pattern, lines):
         f.write(f"\n{lines}\n{pattern}\n".join(split_text))
         f.truncate()
 
+def add_lines_below(file, pattern, lines):
+    final_lines = []
+    with open(file, 'r+') as f:
+        for line in f:
+          final_lines.append(line)
+          if pattern in line:
+              final_lines.append(lines)
+        f.seek(0)
+        f.write("".join(final_lines))
+        f.truncate()
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
