@@ -709,6 +709,14 @@
             <instance>default</instance>
         </interface>
     </hal>
+    <hal format="aidl" optional="true">
+        <name>android.hardware.tv.mediaquality</name>
+        <version>1</version>
+        <interface>
+            <name>IPictureProfileChangedListener</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
     <!-- The native mapper HAL must exist on the device -->
     <hal format="native">
         <name>mapper</name>

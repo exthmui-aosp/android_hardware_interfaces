@@ -14,7 +14,7 @@ aidl_interface {
         "android/hardware/tv/mediaquality/*.aidl",
     ],
     imports: [
-        "android.hardware.graphics.common-V5",
+        "android.hardware.graphics.common-V6",
     ],
     stability: "vintf",
     backend: {
@@ -38,7 +38,7 @@ aidl_interface {
     versions_with_info: [
         {
             version: "1",
-            imports: ["android.hardware.graphics.common-V5"],
+            imports: ["android.hardware.graphics.common-V6"],
         },
     ],
 
