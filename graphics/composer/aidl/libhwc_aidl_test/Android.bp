@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2021, The Android Open Source Project
+ * Copyright (c) 2025, The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,34 +21,33 @@ package {
     // all of the 'license_kinds' from "hardware_interfaces_license"
     // to get the below license kinds:
     // SPDX-license-identifier-Apache-2.0
-    default_applicable_licenses: ["hardware_interfaces_license"],
 }
 
-cc_test {
-    name: "VtsHalGraphicsComposer3_TargetTest",
+cc_library_static {
+    name: "libhwc_aidl_test",
+    export_include_dirs: ["include"],
     defaults: [
-        "VtsHalTargetTestDefaults",
         "use_libaidlvintf_gtest_helper_static",
         "librenderengine_deps",
         "android.hardware.graphics.common-ndk_static",
         "android.hardware.graphics.composer3-ndk_static",
     ],
     srcs: [
-        "VtsHalGraphicsComposer3_TargetTest.cpp",
-        "VtsHalGraphicsComposer3_ReadbackTest.cpp",
+        "ComposerClientWrapper.cpp",
+        "GraphicsComposerCallback.cpp",
+        "Readback.cpp",
+        "RenderEngine.cpp",
     ],
     shared_libs: [
         "libEGL",
         "libGLESv2",
         "libbinder_ndk",
         "libbinder",
+        "libfmq",
         "libbase",
         "libsync",
         "libui",
         "libgui",
-        "libprocessgroup",
-        "libtracing_perfetto",
-        "server_configurable_flags",
     ],
     header_libs: [
         "android.hardware.graphics.composer3-command-buffer",
@@ -60,20 +59,13 @@ cc_test {
         "libaidlcommonsupport",
         "libarect",
         "libbase",
-        "libgmock",
+        "libfmq",
         "libgtest",
-        "libhwc_aidl_test",
         "librenderengine",
         "libsync",
         "libsurfaceflinger_common",
-        "libshaders",
-        "libtonemap",
     ],
     cflags: [
         "-Wconversion",
-    ],
-    test_suites: [
-        "general-tests",
-        "vts",
     ],
 }

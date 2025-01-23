@@ -72,16 +72,29 @@ const String16 kEchoServiceName{"android.hardware.contexthub.test.EchoService"};
 constexpr int64_t kDefaultHubId = 1;
 
 class TestEndpointCallback;
+
 class ContextHubAidl : public testing::TestWithParam<std::tuple<std::string, int32_t>> {
   public:
     void SetUp() override {
         mContextHub = android::waitForDeclaredService<IContextHub>(
                 String16(std::get<0>(GetParam()).c_str()));
         ASSERT_NE(mContextHub, nullptr);
-        mEndpointCb = sp<TestEndpointCallback>::make();
     }
 
     uint32_t getHubId() { return std::get<1>(GetParam()); }
+
+    void testSettingChanged(Setting setting);
+
+    sp<IContextHub> mContextHub;
+};
+
+class ContextHubEndpointAidl : public testing::TestWithParam<std::string> {
+  public:
+    void SetUp() override {
+        mContextHub = android::waitForDeclaredService<IContextHub>(String16(GetParam().c_str()));
+        ASSERT_NE(mContextHub, nullptr);
+        mEndpointCb = sp<TestEndpointCallback>::make();
+    }
 
     Status registerHub(int64_t id, sp<IEndpointCommunication>* hubInterface) {
         HubInfo info;
@@ -103,17 +116,15 @@ class ContextHubAidl : public testing::TestWithParam<std::tuple<std::string, int
         return true;
     }
 
-    void testSettingChanged(Setting setting);
-
     sp<IContextHub> mContextHub;
     sp<TestEndpointCallback> mEndpointCb;
     sp<IEndpointCommunication> mHubInterface;
 };
 
-class ContextHubAidlWithTestMode : public ContextHubAidl {
+class ContextHubEndpointAidlWithTestMode : public ContextHubEndpointAidl {
   public:
     void SetUp() override {
-        ContextHubAidl::SetUp();
+        ContextHubEndpointAidl::SetUp();
 
         // Best effort enable test mode - this may not be supported on older HALS, so we
         // ignore the return value.
@@ -122,11 +133,11 @@ class ContextHubAidlWithTestMode : public ContextHubAidl {
 
     void TearDown() override {
         mContextHub->setTestMode(/* enable= */ false);
-        ContextHubAidl::TearDown();
+        ContextHubEndpointAidl::TearDown();
     }
 };
 
-TEST_P(ContextHubAidl, TestGetHubs) {
+TEST_P(ContextHubEndpointAidl, TestGetHubs) {
     std::vector<ContextHubInfo> hubs;
     ASSERT_TRUE(mContextHub->getContextHubs(&hubs).isOk());
 
@@ -149,7 +160,7 @@ TEST_P(ContextHubAidl, TestGetHubs) {
     }
 }
 
-TEST_P(ContextHubAidl, TestEnableTestMode) {
+TEST_P(ContextHubEndpointAidl, TestEnableTestMode) {
     Status status = mContextHub->setTestMode(true);
     if (status.exceptionCode() == Status::EX_UNSUPPORTED_OPERATION ||
         status.transactionError() == android::UNKNOWN_TRANSACTION) {
@@ -159,7 +170,7 @@ TEST_P(ContextHubAidl, TestEnableTestMode) {
     }
 }
 
-TEST_P(ContextHubAidl, TestDisableTestMode) {
+TEST_P(ContextHubEndpointAidl, TestDisableTestMode) {
     Status status = mContextHub->setTestMode(false);
     if (status.exceptionCode() == Status::EX_UNSUPPORTED_OPERATION ||
         status.transactionError() == android::UNKNOWN_TRANSACTION) {
@@ -585,7 +596,7 @@ class TestEndpointCallback : public BnEndpointCallback {
     bool mWasOnEndpointSessionOpenCompleteCalled = false;
 };
 
-TEST_P(ContextHubAidlWithTestMode, RegisterHub) {
+TEST_P(ContextHubEndpointAidlWithTestMode, RegisterHub) {
     if (!registerDefaultHub()) {
         GTEST_SKIP() << "Not supported -> old API; or not implemented";
     }
@@ -604,7 +615,7 @@ TEST_P(ContextHubAidlWithTestMode, RegisterHub) {
     EXPECT_TRUE(status.isOk());
 }
 
-TEST_P(ContextHubAidlWithTestMode, RegisterEndpoint) {
+TEST_P(ContextHubEndpointAidlWithTestMode, RegisterEndpoint) {
     if (!registerDefaultHub()) {
         GTEST_SKIP() << "Not supported -> old API; or not implemented";
     }
@@ -625,7 +636,7 @@ TEST_P(ContextHubAidlWithTestMode, RegisterEndpoint) {
     }
 }
 
-TEST_P(ContextHubAidlWithTestMode, RegisterEndpointSameNameFailure) {
+TEST_P(ContextHubEndpointAidlWithTestMode, RegisterEndpointSameNameFailure) {
     if (!registerDefaultHub()) {
         GTEST_SKIP() << "Not supported -> old API; or not implemented";
     }
@@ -655,7 +666,7 @@ TEST_P(ContextHubAidlWithTestMode, RegisterEndpointSameNameFailure) {
     EXPECT_FALSE(mHubInterface->registerEndpoint(endpointInfo2).isOk());
 }
 
-TEST_P(ContextHubAidlWithTestMode, RegisterEndpointSameIdFailure) {
+TEST_P(ContextHubEndpointAidlWithTestMode, RegisterEndpointSameIdFailure) {
     if (!registerDefaultHub()) {
         GTEST_SKIP() << "Not supported -> old API; or not implemented";
     }
@@ -685,7 +696,7 @@ TEST_P(ContextHubAidlWithTestMode, RegisterEndpointSameIdFailure) {
     EXPECT_FALSE(mHubInterface->registerEndpoint(endpointInfo2).isOk());
 }
 
-TEST_P(ContextHubAidlWithTestMode, UnregisterEndpoint) {
+TEST_P(ContextHubEndpointAidlWithTestMode, UnregisterEndpoint) {
     if (!registerDefaultHub()) {
         GTEST_SKIP() << "Not supported -> old API; or not implemented";
     }
@@ -708,7 +719,7 @@ TEST_P(ContextHubAidlWithTestMode, UnregisterEndpoint) {
     EXPECT_TRUE(mHubInterface->unregisterEndpoint(endpointInfo).isOk());
 }
 
-TEST_P(ContextHubAidlWithTestMode, UnregisterEndpointNonexistent) {
+TEST_P(ContextHubEndpointAidlWithTestMode, UnregisterEndpointNonexistent) {
     if (!registerDefaultHub()) {
         GTEST_SKIP() << "Not supported -> old API; or not implemented";
     }
@@ -729,7 +740,7 @@ TEST_P(ContextHubAidlWithTestMode, UnregisterEndpointNonexistent) {
     }
 }
 
-TEST_P(ContextHubAidlWithTestMode, OpenEndpointSessionInvalidRange) {
+TEST_P(ContextHubEndpointAidlWithTestMode, OpenEndpointSessionInvalidRange) {
     if (!registerDefaultHub()) {
         GTEST_SKIP() << "Not supported -> old API; or not implemented";
     }
@@ -775,7 +786,7 @@ TEST_P(ContextHubAidlWithTestMode, OpenEndpointSessionInvalidRange) {
                          .isOk());
 }
 
-TEST_P(ContextHubAidlWithTestMode, OpenEndpointSessionAndSendMessageEchoesBack) {
+TEST_P(ContextHubEndpointAidlWithTestMode, OpenEndpointSessionAndSendMessageEchoesBack) {
     if (!registerDefaultHub()) {
         GTEST_SKIP() << "Not supported -> old API; or not implemented";
     }
@@ -845,9 +856,17 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ContextHubAidl);
 INSTANTIATE_TEST_SUITE_P(ContextHub, ContextHubAidl, testing::ValuesIn(generateContextHubMapping()),
                          PrintGeneratedTest);
 
-GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ContextHubAidlWithTestMode);
-INSTANTIATE_TEST_SUITE_P(ContextHub, ContextHubAidlWithTestMode,
-                         testing::ValuesIn(generateContextHubMapping()), PrintGeneratedTest);
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ContextHubEndpointAidl);
+INSTANTIATE_TEST_SUITE_P(
+        ContextHub, ContextHubEndpointAidl,
+        testing::ValuesIn(android::getAidlHalInstanceNames(IContextHub::descriptor)),
+        android::PrintInstanceNameToString);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ContextHubEndpointAidlWithTestMode);
+INSTANTIATE_TEST_SUITE_P(
+        ContextHub, ContextHubEndpointAidlWithTestMode,
+        testing::ValuesIn(android::getAidlHalInstanceNames(IContextHub::descriptor)),
+        android::PrintInstanceNameToString);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ContextHubTransactionTest);
 INSTANTIATE_TEST_SUITE_P(ContextHub, ContextHubTransactionTest,

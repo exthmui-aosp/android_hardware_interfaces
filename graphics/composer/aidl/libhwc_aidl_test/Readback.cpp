@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-#include "ReadbackVts.h"
+#include "Readback.h"
 #include <aidl/android/hardware/graphics/common/BufferUsage.h>
-#include <cmath>
-#include "RenderEngineVts.h"
-#include "renderengine/ExternalTexture.h"
+#include "RenderEngine.h"
 #include "renderengine/impl/ExternalTexture.h"
 
-namespace aidl::android::hardware::graphics::composer3::vts {
+namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test {
 
 const std::vector<ColorMode> ReadbackHelper::colorModes = {ColorMode::SRGB, ColorMode::DISPLAY_P3};
 const std::vector<Dataspace> ReadbackHelper::dataspaces = {common::Dataspace::SRGB,
@@ -344,8 +342,9 @@ void ReadbackHelper::compareColorBuffers(void* expectedBuffer, void* actualBuffe
     }
 }
 
-ReadbackBuffer::ReadbackBuffer(int64_t display, const std::shared_ptr<VtsComposerClient>& client,
-                               int32_t width, int32_t height, common::PixelFormat pixelFormat,
+ReadbackBuffer::ReadbackBuffer(int64_t display,
+                               const std::shared_ptr<ComposerClientWrapper>& client, int32_t width,
+                               int32_t height, common::PixelFormat pixelFormat,
                                common::Dataspace dataspace)
     : mComposerClient(client) {
     mDisplay = display;
@@ -427,7 +426,7 @@ LayerSettings TestColorLayer::toRenderEngineLayerSettings() {
     return layerSettings;
 }
 
-TestBufferLayer::TestBufferLayer(const std::shared_ptr<VtsComposerClient>& client,
+TestBufferLayer::TestBufferLayer(const std::shared_ptr<ComposerClientWrapper>& client,
                                  TestRenderEngine& renderEngine, int64_t display, uint32_t width,
                                  uint32_t height, common::PixelFormat format,
                                  ComposerClientWriter& writer, Composition composition)
@@ -513,4 +512,4 @@ void TestBufferLayer::setToClientComposition(ComposerClientWriter& writer) {
     writer.setLayerCompositionType(mDisplay, mLayer, Composition::CLIENT);
 }
 
-}  // namespace aidl::android::hardware::graphics::composer3::vts
+}  // namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test

@@ -23,9 +23,9 @@
 #include <ui/PixelFormat.h>
 #include <ui/Rect.h>
 #include <ui/Region.h>
-#include "ReadbackVts.h"
+#include "Readback.h"
 
-namespace aidl::android::hardware::graphics::composer3::vts {
+namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test {
 
 using ::android::renderengine::DisplaySettings;
 using ::android::renderengine::ExternalTexture;
@@ -60,4 +60,4 @@ class TestRenderEngine {
     DisplaySettings mDisplaySettings;
 };
 
-}  // namespace aidl::android::hardware::graphics::composer3::vts
+}  // namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test

@@ -59,20 +59,6 @@ namespace aidl::android::hardware::audio::core::internal {
 static constexpr char kCapEngineConfigFileName[] =
         "/parameter-framework/Settings/Policy/PolicyConfigurableDomains.xml";
 
-void EngineConfigXmlConverter::initProductStrategyMap() {
-#define STRATEGY_ENTRY(name) {"STRATEGY_" #name, static_cast<int>(AudioProductStrategyType::name)}
-
-    mProductStrategyMap = {STRATEGY_ENTRY(MEDIA),
-                           STRATEGY_ENTRY(PHONE),
-                           STRATEGY_ENTRY(SONIFICATION),
-                           STRATEGY_ENTRY(SONIFICATION_RESPECTFUL),
-                           STRATEGY_ENTRY(DTMF),
-                           STRATEGY_ENTRY(ENFORCED_AUDIBLE),
-                           STRATEGY_ENTRY(TRANSMITTED_THROUGH_SPEAKER),
-                           STRATEGY_ENTRY(ACCESSIBILITY)};
-#undef STRATEGY_ENTRY
-}
-
 ConversionResult<int> EngineConfigXmlConverter::convertProductStrategyNameToAidl(
         const std::string& xsdcProductStrategyName) {
     const auto [it, success] = mProductStrategyMap.insert(
@@ -242,7 +228,7 @@ AudioHalEngineConfig& EngineConfigXmlConverter::getAidlEngineConfig() {
 }
 
 void EngineConfigXmlConverter::init() {
-    initProductStrategyMap();
+    mProductStrategyMap = getLegacyProductStrategyMap();
     if (getXsdcConfig()->hasProductStrategies()) {
         mAidlEngineConfig.productStrategies = VALUE_OR_FATAL(
                 (convertWrappedCollectionToAidl<eng_xsd::ProductStrategies,

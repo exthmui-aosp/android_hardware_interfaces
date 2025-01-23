@@ -46,17 +46,17 @@ using aidl::android::hardware::graphics::common::PixelFormat;
 using aidl::android::hardware::graphics::common::Rect;
 using namespace ::ndk;
 
-namespace aidl::android::hardware::graphics::composer3::vts {
+namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test {
 
-class VtsDisplay;
+class DisplayWrapper;
 /**
  * A wrapper to IComposerClient.
  * This wrapper manages the IComposerClient instance and manages the resources for
  * the tests with respect to the IComposerClient calls.
  */
-class VtsComposerClient {
+class ComposerClientWrapper {
   public:
-    VtsComposerClient(const std::string& name);
+    ComposerClientWrapper(const std::string& name);
 
     ScopedAStatus createClient();
 
@@ -77,9 +77,9 @@ class VtsComposerClient {
 
     std::pair<ScopedAStatus, int32_t> getActiveConfig(int64_t display);
 
-    ScopedAStatus setActiveConfig(VtsDisplay* vtsDisplay, int32_t config);
+    ScopedAStatus setActiveConfig(DisplayWrapper* display, int32_t config);
 
-    ScopedAStatus setPeakRefreshRateConfig(VtsDisplay* vtsDisplay);
+    ScopedAStatus setPeakRefreshRateConfig(DisplayWrapper* display);
 
     std::pair<ScopedAStatus, int32_t> getDisplayAttribute(int64_t display, int32_t config,
                                                           DisplayAttribute displayAttribute);
@@ -100,7 +100,7 @@ class VtsComposerClient {
     ScopedAStatus setContentType(int64_t display, ContentType contentType);
 
     std::pair<ScopedAStatus, VsyncPeriodChangeTimeline> setActiveConfigWithConstraints(
-            VtsDisplay* vtsDisplay, int32_t config,
+            DisplayWrapper* display, int32_t config,
             const VsyncPeriodChangeConstraints& constraints);
 
     std::pair<ScopedAStatus, std::vector<DisplayCapability>> getDisplayCapabilities(
@@ -190,7 +190,7 @@ class VtsComposerClient {
 
     int64_t getInvalidDisplayId();
 
-    std::pair<ScopedAStatus, std::vector<VtsDisplay>> getDisplays();
+    std::pair<ScopedAStatus, std::vector<DisplayWrapper>> getDisplays();
 
     std::pair<ScopedAStatus, OverlayProperties> getOverlaySupport();
 
@@ -207,10 +207,10 @@ class VtsComposerClient {
     static constexpr int32_t kNoFrameIntervalNs = 0;
 
   private:
-    void addDisplayConfigs(VtsDisplay*, const std::vector<DisplayConfiguration>&);
-    ScopedAStatus addDisplayConfigLegacy(VtsDisplay*, int32_t config);
+    void addDisplayConfigs(DisplayWrapper*, const std::vector<DisplayConfiguration>&);
+    ScopedAStatus addDisplayConfigLegacy(DisplayWrapper*, int32_t config);
     bool getDisplayConfigurationSupported() const;
-    ScopedAStatus updateDisplayProperties(VtsDisplay* vtsDisplay, int32_t config);
+    ScopedAStatus updateDisplayProperties(DisplayWrapper* display, int32_t config);
 
     ScopedAStatus addDisplayToDisplayResources(int64_t display, bool isVirtual);
 
@@ -223,7 +223,7 @@ class VtsComposerClient {
     bool verifyComposerCallbackParams();
 
     // Keep track of displays and layers. When a test fails/ends,
-    // the VtsComposerClient::tearDown should be called from the
+    // the ComposerClientWrapper::tearDown should be called from the
     // test tearDown to clean up the resources for the test.
     struct DisplayResource {
         DisplayResource(bool isVirtual_) : isVirtual(isVirtual_) {}
@@ -240,9 +240,10 @@ class VtsComposerClient {
     std::atomic<int64_t> mNextLayerHandle = 1;
 };
 
-class VtsDisplay {
+class DisplayWrapper {
   public:
-    VtsDisplay(int64_t displayId) : mDisplayId(displayId), mDisplayWidth(0), mDisplayHeight(0) {}
+    DisplayWrapper(int64_t displayId)
+        : mDisplayId(displayId), mDisplayWidth(0), mDisplayHeight(0) {}
 
     int64_t getDisplayId() const { return mDisplayId; }
 
@@ -299,9 +300,8 @@ class VtsDisplay {
         std::stringstream ss;
         if (displayConfig.vrrConfigOpt) {
             ss << "{Config " << config << ": vsyncPeriod " << displayConfig.vsyncPeriod
-                << ", minFrameIntervalNs " << vrrConfigOpt->minFrameIntervalNs << "}";
-        }
-        else {
+               << ", minFrameIntervalNs " << vrrConfigOpt->minFrameIntervalNs << "}";
+        } else {
             ss << "{Config " << config << ": vsyncPeriod " << displayConfig.vsyncPeriod << "}";
         }
         return ss.str();
@@ -315,4 +315,4 @@ class VtsDisplay {
     int32_t mDisplayHeight;
     std::unordered_map<int32_t, DisplayConfig> mDisplayConfigs;
 };
-}  // namespace aidl::android::hardware::graphics::composer3::vts
+}  // namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test

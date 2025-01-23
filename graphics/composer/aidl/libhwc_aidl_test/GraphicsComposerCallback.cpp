@@ -23,7 +23,7 @@
 #undef LOG_TAG
 #define LOG_TAG "GraphicsComposerCallback"
 
-namespace aidl::android::hardware::graphics::composer3::vts {
+namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test {
 
 void GraphicsComposerCallback::setVsyncAllowed(bool allowed) {
     std::scoped_lock lock(mMutex);
@@ -219,4 +219,4 @@ int32_t GraphicsComposerCallback::getInvalidRefreshRateDebugEnabledCallbackCount
     return ::ndk::ScopedAStatus::ok();
 }
 
-}  // namespace aidl::android::hardware::graphics::composer3::vts
+}  // namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test

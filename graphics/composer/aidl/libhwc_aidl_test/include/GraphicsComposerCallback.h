@@ -20,7 +20,7 @@
 #include <mutex>
 #include <vector>
 
-namespace aidl::android::hardware::graphics::composer3::vts {
+namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test {
 
 class GraphicsComposerCallback : public BnComposerCallback {
   public:
@@ -93,4 +93,4 @@ class GraphicsComposerCallback : public BnComposerCallback {
     int32_t mHdcpLevelChangedCount GUARDED_BY(mMutex) = 0;
 };
 
-}  // namespace aidl::android::hardware::graphics::composer3::vts
+}  // namespace aidl::android::hardware::graphics::composer3::libhwc_aidl_test
