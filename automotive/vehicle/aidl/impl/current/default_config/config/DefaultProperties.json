@@ -2549,57 +2549,49 @@
             "property": "VehicleProperty::HVAC_TEMPERATURE_SET",
             "defaultValue": {
                 "floatValues": [
-                    17.0
+                    18.5
                 ]
             },
             "areas": [
                 {
                     "areaId": "Constants::SEAT_1_LEFT",
-                    "minFloatValue": 16.0,
-                    "maxFloatValue": 28.0
+                    "minFloatValue": 17.5,
+                    "maxFloatValue": 32.5
                 },
                 {
                     "areaId": "Constants::SEAT_1_RIGHT",
-                    "minFloatValue": 16.0,
-                    "maxFloatValue": 28.0
+                    "minFloatValue": 17.5,
+                    "maxFloatValue": 32.5
                 },
                 {
                     "areaId": "Constants::SEAT_2_LEFT",
-                    "minFloatValue": 16.0,
-                    "maxFloatValue": 28.0
+                    "minFloatValue": 17.5,
+                    "maxFloatValue": 32.5
                 },
                 {
                     "areaId": "Constants::SEAT_2_RIGHT",
-                    "minFloatValue": 16.0,
-                    "maxFloatValue": 28.0
+                    "minFloatValue": 17.5,
+                    "maxFloatValue": 32.5
                 },
                 {
                     "areaId": "Constants::SEAT_2_CENTER",
-                    "minFloatValue": 16.0,
-                    "maxFloatValue": 28.0
+                    "minFloatValue": 17.5,
+                    "maxFloatValue": 32.5
                 }
             ],
             "comment":
                     "minFloatValue and maxFloatValue in area config should match corresponding values in configArray",
             "configArray": [
-                160,
-                280,
+                175,
+                325,
                 5,
-                608,
-                824,
-                9
+                600,
+                900,
+                10
             ]
         },
         {
-            "property": "VehicleProperty::HVAC_TEMPERATURE_VALUE_SUGGESTION",
-            "defaultValue": {
-                "floatValues": [
-                    66.19999694824219,
-                    "VehicleUnit::FAHRENHEIT",
-                    19.0,
-                    66.2
-                ]
-            }
+            "property": "VehicleProperty::HVAC_TEMPERATURE_VALUE_SUGGESTION"
         },
         {
             "property": "VehicleProperty::ENV_OUTSIDE_TEMPERATURE",

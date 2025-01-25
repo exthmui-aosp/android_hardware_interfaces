@@ -270,7 +270,7 @@ class ComposerClientReader {
         for (auto& [layerId, luts] : displayLuts.layerLuts) {
             if (luts.pfd.get() >= 0) {
                 data.layerLuts.push_back(
-                        {layerId, Luts{ndk::ScopedFileDescriptor(luts.pfd.release()), luts.offsets,
+                        {layerId, Luts{ndk::ScopedFileDescriptor(dup(luts.pfd.get())), luts.offsets,
                                        luts.lutProperties}});
             }
         }

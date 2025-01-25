@@ -3066,8 +3066,8 @@ TEST_F(FakeVehicleHardwareTest, SetPropertyWithPropertyNameAreaName) {
 TEST_F(FakeVehicleHardwareTest, GetPropertyWithPropertyNameAreaName) {
     auto result = getHardware()->dump({"--get", "HVAC_TEMPERATURE_SET", "-a", "ROW_1_LEFT"});
 
-    // Default value is 17
-    ASSERT_THAT(result.buffer, ContainsRegex("17"));
+    // Default value is 18.5
+    ASSERT_THAT(result.buffer, ContainsRegex("18.5"));
 
     getHardware()->dump({"--set", "HVAC_TEMPERATURE_SET", "-a", "ROW_1_LEFT", "-f", "22"});
     result = getHardware()->dump({"--get", "HVAC_TEMPERATURE_SET", "-a", "ROW_1_LEFT"});
@@ -3682,7 +3682,7 @@ TEST_F(FakeVehicleHardwareTest, testSetHvacTemperatureValueSuggestion) {
             .areaId = HVAC_ALL,
             .value.floatValues = {0, 0, 0, 0},
     };
-    status = setValue(floatArraySizeFive);
+    status = setValue(invalidUnit);
     EXPECT_EQ(status, StatusCode::INVALID_ARG);
     clearChangedProperties();
 
@@ -3926,9 +3926,9 @@ TEST_F(FakeVehicleHardwareTest, testSetHvacTemperatureValueSuggestion) {
                                                     {minTempInFahrenheit +
                                                              incrementInFahrenheit * 2.5f,
                                                      FAHRENHEIT,
-                                                     minTempInCelsius + incrementInCelsius * 2,
+                                                     minTempInCelsius + incrementInCelsius * 3,
                                                      minTempInFahrenheit +
-                                                             incrementInFahrenheit * 2},
+                                                             incrementInFahrenheit * 3},
                                     },
                             },
             },
