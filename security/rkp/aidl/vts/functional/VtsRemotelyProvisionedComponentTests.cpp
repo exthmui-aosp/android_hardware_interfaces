@@ -60,6 +60,10 @@ constexpr uint8_t MAX_CHALLENGE_SIZE = 64;
 const string KEYMINT_STRONGBOX_INSTANCE_NAME =
         "android.hardware.security.keymint.IKeyMintDevice/strongbox";
 
+constexpr std::string_view kVerifiedBootState = "ro.boot.verifiedbootstate";
+constexpr std::string_view kDeviceState = "ro.boot.vbmeta.device_state";
+constexpr std::string_view kDefaultValue = "";
+
 #define INSTANTIATE_REM_PROV_AIDL_TEST(name)                                         \
     GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(name);                             \
     INSTANTIATE_TEST_SUITE_P(                                                        \
@@ -169,6 +173,37 @@ std::shared_ptr<IKeyMintDevice> matchingKeyMintDevice(const string& rpcName) {
         }
     }
     return nullptr;
+}
+
+void unlockedBootloaderStatesImpliesNonNormalDiceChain(
+        const string& rpcInstanceName, std::shared_ptr<IRemotelyProvisionedComponent> rpc) {
+    auto challenge = randomBytes(MAX_CHALLENGE_SIZE);
+    bytevec csr;
+    auto status = rpc->generateCertificateRequestV2({} /* keysToSign */, challenge, &csr);
+    ASSERT_TRUE(status.isOk()) << status.getDescription();
+
+    auto isProper = isCsrWithProperDiceChain(csr, rpcInstanceName);
+    ASSERT_TRUE(isProper) << isProper.message();
+    if (!*isProper) {
+        GTEST_SKIP() << "Skipping test: Only a proper DICE chain has a mode set.";
+    }
+
+    auto nonNormalMode = hasNonNormalModeInDiceChain(csr, rpcInstanceName);
+    ASSERT_TRUE(nonNormalMode) << nonNormalMode.message();
+
+    auto deviceState = ::android::base::GetProperty(string(kDeviceState), string(kDefaultValue));
+    auto verifiedBootState =
+            ::android::base::GetProperty(string(kVerifiedBootState), string(kDefaultValue));
+
+    ASSERT_TRUE(!deviceState.empty());
+    ASSERT_TRUE(!verifiedBootState.empty());
+
+    ASSERT_EQ(deviceState != "locked" || verifiedBootState != "green", *nonNormalMode)
+            << kDeviceState << " = '" << deviceState << "' and " << kVerifiedBootState << " = '"
+            << verifiedBootState << "', but the DICE "
+            << " chain has a " << (*nonNormalMode ? "non-normal" : "normal") << " DICE mode."
+            << " Locked devices must report normal, and unlocked devices must report "
+            << " non-normal.";
 }
 
 }  // namespace
@@ -345,7 +380,7 @@ TEST(NonParameterizedTests, componentNameInConfigurationDescriptorForPrimaryKeyM
  * is not "green" if and only if the mode on at least one certificate in the DICE chain
  * is non-normal.
  */
-TEST(NonParameterizedTests, unlockedBootloaderStatesImpliesNonnormalRkpVmDiceChain) {
+TEST(NonParameterizedTests, unlockedBootloaderStatesImpliesNonNormalRkpVmDiceChain) {
     if (!AServiceManager_isDeclared(RKPVM_INSTANCE_NAME.c_str())) {
         GTEST_SKIP() << "The RKP VM (" << RKPVM_INSTANCE_NAME << ") is not present on this device.";
     }
@@ -359,32 +394,31 @@ TEST(NonParameterizedTests, unlockedBootloaderStatesImpliesNonnormalRkpVmDiceCha
         GTEST_SKIP() << "The RKP VM is not supported on this system.";
     }
 
-    auto challenge = randomBytes(MAX_CHALLENGE_SIZE);
-    bytevec csr;
-    auto rkpVmStatus = rpc->generateCertificateRequestV2({} /* keysToSign */, challenge, &csr);
-    ASSERT_TRUE(rkpVmStatus.isOk()) << status.getDescription();
+    unlockedBootloaderStatesImpliesNonNormalDiceChain(RKPVM_INSTANCE_NAME, rpc);
+}
 
-    auto isProper = isCsrWithProperDiceChain(csr, RKPVM_INSTANCE_NAME);
-    ASSERT_TRUE(isProper) << isProper.message();
-    if (!*isProper) {
-        GTEST_SKIP() << "Skipping test: Only a proper DICE chain has a mode set.";
+/**
+ * If trusty.security_vm.keymint.enabled is set to "true", then do the following.
+ *
+ * Check that ro.boot.vbmeta.device_state is not "locked" or ro.boot.verifiedbootstate
+ * is not "green" if and only if the mode on at least one certificate in the DICE chain
+ * is non-normal.
+ */
+TEST(NonParameterizedTests, unlockedBootloaderStatesImpliesNonNormalKeyMintInAVmDiceChain) {
+    if (::android::base::GetBoolProperty("trusty.security_vm.keymint.enabled", false)) {
+        GTEST_SKIP() << "The KeyMint (" << DEFAULT_INSTANCE_NAME
+                     << ") instance is not inside a VM.";
     }
 
-    auto nonNormalMode = hasNonNormalModeInDiceChain(csr, RKPVM_INSTANCE_NAME);
-    ASSERT_TRUE(nonNormalMode) << nonNormalMode.message();
+    auto rpc = getHandle<IRemotelyProvisionedComponent>(DEFAULT_INSTANCE_NAME);
+    ASSERT_NE(rpc, nullptr) << "The KeyMint (" << DEFAULT_INSTANCE_NAME
+                            << ") instance RPC is unavailable.";
 
-    auto deviceState = ::android::base::GetProperty("ro.boot.vbmeta.device_state", "");
-    auto verifiedBootState = ::android::base::GetProperty("ro.boot.verifiedbootstate", "");
+    RpcHardwareInfo hardwareInfo;
+    auto status = rpc->getHardwareInfo(&hardwareInfo);
+    ASSERT_TRUE(status.isOk()) << status.getDescription();
 
-    ASSERT_TRUE(!deviceState.empty());
-    ASSERT_TRUE(!verifiedBootState.empty());
-
-    ASSERT_EQ(deviceState != "locked" || verifiedBootState != "green", *nonNormalMode)
-            << "ro.boot.vbmeta.device_state = '" << deviceState
-            << "' and ro.boot.verifiedbootstate = '" << verifiedBootState << "', but the DICE "
-            << " chain has a " << (*nonNormalMode ? "non-normal" : "normal") << " DICE mode."
-            << " Locked devices must report normal, and unlocked devices must report "
-            << " non-normal.";
+    unlockedBootloaderStatesImpliesNonNormalDiceChain(DEFAULT_INSTANCE_NAME, rpc);
 }
 
 using GetHardwareInfoTests = VtsRemotelyProvisionedComponentTests;

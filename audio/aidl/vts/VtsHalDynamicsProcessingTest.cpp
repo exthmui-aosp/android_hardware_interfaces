@@ -1254,6 +1254,7 @@ class DynamicsProcessingMbcBandConfigDataTest
         SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
         ASSERT_NO_FATAL_FAILURE(generateSineWave(mTestFrequencies, mInput, 1.0, kSamplingFrequency,
                                                  mChannelLayout));
+        mInputDb = calculateDb(mInput);
     }
 
     void TearDown() override { TearDownDynamicsProcessingEffect(); }
@@ -1276,11 +1277,11 @@ class DynamicsProcessingMbcBandConfigDataTest
 
     void fillMbcBandConfig(std::vector<DynamicsProcessing::MbcBandConfig>& cfgs, int channelIndex,
                            float threshold, float ratio, float noiseGate, float expanderRatio,
-                           int bandIndex, int cutoffFreqHz) {
-        cfgs.push_back(createMbcBandConfig(
-                channelIndex, bandIndex, static_cast<float>(cutoffFreqHz), kDefaultAttackTime,
-                kDefaultReleaseTime, ratio, threshold, kDefaultKneeWidth, noiseGate, expanderRatio,
-                kDefaultPreGainDb, kDefaultPostGainDb));
+                           int bandIndex, int cutoffFreqHz, float preGain, float postGain) {
+        cfgs.push_back(createMbcBandConfig(channelIndex, bandIndex,
+                                           static_cast<float>(cutoffFreqHz), kDefaultAttackTime,
+                                           kDefaultReleaseTime, ratio, threshold, kDefaultKneeWidth,
+                                           noiseGate, expanderRatio, preGain, postGain));
     }
 
     void getMagnitudeValue(const std::vector<float>& output, std::vector<float>& bufferMag) {
@@ -1291,10 +1292,9 @@ class DynamicsProcessingMbcBandConfigDataTest
 
     void validateOutput(const std::vector<float>& output, float threshold, float ratio,
                         size_t bandIndex) {
-        float inputDb = calculateDb(mInput);
         std::vector<float> outputMag(mBinOffsets.size());
         EXPECT_NO_FATAL_FAILURE(getMagnitudeValue(output, outputMag));
-        if (threshold >= inputDb || ratio == 1) {
+        if (threshold >= mInputDb || ratio == 1) {
             std::vector<float> inputMag(mBinOffsets.size());
             EXPECT_NO_FATAL_FAILURE(getMagnitudeValue(mInput, inputMag));
             for (size_t i = 0; i < inputMag.size(); i++) {
@@ -1315,10 +1315,11 @@ class DynamicsProcessingMbcBandConfigDataTest
         for (size_t i = 0; i < cutoffFreqHz.size(); i++) {
             for (int channelIndex = 0; channelIndex < mChannelCount; channelIndex++) {
                 fillMbcBandConfig(mCfgs, channelIndex, threshold, ratio, kDefaultNoiseGateDb,
-                                  kDefaultExpanderRatio, i, cutoffFreqHz[i]);
+                                  kDefaultExpanderRatio, i, cutoffFreqHz[i], kDefaultPreGainDb,
+                                  kDefaultPostGainDb);
                 fillMbcBandConfig(mCfgs, channelIndex, kDefaultThresholdDb, kDefaultRatio,
                                   kDefaultNoiseGateDb, kDefaultExpanderRatio, i ^ 1,
-                                  cutoffFreqHz[i ^ 1]);
+                                  cutoffFreqHz[i ^ 1], kDefaultPreGainDb, kDefaultPostGainDb);
             }
             ASSERT_NO_FATAL_FAILURE(setMbcParamsAndProcess(output));
 
@@ -1347,6 +1348,8 @@ class DynamicsProcessingMbcBandConfigDataTest
     static constexpr float kDefaultExpanderRatio = 1;
     static constexpr float kDefaultRatio = 1;
     static constexpr float kBinWidth = (float)kSamplingFrequency / kNPointFFT;
+    // Full scale sine wave with 100 Hz and 1000 Hz frequency is -6 dB
+    static constexpr float kFullScaleDb = -6;
     std::vector<int> mTestFrequencies = {100, 1000};
     // Calculating normalizing factor by dividing the number of FFT points by half and the number of
     // test frequencies. The normalization accounts for the FFT splitting the signal into positive
@@ -1357,6 +1360,7 @@ class DynamicsProcessingMbcBandConfigDataTest
     std::vector<DynamicsProcessing::ChannelConfig> mChannelConfig;
     std::vector<int> mBinOffsets;
     std::vector<float> mInput;
+    float mInputDb;
 };
 
 TEST_P(DynamicsProcessingMbcBandConfigDataTest, IncreasingThreshold) {
@@ -1376,6 +1380,31 @@ TEST_P(DynamicsProcessingMbcBandConfigDataTest, IncreasingRatio) {
     for (float ratio : ratioValues) {
         cleanUpMbcConfig();
         ASSERT_NO_FATAL_FAILURE(analyseMultiBandOutput(threshold, ratio));
+    }
+}
+
+TEST_P(DynamicsProcessingMbcBandConfigDataTest, IncreasingPostGain) {
+    std::vector<float> postGainDbValues = {-55, -30, 0, 30, 55};
+    std::vector<float> output(mInput.size());
+    for (float postGainDb : postGainDbValues) {
+        float amplitude = 1.0 / (pow(10, postGainDb / 20));
+        ASSERT_NO_FATAL_FAILURE(generateSineWave(mTestFrequencies, mInput, amplitude,
+                                                 kSamplingFrequency, mChannelLayout));
+        mInputDb = calculateDb(mInput);
+        EXPECT_NEAR(mInputDb, kFullScaleDb - postGainDb, kToleranceDb);
+        cleanUpMbcConfig();
+        for (int i = 0; i < mChannelCount; i++) {
+            fillMbcBandConfig(mCfgs, i, kDefaultThresholdDb, kDefaultRatio, kDefaultNoiseGateDb,
+                              kDefaultExpanderRatio, 0 /*band index*/, 2000 /*cutoffFrequency*/,
+                              kDefaultPreGainDb, postGainDb);
+        }
+        EXPECT_NO_FATAL_FAILURE(setMbcParamsAndProcess(output));
+        if (!isAllParamsValid()) {
+            continue;
+        }
+        float outputDb = calculateDb(output, kStartIndex);
+        EXPECT_NEAR(outputDb, mInputDb + postGainDb, kToleranceDb)
+                << "PostGain: " << postGainDb << ", OutputDb: " << outputDb;
     }
 }
 
