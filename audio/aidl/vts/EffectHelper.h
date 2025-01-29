@@ -520,9 +520,10 @@ class EffectHelper {
                 << "The input(buffer) size must be greater than or equal to nPointFFT";
         bufferMag.resize(binOffsets.size());
         std::vector<float> fftInput(nPointFFT);
-        PFFFT_Setup* inputHandle = pffft_new_setup(nPointFFT, PFFFT_REAL);
+        pffft::detail::PFFFT_Setup* inputHandle =
+                pffft_new_setup(nPointFFT, pffft::detail::PFFFT_REAL);
         pffft_transform_ordered(inputHandle, buffer.data(), fftInput.data(), nullptr,
-                                PFFFT_FORWARD);
+                                pffft::detail::PFFFT_FORWARD);
         pffft_destroy_setup(inputHandle);
         for (size_t i = 0; i < binOffsets.size(); i++) {
             size_t k = binOffsets[i];
