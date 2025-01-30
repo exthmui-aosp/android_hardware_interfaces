@@ -17,6 +17,7 @@
 #define LOG_TAG "VtsHalAutomotiveVehicle"
 
 #include <AccessForVehicleProperty.h>
+#include <AnnotationsForVehicleProperty.h>
 #include <ChangeModeForVehicleProperty.h>
 #include <IVhalClient.h>
 #include <VehicleHalTypes.h>
@@ -24,6 +25,7 @@
 #include <VersionForVehicleProperty.h>
 #include <aidl/Gtest.h>
 #include <aidl/Vintf.h>
+#include <aidl/android/hardware/automotive/vehicle/HasSupportedValueInfo.h>
 #include <aidl/android/hardware/automotive/vehicle/IVehicle.h>
 #include <android-base/stringprintf.h>
 #include <android-base/thread_annotations.h>
@@ -45,7 +47,9 @@
 #include <vector>
 
 using ::aidl::android::hardware::automotive::vehicle::AllowedAccessForVehicleProperty;
+using ::aidl::android::hardware::automotive::vehicle::AnnotationsForVehicleProperty;
 using ::aidl::android::hardware::automotive::vehicle::ChangeModeForVehicleProperty;
+using ::aidl::android::hardware::automotive::vehicle::HasSupportedValueInfo;
 using ::aidl::android::hardware::automotive::vehicle::IVehicle;
 using ::aidl::android::hardware::automotive::vehicle::StatusCode;
 using ::aidl::android::hardware::automotive::vehicle::SubscribeOptions;
@@ -81,6 +85,7 @@ using ::testing::Ge;
 constexpr int32_t kInvalidProp = 0x31600207;
 // The timeout for retrying getting prop value after setting prop value.
 constexpr int64_t kRetryGetPropAfterSetPropTimeoutMillis = 10'000;
+static constexpr char ANNOTATION_REQUIRE_MIN_MAX_VALUE[] = "require_min_max_supported_value";
 
 struct ServiceDescriptor {
     std::string name;
@@ -273,65 +278,6 @@ void VtsHalAutomotiveTest::verifyGlobalAccessIsMaximalAreaAccessSubset(
     ASSERT_EQ(propertyLevelAccess, maximalAreaAccessSubset) << StringPrintf(
             "Expected global access to be equal to maximal area access subset %d, Instead got %d",
             maximalAreaAccessSubset, propertyLevelAccess);
-}
-
-// Helper function to compare actual vs expected property config
-void VtsHalAutomotiveTest::verifyProperty(VehicleProperty propId,
-                                          std::vector<VehiclePropertyAccess> accessModes,
-                                          VehiclePropertyChangeMode changeMode) {
-    int expectedPropId = toInt(propId);
-    int expectedChangeMode = toInt(changeMode);
-
-    auto result = mVhalClient->getAllPropConfigs();
-    ASSERT_TRUE(result.ok()) << "Failed to get all property configs, error: "
-                             << result.error().message();
-
-    // Check if property is implemented by getting all configs and looking to see if the expected
-    // property id is in that list.
-    bool isExpectedPropIdImplemented = false;
-    for (const auto& cfgPtr : result.value()) {
-        const IHalPropConfig& cfg = *cfgPtr;
-        if (expectedPropId == cfg.getPropId()) {
-            isExpectedPropIdImplemented = true;
-            break;
-        }
-    }
-
-    if (!isExpectedPropIdImplemented) {
-        GTEST_SKIP() << StringPrintf("Property %" PRId32 " has not been implemented",
-                                     expectedPropId);
-    }
-
-    result = mVhalClient->getPropConfigs({expectedPropId});
-    ASSERT_TRUE(result.ok()) << "Failed to get required property config, error: "
-                             << result.error().message();
-
-    ASSERT_EQ(result.value().size(), 1u)
-            << StringPrintf("Expect to get exactly 1 config, got %zu", result.value().size());
-
-    const auto& config = result.value().at(0);
-    int actualPropId = config->getPropId();
-    int actualChangeMode = config->getChangeMode();
-
-    ASSERT_EQ(actualPropId, expectedPropId)
-            << StringPrintf("Expect to get property ID: %i, got %i", expectedPropId, actualPropId);
-
-    int globalAccess = config->getAccess();
-    if (config->getAreaConfigSize() == 0) {
-        verifyAccessMode(globalAccess, accessModes);
-    } else {
-        for (const auto& areaConfig : config->getAreaConfigs()) {
-            int areaConfigAccess = areaConfig->getAccess();
-            int actualAccess = (areaConfigAccess != toInt(VehiclePropertyAccess::NONE))
-                                       ? areaConfigAccess
-                                       : globalAccess;
-            verifyAccessMode(actualAccess, accessModes);
-        }
-    }
-
-    EXPECT_EQ(actualChangeMode, expectedChangeMode)
-            << StringPrintf("Expect to get VehiclePropertyChangeMode: %i, got %i",
-                            expectedChangeMode, actualChangeMode);
 }
 
 class VtsHalAutomotiveVehicleTargetTest : public VtsHalAutomotiveTest,
@@ -852,9 +798,108 @@ TEST_P(VtsHalAutomotiveVehicleTargetTest, testGetValuesTimestampAIDL) {
     }
 }
 
+/**
+ * Verifies that each property's property config is consistent with the requirement
+ * documented in VehicleProperty.aidl.
+ */
 TEST_P(VtsHalAutomotivePropertyConfigTest, verifyPropertyConfig) {
     const PropertyConfigTestParam& param = std::get<0>(GetParam());
-    verifyProperty(param.propId, param.accessModes, param.changeMode);
+    int expectedPropId = toInt(param.propId);
+    int expectedChangeMode = toInt(param.changeMode);
+
+    auto result = mVhalClient->getAllPropConfigs();
+    ASSERT_TRUE(result.ok()) << "Failed to get all property configs, error: "
+                             << result.error().message();
+
+    // Check if property is implemented by getting all configs and looking to see if the expected
+    // property id is in that list.
+    bool isExpectedPropIdImplemented = false;
+    for (const auto& cfgPtr : result.value()) {
+        const IHalPropConfig& cfg = *cfgPtr;
+        if (expectedPropId == cfg.getPropId()) {
+            isExpectedPropIdImplemented = true;
+            break;
+        }
+    }
+
+    if (!isExpectedPropIdImplemented) {
+        GTEST_SKIP() << StringPrintf("Property %" PRId32 " has not been implemented",
+                                     expectedPropId);
+    }
+
+    result = mVhalClient->getPropConfigs({expectedPropId});
+    ASSERT_TRUE(result.ok()) << "Failed to get required property config, error: "
+                             << result.error().message();
+
+    ASSERT_EQ(result.value().size(), 1u)
+            << StringPrintf("Expect to get exactly 1 config, got %zu", result.value().size());
+
+    const auto& config = result.value().at(0);
+    int actualPropId = config->getPropId();
+    int actualChangeMode = config->getChangeMode();
+
+    ASSERT_EQ(actualPropId, expectedPropId)
+            << StringPrintf("Expect to get property ID: %i, got %i", expectedPropId, actualPropId);
+
+    int globalAccess = config->getAccess();
+    if (config->getAreaConfigSize() == 0) {
+        verifyAccessMode(globalAccess, param.accessModes);
+    } else {
+        for (const auto& areaConfig : config->getAreaConfigs()) {
+            int areaConfigAccess = areaConfig->getAccess();
+            int actualAccess = (areaConfigAccess != toInt(VehiclePropertyAccess::NONE))
+                                       ? areaConfigAccess
+                                       : globalAccess;
+            verifyAccessMode(actualAccess, param.accessModes);
+        }
+    }
+
+    EXPECT_EQ(actualChangeMode, expectedChangeMode)
+            << StringPrintf("Expect to get VehiclePropertyChangeMode: %i, got %i",
+                            expectedChangeMode, actualChangeMode);
+
+    std::unordered_set<std::string> annotations;
+    auto it = AnnotationsForVehicleProperty.find(param.propId);
+    if (it != AnnotationsForVehicleProperty.end()) {
+        annotations = it->second;
+    }
+
+    int propertyType = expectedPropId & toInt(VehiclePropertyType::MASK);
+    if (annotations.find(ANNOTATION_REQUIRE_MIN_MAX_VALUE) != annotations.end()) {
+        for (const auto& areaConfig : config->getAreaConfigs()) {
+            switch (propertyType) {
+                case toInt(VehiclePropertyType::INT32):
+                    EXPECT_FALSE(areaConfig->getMinInt32Value() == 0 &&
+                                 areaConfig->getMaxInt32Value() == 0)
+                            << "minInt32Value and maxInt32Value must not both be 0 because "
+                               "min and max value is required for this property";
+                    break;
+                case toInt(VehiclePropertyType::FLOAT):
+                    EXPECT_FALSE(areaConfig->getMinFloatValue() == 0 &&
+                                 areaConfig->getMaxFloatValue() == 0)
+                            << "minFloatValue and maxFloatValue must not both be 0 because "
+                               "min and max value is required for this property";
+                    break;
+                case toInt(VehiclePropertyType::INT64):
+                    EXPECT_FALSE(areaConfig->getMinInt64Value() == 0 &&
+                                 areaConfig->getMaxInt64Value() == 0)
+                            << "minInt64Value and maxInt64Value must not both be 0 because "
+                               "min and max value is required for this property";
+                    break;
+            }
+
+            std::optional<HasSupportedValueInfo> maybeHasSupportedValueInfo =
+                    areaConfig->getHasSupportedValueInfo();
+            if (maybeHasSupportedValueInfo.has_value()) {
+                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMinSupportedValue)
+                        << "HasSupportedValueInfo.hasMinSupportedValue must be true because"
+                           "min and max value is required for this property";
+                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMaxSupportedValue)
+                        << "HasSupportedValueInfo.hasMaxSupportedValue must be true because"
+                           "min and max value is required for this property";
+            }
+        }
+    }
 }
 
 std::vector<ServiceDescriptor> getDescriptors() {
