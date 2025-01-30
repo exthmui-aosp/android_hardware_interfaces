@@ -86,6 +86,9 @@ constexpr int32_t kInvalidProp = 0x31600207;
 // The timeout for retrying getting prop value after setting prop value.
 constexpr int64_t kRetryGetPropAfterSetPropTimeoutMillis = 10'000;
 static constexpr char ANNOTATION_REQUIRE_MIN_MAX_VALUE[] = "require_min_max_supported_value";
+static constexpr char ANNOTATION_REQUIRE_SUPPORTED_VALUES[] = "require_supported_values_list";
+static constexpr char ANNOTATION_SUPPORTED_VALUES_IN_CONFIG[] = "legacy_supported_values_in_config";
+static constexpr char ANNOTATIONS_DATA_ENUM[] = "data_enum";
 
 struct ServiceDescriptor {
     std::string name;
@@ -798,6 +801,139 @@ TEST_P(VtsHalAutomotiveVehicleTargetTest, testGetValuesTimestampAIDL) {
     }
 }
 
+void verifyPropertyConfigMinMaxValue(const IHalPropConfig* config, int propertyType) {
+    for (const auto& areaConfig : config->getAreaConfigs()) {
+        std::optional<HasSupportedValueInfo> maybeHasSupportedValueInfo =
+                areaConfig->getHasSupportedValueInfo();
+        if (areaConfig->getMinInt32Value() != 0 || areaConfig->getMaxInt32Value() != 0) {
+            EXPECT_EQ(propertyType, toInt(VehiclePropertyType::INT32))
+                    << "minInt32Value and maxInt32Value must not be specified for INT32 type "
+                       "property";
+            EXPECT_THAT(areaConfig->getMinInt32Value(),
+                        ::testing::Le(areaConfig->getMaxInt32Value()))
+                    << "minInt32Value must be less or equal to maxInt32Value";
+            if (maybeHasSupportedValueInfo.has_value()) {
+                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMinSupportedValue)
+                        << "HasSupportedValueInfo.hasMinSupportedValue must be true because"
+                           "minInt32Value is specified in VehicleAreaConfig";
+                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMaxSupportedValue)
+                        << "HasSupportedValueInfo.hasMaxSupportedValue must be true because"
+                           "maxInt32Value is specified in VehicleAreaConfig";
+            }
+        }
+        if (areaConfig->getMinFloatValue() != 0 || areaConfig->getMaxFloatValue() != 0) {
+            EXPECT_EQ(propertyType, toInt(VehiclePropertyType::FLOAT))
+                    << "minFloatValue and maxFloatValue must not be specified for FLOAT type "
+                       "property";
+            EXPECT_THAT(areaConfig->getMinFloatValue(),
+                        ::testing::Le(areaConfig->getMaxFloatValue()))
+                    << "minFloatValue must be less or equal to maxFloatValue";
+            if (maybeHasSupportedValueInfo.has_value()) {
+                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMinSupportedValue)
+                        << "HasSupportedValueInfo.hasMinSupportedValue must be true because"
+                           "minFloatValue is specified in VehicleAreaConfig";
+                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMaxSupportedValue)
+                        << "HasSupportedValueInfo.hasMaxSupportedValue must be true because"
+                           "maxFloatValue is specified in VehicleAreaConfig";
+            }
+        }
+        if (areaConfig->getMinInt64Value() != 0 || areaConfig->getMaxInt64Value() != 0) {
+            EXPECT_EQ(propertyType, toInt(VehiclePropertyType::INT64))
+                    << "minInt64Value and maxInt64Value must not be specified for INT64 type "
+                       "property";
+            EXPECT_THAT(areaConfig->getMinInt64Value(),
+                        ::testing::Le(areaConfig->getMaxInt64Value()))
+                    << "minInt64Value must be less or equal to maxInt64Value";
+            if (maybeHasSupportedValueInfo.has_value()) {
+                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMinSupportedValue)
+                        << "HasSupportedValueInfo.hasMinSupportedValue must be true because"
+                           "minInt64Value is specified in VehicleAreaConfig";
+                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMaxSupportedValue)
+                        << "HasSupportedValueInfo.hasMaxSupportedValue must be true because"
+                           "maxInt64Value is specified in VehicleAreaConfig";
+            }
+        }
+    }
+}
+
+void verifyPropertyConfigRequireMinMaxValue(const IHalPropConfig* config, int propertyType) {
+    for (const auto& areaConfig : config->getAreaConfigs()) {
+        switch (propertyType) {
+            case toInt(VehiclePropertyType::INT32):
+                EXPECT_FALSE(areaConfig->getMinInt32Value() == 0 &&
+                             areaConfig->getMaxInt32Value() == 0)
+                        << "minInt32Value and maxInt32Value must not both be 0 because "
+                           "min and max value is required for this property";
+                break;
+            case toInt(VehiclePropertyType::FLOAT):
+                EXPECT_FALSE(areaConfig->getMinFloatValue() == 0 &&
+                             areaConfig->getMaxFloatValue() == 0)
+                        << "minFloatValue and maxFloatValue must not both be 0 because "
+                           "min and max value is required for this property";
+                break;
+            case toInt(VehiclePropertyType::INT64):
+                EXPECT_FALSE(areaConfig->getMinInt64Value() == 0 &&
+                             areaConfig->getMaxInt64Value() == 0)
+                        << "minInt64Value and maxInt64Value must not both be 0 because "
+                           "min and max value is required for this property";
+                break;
+        }
+
+        std::optional<HasSupportedValueInfo> maybeHasSupportedValueInfo =
+                areaConfig->getHasSupportedValueInfo();
+        if (maybeHasSupportedValueInfo.has_value()) {
+            EXPECT_TRUE(maybeHasSupportedValueInfo->hasMinSupportedValue)
+                    << "HasSupportedValueInfo.hasMinSupportedValue must be true because"
+                       "min and max value is required for this property";
+            EXPECT_TRUE(maybeHasSupportedValueInfo->hasMaxSupportedValue)
+                    << "HasSupportedValueInfo.hasMaxSupportedValue must be true because"
+                       "min and max value is required for this property";
+        }
+    }
+}
+
+void verifyPropertyConfigRequireSupportedValues(
+        const IHalPropConfig* config, const std::unordered_set<std::string>& annotations) {
+    bool supportedValuesInConfig =
+            (annotations.find(ANNOTATION_SUPPORTED_VALUES_IN_CONFIG) != annotations.end());
+    if (supportedValuesInConfig) {
+        const std::vector<int32_t>& configArray = config->getConfigArray();
+        EXPECT_THAT(configArray, Not(::testing::IsEmpty()))
+                << "Config array must not be empty because supported values list must be specified"
+                << " by the config array";
+    }
+
+    for (const auto& areaConfig : config->getAreaConfigs()) {
+        std::optional<HasSupportedValueInfo> maybeHasSupportedValueInfo =
+                areaConfig->getHasSupportedValueInfo();
+        if (maybeHasSupportedValueInfo.has_value()) {
+            EXPECT_TRUE(maybeHasSupportedValueInfo->hasSupportedValuesList)
+                    << "HasSupportedValueInfo.hasSupportedValuesList must be true because"
+                       "supported values list is required for this property";
+        }
+    }
+}
+
+void verifyPropertyConfigDataEnum(const IHalPropConfig* config) {
+    for (const auto& areaConfig : config->getAreaConfigs()) {
+        std::optional<std::vector<int64_t>> maybeSupportedEnumValues =
+                areaConfig->getSupportedEnumValues();
+        if (!maybeSupportedEnumValues.has_value()) {
+            continue;
+        }
+        std::optional<HasSupportedValueInfo> maybeHasSupportedValueInfo =
+                areaConfig->getHasSupportedValueInfo();
+        const std::vector<int64_t>& supportedEnumValues = *maybeSupportedEnumValues;
+        if (!supportedEnumValues.empty() && maybeHasSupportedValueInfo.has_value()) {
+            EXPECT_TRUE(maybeHasSupportedValueInfo->hasSupportedValuesList)
+                    << "HasSupportedValueInfo.hasSupportedValuesList must be true because"
+                       "supported enum values is not empty";
+        }
+
+        // TODO(b/381123190): Verify the supported enum values are within the defined enum type.
+    }
+}
+
 /**
  * Verifies that each property's property config is consistent with the requirement
  * documented in VehicleProperty.aidl.
@@ -865,40 +1001,15 @@ TEST_P(VtsHalAutomotivePropertyConfigTest, verifyPropertyConfig) {
     }
 
     int propertyType = expectedPropId & toInt(VehiclePropertyType::MASK);
+    verifyPropertyConfigMinMaxValue(config.get(), propertyType);
     if (annotations.find(ANNOTATION_REQUIRE_MIN_MAX_VALUE) != annotations.end()) {
-        for (const auto& areaConfig : config->getAreaConfigs()) {
-            switch (propertyType) {
-                case toInt(VehiclePropertyType::INT32):
-                    EXPECT_FALSE(areaConfig->getMinInt32Value() == 0 &&
-                                 areaConfig->getMaxInt32Value() == 0)
-                            << "minInt32Value and maxInt32Value must not both be 0 because "
-                               "min and max value is required for this property";
-                    break;
-                case toInt(VehiclePropertyType::FLOAT):
-                    EXPECT_FALSE(areaConfig->getMinFloatValue() == 0 &&
-                                 areaConfig->getMaxFloatValue() == 0)
-                            << "minFloatValue and maxFloatValue must not both be 0 because "
-                               "min and max value is required for this property";
-                    break;
-                case toInt(VehiclePropertyType::INT64):
-                    EXPECT_FALSE(areaConfig->getMinInt64Value() == 0 &&
-                                 areaConfig->getMaxInt64Value() == 0)
-                            << "minInt64Value and maxInt64Value must not both be 0 because "
-                               "min and max value is required for this property";
-                    break;
-            }
-
-            std::optional<HasSupportedValueInfo> maybeHasSupportedValueInfo =
-                    areaConfig->getHasSupportedValueInfo();
-            if (maybeHasSupportedValueInfo.has_value()) {
-                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMinSupportedValue)
-                        << "HasSupportedValueInfo.hasMinSupportedValue must be true because"
-                           "min and max value is required for this property";
-                EXPECT_TRUE(maybeHasSupportedValueInfo->hasMaxSupportedValue)
-                        << "HasSupportedValueInfo.hasMaxSupportedValue must be true because"
-                           "min and max value is required for this property";
-            }
-        }
+        verifyPropertyConfigRequireMinMaxValue(config.get(), propertyType);
+    }
+    if (annotations.find(ANNOTATION_REQUIRE_SUPPORTED_VALUES) != annotations.end()) {
+        verifyPropertyConfigRequireSupportedValues(config.get(), annotations);
+    }
+    if (annotations.find(ANNOTATIONS_DATA_ENUM) != annotations.end()) {
+        verifyPropertyConfigDataEnum(config.get());
     }
 }
 
