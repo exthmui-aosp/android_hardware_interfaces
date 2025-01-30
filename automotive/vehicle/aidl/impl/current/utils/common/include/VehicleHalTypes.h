@@ -24,6 +24,7 @@
 #include <aidl/android/hardware/automotive/vehicle/CruiseControlCommand.h>
 #include <aidl/android/hardware/automotive/vehicle/CruiseControlState.h>
 #include <aidl/android/hardware/automotive/vehicle/CruiseControlType.h>
+#include <aidl/android/hardware/automotive/vehicle/CustomInputType.h>
 #include <aidl/android/hardware/automotive/vehicle/DiagnosticFloatSensorIndex.h>
 #include <aidl/android/hardware/automotive/vehicle/DiagnosticIntegerSensorIndex.h>
 #include <aidl/android/hardware/automotive/vehicle/DriverDistractionState.h>
@@ -31,9 +32,13 @@
 #include <aidl/android/hardware/automotive/vehicle/DriverDrowsinessAttentionState.h>
 #include <aidl/android/hardware/automotive/vehicle/DriverDrowsinessAttentionWarning.h>
 #include <aidl/android/hardware/automotive/vehicle/ElectronicStabilityControlState.h>
+#include <aidl/android/hardware/automotive/vehicle/ElectronicTollCollectionCardStatus.h>
+#include <aidl/android/hardware/automotive/vehicle/ElectronicTollCollectionCardType.h>
 #include <aidl/android/hardware/automotive/vehicle/EmergencyLaneKeepAssistState.h>
 #include <aidl/android/hardware/automotive/vehicle/ErrorState.h>
+#include <aidl/android/hardware/automotive/vehicle/EvChargeState.h>
 #include <aidl/android/hardware/automotive/vehicle/EvConnectorType.h>
+#include <aidl/android/hardware/automotive/vehicle/EvRegenerativeBrakingState.h>
 #include <aidl/android/hardware/automotive/vehicle/EvStoppingMode.h>
 #include <aidl/android/hardware/automotive/vehicle/EvsServiceState.h>
 #include <aidl/android/hardware/automotive/vehicle/EvsServiceType.h>
@@ -62,6 +67,7 @@
 #include <aidl/android/hardware/automotive/vehicle/Obd2SecondaryAirStatus.h>
 #include <aidl/android/hardware/automotive/vehicle/Obd2SparkIgnitionMonitors.h>
 #include <aidl/android/hardware/automotive/vehicle/PortLocationType.h>
+#include <aidl/android/hardware/automotive/vehicle/RotaryInputType.h>
 #include <aidl/android/hardware/automotive/vehicle/SetValueRequest.h>
 #include <aidl/android/hardware/automotive/vehicle/SetValueResult.h>
 #include <aidl/android/hardware/automotive/vehicle/SetValueResults.h>
@@ -69,10 +75,12 @@
 #include <aidl/android/hardware/automotive/vehicle/SubscribeOptions.h>
 #include <aidl/android/hardware/automotive/vehicle/SupportedValuesListResult.h>
 #include <aidl/android/hardware/automotive/vehicle/SupportedValuesListResults.h>
+#include <aidl/android/hardware/automotive/vehicle/TrailerState.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleAirbagLocation.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleApPowerBootupReason.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleApPowerStateReport.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleApPowerStateReq.h>
+#include <aidl/android/hardware/automotive/vehicle/VehicleApPowerStateShutdownParam.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleArea.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleAreaDoor.h>
 #include <aidl/android/hardware/automotive/vehicle/VehicleAreaMirror.h>

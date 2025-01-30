@@ -17,6 +17,8 @@
 #include <AccessForVehicleProperty.h>
 #include <AnnotationsForVehicleProperty.h>
 #include <ChangeModeForVehicleProperty.h>
+#include <EnumForVehicleProperty.h>
+#include <VehicleHalTypes.h>
 
 #include <aidl/android/hardware/automotive/vehicle/VehicleProperty.h>
 #include <gmock/gmock.h>
@@ -72,4 +74,17 @@ TEST(VehiclePropertyAnnotationCppTest, testAnnotations) {
                 << "annotations set for property: " << aidl_vehicle::toString(propertyId)
                 << " must not be empty";
     }
+}
+
+TEST(VehiclePropertyAnnotationCppTest, testSupportedEnums) {
+    auto supportedEnums =
+            aidl_vehicle::getSupportedEnumValuesForProperty(VehicleProperty::INFO_FUEL_TYPE);
+    // We only listed part of the fuel type values here. This is enough to verify that the
+    // generated code is correct.
+    ASSERT_THAT(supportedEnums,
+                ::testing::IsSupersetOf(
+                        {static_cast<int64_t>(aidl_vehicle::FuelType::FUEL_TYPE_UNLEADED),
+                         static_cast<int64_t>(aidl_vehicle::FuelType::FUEL_TYPE_LEADED),
+                         static_cast<int64_t>(aidl_vehicle::FuelType::FUEL_TYPE_DIESEL_1),
+                         static_cast<int64_t>(aidl_vehicle::FuelType::FUEL_TYPE_DIESEL_2)}));
 }

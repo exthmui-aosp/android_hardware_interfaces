@@ -19,6 +19,7 @@
 #include <AccessForVehicleProperty.h>
 #include <AnnotationsForVehicleProperty.h>
 #include <ChangeModeForVehicleProperty.h>
+#include <EnumForVehicleProperty.h>
 #include <IVhalClient.h>
 #include <VehicleHalTypes.h>
 #include <VehicleUtils.h>
@@ -49,6 +50,7 @@
 using ::aidl::android::hardware::automotive::vehicle::AllowedAccessForVehicleProperty;
 using ::aidl::android::hardware::automotive::vehicle::AnnotationsForVehicleProperty;
 using ::aidl::android::hardware::automotive::vehicle::ChangeModeForVehicleProperty;
+using ::aidl::android::hardware::automotive::vehicle::getSupportedEnumValuesForProperty;
 using ::aidl::android::hardware::automotive::vehicle::HasSupportedValueInfo;
 using ::aidl::android::hardware::automotive::vehicle::IVehicle;
 using ::aidl::android::hardware::automotive::vehicle::StatusCode;
@@ -930,7 +932,12 @@ void verifyPropertyConfigDataEnum(const IHalPropConfig* config) {
                        "supported enum values is not empty";
         }
 
-        // TODO(b/381123190): Verify the supported enum values are within the defined enum type.
+        if (!supportedEnumValues.empty()) {
+            std::unordered_set<int64_t> allowedEnumValues = getSupportedEnumValuesForProperty(
+                    static_cast<VehicleProperty>(config->getPropId()));
+            EXPECT_THAT(supportedEnumValues, ::testing::IsSubsetOf(allowedEnumValues))
+                    << "Supported enum values must be part of defined enum type";
+        }
     }
 }
 
