@@ -475,6 +475,7 @@ class StreamCommonImpl : virtual public StreamCommonInterface, virtual public Dr
     // the destructor in order to stop and join the worker thread in the case when the client
     // has not called 'IStreamCommon::close' method.
     void cleanupWorker();
+    void setWorkerThreadPriority(pid_t workerTid);
     void stopAndJoinWorker();
     void stopWorker();
 

@@ -704,44 +704,7 @@ ndk::ScopedAStatus StreamCommonImpl::initInstance(
         LOG(ERROR) << __func__ << ": Worker start error: " << mWorker->getError();
         return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
     }
-    if (auto flags = getContext().getFlags();
-        (flags.getTag() == AudioIoFlags::Tag::input &&
-         isBitPositionFlagSet(flags.template get<AudioIoFlags::Tag::input>(),
-                              AudioInputFlags::FAST)) ||
-        (flags.getTag() == AudioIoFlags::Tag::output &&
-         (isBitPositionFlagSet(flags.template get<AudioIoFlags::Tag::output>(),
-                               AudioOutputFlags::FAST) ||
-          isBitPositionFlagSet(flags.template get<AudioIoFlags::Tag::output>(),
-                               AudioOutputFlags::SPATIALIZER)))) {
-        // FAST workers should be run with a SCHED_FIFO scheduler, however the host process
-        // might be lacking the capability to request it, thus a failure to set is not an error.
-        pid_t workerTid = mWorker->getTid();
-        if (workerTid > 0) {
-            constexpr int32_t kRTPriorityMin = 1;  // SchedulingPolicyService.PRIORITY_MIN (Java).
-            constexpr int32_t kRTPriorityMax = 3;  // SchedulingPolicyService.PRIORITY_MAX (Java).
-            int priorityBoost = kRTPriorityMax;
-            if (flags.getTag() == AudioIoFlags::Tag::output &&
-                isBitPositionFlagSet(flags.template get<AudioIoFlags::Tag::output>(),
-                                     AudioOutputFlags::SPATIALIZER)) {
-                const int32_t sptPrio =
-                        property_get_int32("audio.spatializer.priority", kRTPriorityMin);
-                if (sptPrio >= kRTPriorityMin && sptPrio <= kRTPriorityMax) {
-                    priorityBoost = sptPrio;
-                } else {
-                    LOG(WARNING) << __func__ << ": invalid spatializer priority: " << sptPrio;
-                    return ndk::ScopedAStatus::ok();
-                }
-            }
-            struct sched_param param = {
-                    .sched_priority = priorityBoost,
-            };
-            if (sched_setscheduler(workerTid, SCHED_FIFO | SCHED_RESET_ON_FORK, &param) != 0) {
-                PLOG(WARNING) << __func__ << ": failed to set FIFO scheduler and priority";
-            }
-        } else {
-            LOG(WARNING) << __func__ << ": invalid worker tid: " << workerTid;
-        }
-    }
+    setWorkerThreadPriority(mWorker->getTid());
     getContext().getCommandMQ()->setErrorHandler(
             fmqErrorHandler<StreamContext::CommandMQ::Error>("CommandMQ"));
     getContext().getReplyMQ()->setErrorHandler(
@@ -827,6 +790,42 @@ void StreamCommonImpl::cleanupWorker() {
     if (!isClosed()) {
         LOG(ERROR) << __func__ << ": stream was not closed prior to destruction, resource leak";
         stopAndJoinWorker();
+    }
+}
+
+void StreamCommonImpl::setWorkerThreadPriority(pid_t workerTid) {
+    // FAST workers should be run with a SCHED_FIFO scheduler, however the host process
+    // might be lacking the capability to request it, thus a failure to set is not an error.
+    if (auto flags = getContext().getFlags();
+        (flags.getTag() == AudioIoFlags::Tag::input &&
+         isBitPositionFlagSet(flags.template get<AudioIoFlags::Tag::input>(),
+                              AudioInputFlags::FAST)) ||
+        (flags.getTag() == AudioIoFlags::Tag::output &&
+         (isBitPositionFlagSet(flags.template get<AudioIoFlags::Tag::output>(),
+                               AudioOutputFlags::FAST) ||
+          isBitPositionFlagSet(flags.template get<AudioIoFlags::Tag::output>(),
+                               AudioOutputFlags::SPATIALIZER)))) {
+        constexpr int32_t kRTPriorityMin = 1;  // SchedulingPolicyService.PRIORITY_MIN (Java).
+        constexpr int32_t kRTPriorityMax = 3;  // SchedulingPolicyService.PRIORITY_MAX (Java).
+        int priorityBoost = kRTPriorityMax;
+        if (flags.getTag() == AudioIoFlags::Tag::output &&
+            isBitPositionFlagSet(flags.template get<AudioIoFlags::Tag::output>(),
+                                 AudioOutputFlags::SPATIALIZER)) {
+            const int32_t sptPrio =
+                    property_get_int32("audio.spatializer.priority", kRTPriorityMin);
+            if (sptPrio >= kRTPriorityMin && sptPrio <= kRTPriorityMax) {
+                priorityBoost = sptPrio;
+            } else {
+                LOG(WARNING) << __func__ << ": invalid spatializer priority: " << sptPrio;
+                return;
+            }
+        }
+        struct sched_param param = {
+                .sched_priority = priorityBoost,
+        };
+        if (sched_setscheduler(workerTid, SCHED_FIFO | SCHED_RESET_ON_FORK, &param) != 0) {
+            PLOG(WARNING) << __func__ << ": failed to set FIFO scheduler and priority";
+        }
     }
 }
 

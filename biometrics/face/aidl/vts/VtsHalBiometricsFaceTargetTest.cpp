@@ -186,6 +186,7 @@ class Face : public testing::TestWithParam<std::string> {
 
     void TearDown() override {
         // Close the mSession.
+        ASSERT_NE(mSession, nullptr);
         ASSERT_TRUE(mSession->close().isOk());
 
         // Make sure the mSession is closed.
