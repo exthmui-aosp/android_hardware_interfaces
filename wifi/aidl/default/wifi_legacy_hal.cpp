@@ -1931,6 +1931,16 @@ std::pair<wifi_twt_capabilities, wifi_error> WifiLegacyHal::twtGetCapabilities(
     return {capabs, status};
 }
 
+void invalidateTwtInternalCallbacks() {
+    on_twt_failure_internal_callback = nullptr;
+    on_twt_session_create_internal_callback = nullptr;
+    on_twt_session_update_internal_callback = nullptr;
+    on_twt_session_teardown_internal_callback = nullptr;
+    on_twt_session_stats_internal_callback = nullptr;
+    on_twt_session_suspend_internal_callback = nullptr;
+    on_twt_session_resume_internal_callback = nullptr;
+}
+
 wifi_error WifiLegacyHal::twtRegisterEvents(
         const std::string& ifaceName, const on_twt_failure& on_twt_failure_user_callback,
         const on_twt_session_create& on_twt_session_create_user_callback,
@@ -1984,11 +1994,15 @@ wifi_error WifiLegacyHal::twtRegisterEvents(
         on_twt_session_resume_user_callback(id, session_id);
     };
 
-    return global_func_table_.wifi_twt_register_events(
+    wifi_error status = global_func_table_.wifi_twt_register_events(
             getIfaceHandle(ifaceName),
             {onAsyncTwtError, onAsyncTwtSessionCreate, onAsyncTwtSessionUpdate,
              onAsyncTwtSessionTeardown, onAsyncTwtSessionStats, onAsyncTwtSessionSuspend,
              onAsyncTwtSessionResume});
+    if (status != WIFI_SUCCESS) {
+        invalidateTwtInternalCallbacks();
+    }
+    return status;
 }
 
 wifi_error WifiLegacyHal::twtSessionSetup(const std::string& ifaceName, uint32_t cmdId,
@@ -2226,6 +2240,7 @@ void WifiLegacyHal::invalidate() {
     on_twt_event_device_notify_callback = nullptr;
     on_chre_nan_rtt_internal_callback = nullptr;
     on_cached_scan_results_internal_callback = nullptr;
+    invalidateTwtInternalCallbacks();
 }
 
 }  // namespace legacy_hal

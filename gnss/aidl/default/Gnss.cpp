@@ -298,8 +298,14 @@ ScopedAStatus Gnss::deleteAidingData(GnssAidingData aidingDataFlags) {
 ScopedAStatus Gnss::setPositionMode(const PositionModeOptions& options) {
     ALOGD("setPositionMode. minIntervalMs:%d, lowPowerMode:%d", options.minIntervalMs,
           (int)options.lowPowerMode);
-    mMinIntervalMs = std::max(1000, options.minIntervalMs);
-    mGnssMeasurementInterface->setLocationInterval(mMinIntervalMs);
+    if (std::max(1000, options.minIntervalMs) != mMinIntervalMs) {
+        mMinIntervalMs = std::max(1000, options.minIntervalMs);
+        mGnssMeasurementInterface->setLocationInterval(mMinIntervalMs);
+        if (mIsActive) {
+            stop();
+            start();
+        }
+    }
     return ScopedAStatus::ok();
 }
 
