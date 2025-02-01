@@ -109,64 +109,55 @@ LICENSE = """/*
 
 """
 
-CHANGE_MODE_CPP_HEADER = """#pragma once
+CHANGE_MODE_CPP_FORMATTER = """#pragma once
 
 #include <aidl/android/hardware/automotive/vehicle/VehicleProperty.h>
 #include <aidl/android/hardware/automotive/vehicle/VehiclePropertyChangeMode.h>
 
 #include <unordered_map>
 
-namespace aidl {
-namespace android {
-namespace hardware {
-namespace automotive {
-namespace vehicle {
-
-std::unordered_map<VehicleProperty, VehiclePropertyChangeMode> ChangeModeForVehicleProperty = {
+namespace aidl::android::hardware::automotive::vehicle {{
+std::unordered_map<VehicleProperty, VehiclePropertyChangeMode> ChangeModeForVehicleProperty = {{
+{0}
+}};
+}}  // aidl::android::hardware::automotive::vehicle
 """
 
-CPP_FOOTER = """
-};
-
-}  // namespace vehicle
-}  // namespace automotive
-}  // namespace hardware
-}  // namespace android
-}  // aidl
-"""
-
-ACCESS_CPP_HEADER = """#pragma once
+ACCESS_CPP_FORMATTER = """#pragma once
 
 #include <aidl/android/hardware/automotive/vehicle/VehicleProperty.h>
 #include <aidl/android/hardware/automotive/vehicle/VehiclePropertyAccess.h>
 
 #include <unordered_map>
 
-namespace aidl {
-namespace android {
-namespace hardware {
-namespace automotive {
-namespace vehicle {
+namespace aidl::android::hardware::automotive::vehicle {{
+// This map represents the default access mode for each property.
+std::unordered_map<VehicleProperty, VehiclePropertyAccess> DefaultAccessForVehicleProperty = {{
+{0}
+}};
 
-std::unordered_map<VehicleProperty, VehiclePropertyAccess> AccessForVehicleProperty = {
+// This map represents the allowed access modes for each property.
+std::unordered_map<VehicleProperty, std::vector<VehiclePropertyAccess>>
+        AllowedAccessForVehicleProperty = {{
+{1}
+}};
+}}  // aidl::android::hardware::automotive::vehicle
 """
 
-VERSION_CPP_HEADER = """#pragma once
+VERSION_CPP_FORMATTER = """#pragma once
 
 #include <aidl/android/hardware/automotive/vehicle/VehicleProperty.h>
 
 #include <unordered_map>
 
-namespace aidl {
-namespace android {
-namespace hardware {
-namespace automotive {
-namespace vehicle {
-
-std::unordered_map<VehicleProperty, int32_t> VersionForVehicleProperty = {
+namespace aidl::android::hardware::automotive::vehicle {{
+std::unordered_map<VehicleProperty, int32_t> VersionForVehicleProperty = {{
+{0}
+}};
+}}  // aidl::android::hardware::automotive::vehicle
 """
 
-ANNOTATIONS_CPP_HEADER = """#pragma once
+ANNOTATIONS_CPP_FORMATTER = """#pragma once
 
 #include <aidl/android/hardware/automotive/vehicle/VehicleProperty.h>
 
@@ -174,67 +165,79 @@ ANNOTATIONS_CPP_HEADER = """#pragma once
 #include <unordered_map>
 #include <unordered_set>
 
-namespace aidl {
-namespace android {
-namespace hardware {
-namespace automotive {
-namespace vehicle {
-
+namespace aidl::android::hardware::automotive::vehicle {{
 std::unordered_map<VehicleProperty, std::unordered_set<std::string>>
-        AnnotationsForVehicleProperty = {
+        AnnotationsForVehicleProperty = {{
+{0}
+}};
+}}  // aidl::android::hardware::automotive::vehicle
 """
 
-CHANGE_MODE_JAVA_HEADER = """package android.hardware.automotive.vehicle;
+CHANGE_MODE_JAVA_FORMATTER = """package android.hardware.automotive.vehicle;
 
 import java.util.Map;
 
-public final class ChangeModeForVehicleProperty {
+public final class ChangeModeForVehicleProperty {{
 
     public static final Map<Integer, Integer> values = Map.ofEntries(
-"""
-
-JAVA_FOOTER = """
+{0}
     );
 
-}
+}}
 """
 
-ACCESS_JAVA_HEADER = """package android.hardware.automotive.vehicle;
+ACCESS_JAVA_FORMATTER = """package android.hardware.automotive.vehicle;
 
 import java.util.Map;
 
-public final class AccessForVehicleProperty {
+public final class AccessForVehicleProperty {{
 
     public static final Map<Integer, Integer> values = Map.ofEntries(
+{0}
+    );
+
+}}
 """
 
-ENUM_JAVA_HEADER = """package android.hardware.automotive.vehicle;
+ENUM_JAVA_FORMATTER = """package android.hardware.automotive.vehicle;
 
 import java.util.List;
 import java.util.Map;
 
-public final class EnumForVehicleProperty {
+public final class EnumForVehicleProperty {{
 
     public static final Map<Integer, List<Class<?>>> values = Map.ofEntries(
+{0}
+    );
+
+}}
 """
 
-UNITS_JAVA_HEADER = """package android.hardware.automotive.vehicle;
+UNITS_JAVA_FORMATTER = """package android.hardware.automotive.vehicle;
 
 import java.util.Map;
 
-public final class UnitsForVehicleProperty {
+public final class UnitsForVehicleProperty {{
 
     public static final Map<Integer, Integer> values = Map.ofEntries(
+{0}
+    );
+
+}}
 """
 
-ANNOTATIONS_JAVA_HEADER = """package android.hardware.automotive.vehicle;
+ANNOTATIONS_JAVA_FORMATTER = """package android.hardware.automotive.vehicle;
 
 import java.util.Set;
 import java.util.Map;
 
-public final class AnnotationsForVehicleProperty {
+public final class AnnotationsForVehicleProperty {{
 
     public static final Map<Integer, Set<String>> values = Map.ofEntries(
+{0}
+    );
+
+}}
 """
 
 
@@ -382,10 +385,10 @@ class FileParser:
                     # Treat empty line comment as a new line.
                     config.comment += '\n'
 
-    def convert(self, output, header, footer, cpp, field):
+    def convert(self, output, formatter, cpp, field):
         """Converts the property config file to C++/Java output file."""
         counter = 0
-        content = LICENSE + header
+        content = ''
         for config in self.configs:
             if field == 'change_mode':
                 if cpp:
@@ -413,7 +416,7 @@ class FileParser:
             elif field == 'annotations':
                 if len(config.annotations) < 1:
                     continue
-                joined_annotation_strings = ', '.join(['"' + annotation + '"' for annotation in config.annotations])
+                joined_annotation_strings = ', '.join(['"' + annotation + '"' for annotation in sorted(config.annotations)])
                 if cpp:
                     value = "{" + joined_annotation_strings + "}"
                 else:
@@ -434,7 +437,19 @@ class FileParser:
         if not cpp:
             content = content[:-1]
 
-        content += footer
+        if field != 'access_mode' or not cpp:
+            content = LICENSE + formatter.format(content)
+        else:
+            content2 = ''
+            counter = 0
+            for config in self.configs:
+                if counter != 0:
+                    content2 += '\n'
+                value = ', '. join(['VehiclePropertyAccess::' + access_mode for access_mode in config.access_modes])
+                content2 += TAB + TAB + '{{VehicleProperty::{0}, {{{1}}}}},'.format(config.name, value)
+                counter += 1
+            content = LICENSE + formatter.format(content, content2)
+
 
         with open(output, 'w') as f:
             f.write(content)
@@ -480,10 +495,8 @@ class GeneratedFile:
         self.type = type
         self.cpp_file_path = None
         self.java_file_path = None
-        self.cpp_header = None
-        self.java_header = None
-        self.cpp_footer = None
-        self.java_footer = None
+        self.cpp_formatter = None
+        self.java_formatter = None
         self.cpp_output_file = None
         self.java_output_file = None
 
@@ -493,27 +506,21 @@ class GeneratedFile:
     def setJavaFilePath(self, java_file_path):
         self.java_file_path = java_file_path
 
-    def setCppHeader(self, cpp_header):
-        self.cpp_header = cpp_header
+    def setCppFormatter(self, cpp_formatter):
+        self.cpp_formatter = cpp_formatter
 
-    def setCppFooter(self, cpp_footer):
-        self.cpp_footer = cpp_footer
-
-    def setJavaHeader(self, java_header):
-        self.java_header = java_header
-
-    def setJavaFooter(self, java_footer):
-        self.java_footer = java_footer
+    def setJavaFormatter(self, java_formatter):
+        self.java_formatter = java_formatter
 
     def convert(self, file_parser, check_only, temp_files):
         if self.cpp_file_path:
             output_file = GeneratedFile._getOutputFile(self.cpp_file_path, check_only, temp_files)
-            file_parser.convert(output_file, self.cpp_header, self.cpp_footer, True, self.type)
+            file_parser.convert(output_file, self.cpp_formatter, True, self.type)
             self.cpp_output_file = output_file
 
         if self.java_file_path:
             output_file = GeneratedFile._getOutputFile(self.java_file_path, check_only, temp_files)
-            file_parser.convert(output_file, self.java_header, self.java_footer, False, self.type)
+            file_parser.convert(output_file, self.java_formatter, False, self.type)
             self.java_output_file = output_file
 
     def cmp(self):
@@ -577,46 +584,37 @@ def main():
     change_mode = GeneratedFile('change_mode')
     change_mode.setCppFilePath(os.path.join(android_top, CHANGE_MODE_CPP_FILE_PATH))
     change_mode.setJavaFilePath(os.path.join(android_top, CHANGE_MODE_JAVA_FILE_PATH))
-    change_mode.setCppHeader(CHANGE_MODE_CPP_HEADER)
-    change_mode.setCppFooter(CPP_FOOTER)
-    change_mode.setJavaHeader(CHANGE_MODE_JAVA_HEADER)
-    change_mode.setJavaFooter(JAVA_FOOTER)
+    change_mode.setCppFormatter(CHANGE_MODE_CPP_FORMATTER)
+    change_mode.setJavaFormatter(CHANGE_MODE_JAVA_FORMATTER)
     generated_files.append(change_mode)
 
     access_mode = GeneratedFile('access_mode')
     access_mode.setCppFilePath(os.path.join(android_top, ACCESS_CPP_FILE_PATH))
     access_mode.setJavaFilePath(os.path.join(android_top, ACCESS_JAVA_FILE_PATH))
-    access_mode.setCppHeader(ACCESS_CPP_HEADER)
-    access_mode.setCppFooter(CPP_FOOTER)
-    access_mode.setJavaHeader(ACCESS_JAVA_HEADER)
-    access_mode.setJavaFooter(JAVA_FOOTER)
+    access_mode.setCppFormatter(ACCESS_CPP_FORMATTER)
+    access_mode.setJavaFormatter(ACCESS_JAVA_FORMATTER)
     generated_files.append(access_mode)
 
     enum_types = GeneratedFile('enum_types')
     enum_types.setJavaFilePath(os.path.join(android_top, ENUM_JAVA_FILE_PATH))
-    enum_types.setJavaHeader(ENUM_JAVA_HEADER)
-    enum_types.setJavaFooter(JAVA_FOOTER)
+    enum_types.setJavaFormatter(ENUM_JAVA_FORMATTER)
     generated_files.append(enum_types)
 
     unit_type = GeneratedFile('unit_type')
     unit_type.setJavaFilePath(os.path.join(android_top, UNITS_JAVA_FILE_PATH))
-    unit_type.setJavaHeader(UNITS_JAVA_HEADER)
-    unit_type.setJavaFooter(JAVA_FOOTER)
+    unit_type.setJavaFormatter(UNITS_JAVA_FORMATTER)
     generated_files.append(unit_type)
 
     version = GeneratedFile('version')
     version.setCppFilePath(os.path.join(android_top, VERSION_CPP_FILE_PATH))
-    version.setCppHeader(VERSION_CPP_HEADER)
-    version.setCppFooter(CPP_FOOTER)
+    version.setCppFormatter(VERSION_CPP_FORMATTER)
     generated_files.append(version)
 
     annotations = GeneratedFile('annotations')
     annotations.setCppFilePath(os.path.join(android_top, ANNOTATIONS_CPP_FILE_PATH))
     annotations.setJavaFilePath(os.path.join(android_top, ANNOTATIONS_JAVA_FILE_PATH))
-    annotations.setCppHeader(ANNOTATIONS_CPP_HEADER)
-    annotations.setCppFooter(CPP_FOOTER)
-    annotations.setJavaHeader(ANNOTATIONS_JAVA_HEADER)
-    annotations.setJavaFooter(JAVA_FOOTER)
+    annotations.setCppFormatter(ANNOTATIONS_CPP_FORMATTER)
+    annotations.setJavaFormatter(ANNOTATIONS_JAVA_FORMATTER)
     generated_files.append(annotations)
 
     temp_files = []

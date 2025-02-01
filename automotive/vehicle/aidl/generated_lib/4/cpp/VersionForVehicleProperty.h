@@ -28,12 +28,7 @@
 
 #include <unordered_map>
 
-namespace aidl {
-namespace android {
-namespace hardware {
-namespace automotive {
-namespace vehicle {
-
+namespace aidl::android::hardware::automotive::vehicle {
 std::unordered_map<VehicleProperty, int32_t> VersionForVehicleProperty = {
         {VehicleProperty::INFO_VIN, 2},
         {VehicleProperty::INFO_MAKE, 2},
@@ -316,9 +311,4 @@ std::unordered_map<VehicleProperty, int32_t> VersionForVehicleProperty = {
         {VehicleProperty::LOW_SPEED_AUTOMATIC_EMERGENCY_BRAKING_ENABLED, 3},
         {VehicleProperty::LOW_SPEED_AUTOMATIC_EMERGENCY_BRAKING_STATE, 3},
 };
-
-}  // namespace vehicle
-}  // namespace automotive
-}  // namespace hardware
-}  // namespace android
-}  // aidl
+}  // aidl::android::hardware::automotive::vehicle

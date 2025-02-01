@@ -29,12 +29,7 @@
 
 #include <unordered_map>
 
-namespace aidl {
-namespace android {
-namespace hardware {
-namespace automotive {
-namespace vehicle {
-
+namespace aidl::android::hardware::automotive::vehicle {
 std::unordered_map<VehicleProperty, VehiclePropertyChangeMode> ChangeModeForVehicleProperty = {
         {VehicleProperty::INFO_VIN, VehiclePropertyChangeMode::STATIC},
         {VehicleProperty::INFO_MAKE, VehiclePropertyChangeMode::STATIC},
@@ -317,9 +312,4 @@ std::unordered_map<VehicleProperty, VehiclePropertyChangeMode> ChangeModeForVehi
         {VehicleProperty::LOW_SPEED_AUTOMATIC_EMERGENCY_BRAKING_ENABLED, VehiclePropertyChangeMode::ON_CHANGE},
         {VehicleProperty::LOW_SPEED_AUTOMATIC_EMERGENCY_BRAKING_STATE, VehiclePropertyChangeMode::ON_CHANGE},
 };
-
-}  // namespace vehicle
-}  // namespace automotive
-}  // namespace hardware
-}  // namespace android
-}  // aidl
+}  // aidl::android::hardware::automotive::vehicle

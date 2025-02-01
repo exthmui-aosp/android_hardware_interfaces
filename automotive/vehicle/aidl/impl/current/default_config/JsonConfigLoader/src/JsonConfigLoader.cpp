@@ -34,7 +34,6 @@ namespace vehicle {
 
 namespace jsonconfigloader_impl {
 
-using ::aidl::android::hardware::automotive::vehicle::AccessForVehicleProperty;
 using ::aidl::android::hardware::automotive::vehicle::AutomaticEmergencyBrakingState;
 using ::aidl::android::hardware::automotive::vehicle::BlindSpotWarningState;
 using ::aidl::android::hardware::automotive::vehicle::CameraServiceState;
@@ -43,6 +42,7 @@ using ::aidl::android::hardware::automotive::vehicle::CrossTrafficMonitoringWarn
 using ::aidl::android::hardware::automotive::vehicle::CruiseControlCommand;
 using ::aidl::android::hardware::automotive::vehicle::CruiseControlState;
 using ::aidl::android::hardware::automotive::vehicle::CruiseControlType;
+using ::aidl::android::hardware::automotive::vehicle::DefaultAccessForVehicleProperty;
 using ::aidl::android::hardware::automotive::vehicle::DriverDistractionState;
 using ::aidl::android::hardware::automotive::vehicle::DriverDistractionWarning;
 using ::aidl::android::hardware::automotive::vehicle::DriverDrowsinessAttentionState;
@@ -640,8 +640,8 @@ std::optional<ConfigDeclaration> JsonConfigParser::parseEachProperty(
     configDecl.config.prop = propId;
     std::string propStr = propJsonValue["property"].toStyledString();
     VehiclePropertyAccess* defaultAccessMode = NULL;
-    auto itAccess = AccessForVehicleProperty.find(static_cast<VehicleProperty>(propId));
-    if (itAccess != AccessForVehicleProperty.end()) {
+    auto itAccess = DefaultAccessForVehicleProperty.find(static_cast<VehicleProperty>(propId));
+    if (itAccess != DefaultAccessForVehicleProperty.end()) {
         defaultAccessMode = &itAccess->second;
     }
     VehiclePropertyChangeMode* defaultChangeMode = NULL;

@@ -24,9 +24,10 @@
 #include <unordered_set>
 
 namespace aidl_vehicle = ::aidl::android::hardware::automotive::vehicle;
-using aidl_vehicle::AccessForVehicleProperty;
+using aidl_vehicle::AllowedAccessForVehicleProperty;
 using aidl_vehicle::AnnotationsForVehicleProperty;
 using aidl_vehicle::ChangeModeForVehicleProperty;
+using aidl_vehicle::DefaultAccessForVehicleProperty;
 using aidl_vehicle::VehicleProperty;
 using testing::IsEmpty;
 
@@ -53,8 +54,14 @@ TEST(VehiclePropertyAnnotationCppTest, testChangeMode) {
             << "generate_annotation_enums.py to update.";
 }
 
-TEST(VehiclePropertyAnnotationCppTest, testAccess) {
-    ASSERT_TRUE(doesAnnotationMapContainsAllProps(AccessForVehicleProperty))
+TEST(VehiclePropertyAnnotationCppTest, testDefaultAccess) {
+    ASSERT_TRUE(doesAnnotationMapContainsAllProps(DefaultAccessForVehicleProperty))
+            << "Outdated annotation-generated AIDL files. Please run "
+            << "generate_annotation_enums.py to update.";
+}
+
+TEST(VehiclePropertyAnnotationCppTest, testAllowedAccess) {
+    ASSERT_TRUE(doesAnnotationMapContainsAllProps(AllowedAccessForVehicleProperty))
             << "Outdated annotation-generated AIDL files. Please run "
             << "generate_annotation_enums.py to update.";
 }
