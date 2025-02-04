@@ -82,6 +82,7 @@ ScopedAStatus Sensors::initialize(
         const MQDescriptor<int32_t, SynchronizedReadWrite>& in_wakeLockDescriptor,
         const std::shared_ptr<::aidl::android::hardware::sensors::ISensorsCallback>&
                 in_sensorsCallback) {
+    ALOGI("Sensors initializing");
     ScopedAStatus result = ScopedAStatus::ok();
 
     mEventQueue = std::make_unique<AidlMessageQueue<Event, SynchronizedReadWrite>>(
@@ -101,22 +102,27 @@ ScopedAStatus Sensors::initialize(
     // Save a reference to the callback
     mCallback = in_sensorsCallback;
 
-    // Ensure that any existing EventFlag is properly deleted
-    deleteEventFlag();
+    {
+        // Hold the lock to ensure that re-creation of event flag is atomic
+        std::lock_guard<std::mutex> lock(mWriteLock);
 
-    // Create the EventFlag that is used to signal to the framework that sensor events have been
-    // written to the Event FMQ
-    if (EventFlag::createEventFlag(mEventQueue->getEventFlagWord(), &mEventQueueFlag) != OK) {
-        result = ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
-    }
+        // Ensure that any existing EventFlag is properly deleted
+        deleteEventFlagLocked();
 
-    // Create the Wake Lock FMQ that is used by the framework to communicate whenever WAKE_UP
-    // events have been successfully read and handled by the framework.
-    mWakeLockQueue = std::make_unique<AidlMessageQueue<int32_t, SynchronizedReadWrite>>(
-            in_wakeLockDescriptor, true /* resetPointers */);
+        // Create the EventFlag that is used to signal to the framework that sensor events have been
+        // written to the Event FMQ
+        if (EventFlag::createEventFlag(mEventQueue->getEventFlagWord(), &mEventQueueFlag) != OK) {
+            result = ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
+        }
 
-    if (!mCallback || !mEventQueue || !mWakeLockQueue || mEventQueueFlag == nullptr) {
-        result = ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
+        // Create the Wake Lock FMQ that is used by the framework to communicate whenever WAKE_UP
+        // events have been successfully read and handled by the framework.
+        mWakeLockQueue = std::make_unique<AidlMessageQueue<int32_t, SynchronizedReadWrite>>(
+                in_wakeLockDescriptor, true /* resetPointers */);
+
+        if (!mCallback || !mEventQueue || !mWakeLockQueue || mEventQueueFlag == nullptr) {
+            result = ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
+        }
     }
 
     // Start the thread to read events from the Wake Lock FMQ

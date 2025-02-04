@@ -1034,6 +1034,54 @@ TEST_P(WifiChipAidlTest, SetMloMode) {
     EXPECT_TRUE(status.isOk());
 }
 
+/*
+ * EnableDebugErrorAlerts
+ */
+TEST_P(WifiChipAidlTest, EnableDebugErrorAlerts) {
+    // STA iface needs to be configured for this test
+    auto iface = configureChipForStaAndGetIface();
+    ASSERT_NE(iface, nullptr);
+
+    auto status = wifi_chip_->enableDebugErrorAlerts(true);
+    if (checkStatusCode(&status, WifiStatusCode::ERROR_NOT_SUPPORTED)) {
+        GTEST_SKIP() << "EnableDebugErrorAlerts is not supported by vendor";
+    }
+    EXPECT_TRUE(status.isOk());
+    EXPECT_TRUE(wifi_chip_->enableDebugErrorAlerts(false).isOk());
+}
+
+/*
+ * TriggerSubsystemRestart
+ */
+TEST_P(WifiChipAidlTest, TriggerSubsystemRestart) {
+    // STA iface needs to be configured for this test
+    auto iface = configureChipForStaAndGetIface();
+    ASSERT_NE(iface, nullptr);
+
+    auto status = wifi_chip_->triggerSubsystemRestart();
+    if (checkStatusCode(&status, WifiStatusCode::ERROR_NOT_SUPPORTED)) {
+        GTEST_SKIP() << "TriggerSubsystemRestart is not supported by vendor";
+    }
+    EXPECT_TRUE(status.isOk());
+}
+
+/*
+ * EnableStaChannelForPeerNetwork
+ */
+TEST_P(WifiChipAidlTest, EnableStaChannelForPeerNetwork) {
+    // STA iface needs to be configured for this test
+    auto iface = configureChipForStaAndGetIface();
+    ASSERT_NE(iface, nullptr);
+
+    int categoryMask = (int)IWifiChip::ChannelCategoryMask::INDOOR_CHANNEL |
+                       (int)IWifiChip::ChannelCategoryMask::DFS_CHANNEL;
+    auto status = wifi_chip_->enableStaChannelForPeerNetwork(categoryMask);
+    if (checkStatusCode(&status, WifiStatusCode::ERROR_NOT_SUPPORTED)) {
+        GTEST_SKIP() << "EnableStaChannelForPeerNetwork is not supported by vendor";
+    }
+    EXPECT_TRUE(status.isOk());
+}
+
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WifiChipAidlTest);
 INSTANTIATE_TEST_SUITE_P(WifiTest, WifiChipAidlTest,
                          testing::ValuesIn(android::getAidlHalInstanceNames(IWifi::descriptor)),
