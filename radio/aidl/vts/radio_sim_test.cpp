@@ -52,6 +52,15 @@ void RadioSimTest::SetUp() {
     ASSERT_NE(nullptr, radio_config.get());
 }
 
+bool RadioSimTest::shouldTestCdma() {
+    int32_t aidl_version = 0;
+    ndk::ScopedAStatus aidl_status = radio_sim->getInterfaceVersion(&aidl_version);
+    EXPECT_TRUE(aidl_status.isOk());
+    if (aidl_version < 4) return true;  // < RADIO_HAL_VERSION_2_3
+
+    return !telephony_flags::cleanup_cdma();
+}
+
 void RadioSimTest::updateSimCardStatus() {
     serial = GetRandomSerialNumber();
     radio_sim->getIccCardStatus(serial);
@@ -935,6 +944,13 @@ TEST_P(RadioSimTest, iccOpenLogicalChannel) {
  * Test IRadioSim.iccCloseLogicalChannel() for the response returned.
  */
 TEST_P(RadioSimTest, iccCloseLogicalChannel) {
+    int32_t aidl_version;
+    ndk::ScopedAStatus aidl_status = radio_sim->getInterfaceVersion(&aidl_version);
+    ASSERT_OK(aidl_status);
+    if (aidl_version >= 2) {  // >= RADIO_HAL_VERSION_2_1
+        GTEST_SKIP() << "Skipping iccCloseLogicalChannel (deprecated)";
+    }
+
     if (telephony_flags::enforce_telephony_feature_mapping()) {
         if (!deviceSupportsFeature(FEATURE_TELEPHONY_SUBSCRIPTION)) {
             GTEST_SKIP() << "Skipping iccCloseLogicalChannel "
@@ -1176,6 +1192,9 @@ TEST_P(RadioSimTest, setCdmaSubscriptionSource) {
  * Test IRadioSim.setUiccSubscription() for the response returned.
  */
 TEST_P(RadioSimTest, setUiccSubscription) {
+    if (!shouldTestCdma()) {
+        GTEST_SKIP() << "Skipping CDMA testing (deprecated)";
+    }
     if (telephony_flags::enforce_telephony_feature_mapping()) {
         if (!deviceSupportsFeature(FEATURE_TELEPHONY_SUBSCRIPTION)) {
             GTEST_SKIP() << "Skipping setUiccSubscription "
