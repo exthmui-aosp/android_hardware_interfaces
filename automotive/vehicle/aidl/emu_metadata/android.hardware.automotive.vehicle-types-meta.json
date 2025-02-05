@@ -388,13 +388,13 @@
                 "description": "Fan speed setting\nThe maxInt32Value and minInt32Value in VehicleAreaConfig must be defined. All integers between minInt32Value and maxInt32Value must be supported.\nThe minInt32Value indicates the lowest fan speed.\nThe maxInt32Value indicates the highest fan speed.\nIf {@code HasSupportedValueInfo} for a specific area ID is not {@code null}: {@code HasSupportedValueInfo#hasMinSupportedValue} and {@code HasSupportedValueInfo#hasMaxSupportedValue} must be {@code true} for the specific area ID. {@code MinMaxSupportedValueResult#minSupportedValue} has the same meaning as minInt32Value. {@code MinMaxSupportedValueResult#maxSupportedValue} has the same meaning as maxInt32Value. All integers between minSupportedValue and maxSupportedValue must be supported. At boot, minInt32Value is equal to minSupportedValue, maxInt32Value is equal to maxSupportedValue.\nThis property is not in any particular unit but in a specified range of relative speeds.\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
-                "name": "Fan direction setting",
+                "name": "HVAC_FAN_DIRECTION",
                 "value": 356517121,
                 "data_enums": [
                     "VehicleHvacFanDirection"
                 ],
                 "data_enum": "VehicleHvacFanDirection",
-                "description": "Fan direction setting\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only.\nThe supported hvac fan direction is exposed through {@code HVAC_FAN_DIRECTION_AVAILABLE} property. Caller should not call {@code getSupportedValuesList}, or use {@code VehicleAreaConfig#supportedEnumValues}."
+                "description": "The current HVAC fan direction setting\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only.\nThe supported hvac fan direction is exposed through {@code HVAC_FAN_DIRECTION_AVAILABLE} property. Caller should not call {@code getSupportedValuesList}, or use {@code VehicleAreaConfig#supportedEnumValues}.\nThis property must be supported if {@code HVAC_FAN_DIRECTION_AVAILABLE} is implemented on the vehicle, and vice versa."
             },
             {
                 "name": "HVAC current temperature.",
@@ -476,13 +476,13 @@
                 "description": "Represents global power state for HVAC. Setting this property to false MAY mark some properties that control individual HVAC features\/subsystems to UNAVAILABLE state. Setting this property to true MAY mark some properties that control individual HVAC features\/subsystems to AVAILABLE state (unless any\/all of them are UNAVAILABLE on their own individual merits).\n[Definition] HvacPower_DependentProperties: Properties that need HVAC to be powered on in order to enable their functionality. For example, in some cars, in order to turn on the AC, HVAC must be powered on first.\nHvacPower_DependentProperties list must be set in the VehiclePropConfig.configArray. HvacPower_DependentProperties must only contain properties that are associated with VehicleArea:SEAT. Properties that are not associated with VehicleArea:SEAT, for example, HVAC_DEFROSTER, must never depend on HVAC_POWER_ON property and must never be part of HvacPower_DependentProperties list.\nAreaID mapping for HVAC_POWER_ON property must contain all AreaIDs that HvacPower_DependentProperties are mapped to.\nExample 1: A car has two front seats (ROW_1_LEFT, ROW_1_RIGHT) and three back seats (ROW_2_LEFT, ROW_2_CENTER, ROW_2_RIGHT). If the HVAC features (AC, Temperature etc.) throughout the car are dependent on a single HVAC power controller then HVAC_POWER_ON must be mapped to [ROW_1_LEFT | ROW_1_RIGHT | ROW_2_LEFT | ROW_2_CENTER | ROW_2_RIGHT].\nExample 2: A car has two seats in the front row (ROW_1_LEFT, ROW_1_RIGHT) and three seats in the second (ROW_2_LEFT, ROW_2_CENTER, ROW_2_RIGHT) and third rows (ROW_3_LEFT, ROW_3_CENTER, ROW_3_RIGHT). If the car has temperature controllers in the front row which can operate entirely independently of temperature controllers in the back of the vehicle, then HVAC_POWER_ON must be mapped to a two element array: - ROW_1_LEFT | ROW_1_RIGHT - ROW_2_LEFT | ROW_2_CENTER | ROW_2_RIGHT | ROW_3_LEFT | ROW_3_CENTER | ROW_3_RIGHT\nThis property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to implement it as VehiclePropertyAccess.READ only."
             },
             {
-                "name": "Fan Positions Available",
+                "name": "HVAC_FAN_DIRECTION_AVAILABLE",
                 "value": 356582673,
                 "data_enums": [
                     "VehicleHvacFanDirection"
                 ],
                 "data_enum": "VehicleHvacFanDirection",
-                "description": "Fan Positions Available\nThis is a bit mask of fan positions available for the zone.  Each available fan direction is denoted by a separate entry in the vector.  A fan direction may have multiple bits from vehicle_hvac_fan_direction set. For instance, a typical car may have the following fan positions: - FAN_DIRECTION_FACE (0x1) - FAN_DIRECTION_FLOOR (0x2) - FAN_DIRECTION_FACE | FAN_DIRECTION_FLOOR (0x3) - FAN_DIRECTION_DEFROST (0x4) - FAN_DIRECTION_FLOOR | FAN_DIRECTION_DEFROST (0x6)"
+                "description": "List of supported fan directions in the vehicle.\nThis is a bit mask of the supported fan positions available each area ID.  Each supported fan direction is denoted by a separate entry in the vector.  A fan direction may have multiple bits from vehicle_hvac_fan_direction set. For instance, a typical car may have the following fan positions: - FAN_DIRECTION_FACE (0x1) - FAN_DIRECTION_FLOOR (0x2) - FAN_DIRECTION_FACE | FAN_DIRECTION_FLOOR (0x3) - FAN_DIRECTION_DEFROST (0x4) - FAN_DIRECTION_FLOOR | FAN_DIRECTION_DEFROST (0x6)\nThis property must be supported if {@code #HVAC_FAN_DIRECTION} is implemented on the vehicle, and vice versa."
             },
             {
                 "name": "Automatic recirculation on\/off",

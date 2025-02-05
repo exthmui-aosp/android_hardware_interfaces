@@ -1317,7 +1317,7 @@ enum VehicleProperty {
     HVAC_FAN_SPEED = 0x0500 + 0x10000000 + 0x05000000
             + 0x00400000, // VehiclePropertyGroup:SYSTEM,VehicleArea:SEAT,VehiclePropertyType:INT32
     /**
-     * Fan direction setting
+     * The current HVAC fan direction setting
      *
      * This property is defined as VehiclePropertyAccess.READ_WRITE, but OEMs have the option to
      * implement it as VehiclePropertyAccess.READ only.
@@ -1325,6 +1325,9 @@ enum VehicleProperty {
      * The supported hvac fan direction is exposed through {@code HVAC_FAN_DIRECTION_AVAILABLE}
      * property. Caller should not call {@code getSupportedValuesList}, or use
      * {@code VehicleAreaConfig#supportedEnumValues}.
+     *
+     * This property must be supported if {@code HVAC_FAN_DIRECTION_AVAILABLE} is implemented
+     * on the vehicle, and vice versa.
      *
      * @change_mode VehiclePropertyChangeMode.ON_CHANGE
      * @access VehiclePropertyAccess.READ_WRITE
@@ -1770,10 +1773,10 @@ enum VehicleProperty {
     HVAC_POWER_ON = 0x0510 + 0x10000000 + 0x05000000
             + 0x00200000, // VehiclePropertyGroup:SYSTEM,VehicleArea:SEAT,VehiclePropertyType:BOOLEAN
     /**
-     * Fan Positions Available
+     * List of supported fan directions in the vehicle.
      *
-     * This is a bit mask of fan positions available for the zone.  Each
-     * available fan direction is denoted by a separate entry in the vector.  A
+     * This is a bit mask of the supported fan positions available each area ID.  Each
+     * supported fan direction is denoted by a separate entry in the vector.  A
      * fan direction may have multiple bits from vehicle_hvac_fan_direction set.
      * For instance, a typical car may have the following fan positions:
      *   - FAN_DIRECTION_FACE (0x1)
@@ -1781,6 +1784,9 @@ enum VehicleProperty {
      *   - FAN_DIRECTION_FACE | FAN_DIRECTION_FLOOR (0x3)
      *   - FAN_DIRECTION_DEFROST (0x4)
      *   - FAN_DIRECTION_FLOOR | FAN_DIRECTION_DEFROST (0x6)
+     *
+     * This property must be supported if {@code #HVAC_FAN_DIRECTION} is implemented on the vehicle,
+     * and vice versa.
      *
      * @change_mode VehiclePropertyChangeMode.STATIC
      * @access VehiclePropertyAccess.READ

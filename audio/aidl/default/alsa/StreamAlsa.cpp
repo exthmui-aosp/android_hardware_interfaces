@@ -280,13 +280,22 @@ void StreamAlsa::outputIoThread(size_t idx) {
     const size_t bufferSize = mBufferSizeFrames * mFrameSizeBytes;
     std::vector<char> buffer(bufferSize);
     while (mIoThreadIsRunning) {
-        ssize_t framesRead = mSources[idx]->read(&buffer[0], mBufferSizeFrames);
-        if (framesRead > 0) {
+        ssize_t framesReadOrError = mSources[idx]->read(&buffer[0], mBufferSizeFrames);
+        if (framesReadOrError > 0) {
             int ret = proxy_write_with_retries(mAlsaDeviceProxies[idx].get(), &buffer[0],
-                                               framesRead * mFrameSizeBytes, mReadWriteRetries);
+                                               framesReadOrError * mFrameSizeBytes,
+                                               mReadWriteRetries);
             // Errors when the stream is being stopped are expected.
             LOG_IF(WARNING, ret != 0 && mIoThreadIsRunning)
                     << __func__ << "[" << idx << "]: Error writing into ALSA: " << ret;
+        } else if (framesReadOrError == 0) {
+            // MonoPipeReader does not have a blocking read, while use of std::condition_variable
+            // requires use of a mutex. For now, just do a 1ms sleep. Consider using a different
+            // pipe / ring buffer mechanism.
+            if (mIoThreadIsRunning) usleep(1000);
+        } else {
+            LOG(WARNING) << __func__ << "[" << idx
+                         << "]: Error while reading from the pipe: " << framesReadOrError;
         }
     }
 }
