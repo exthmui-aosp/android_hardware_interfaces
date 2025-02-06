@@ -578,6 +578,18 @@ TEST_P(MediaQualityAidl, TestSetMediaQualityCallback) {
     ASSERT_OK(mediaquality->setAmbientBacklightCallback(callback));
 }
 
+TEST_P(MediaQualityAidl, TestGetPictureProfileChangedListener) {
+    std::shared_ptr<::aidl::android::hardware::tv::mediaquality::IPictureProfileChangedListener>
+            aidlListener;
+    mediaquality->getPictureProfileListener(&aidlListener);
+}
+
+TEST_P(MediaQualityAidl, TestGetSoundProfileChangedListener) {
+    std::shared_ptr<::aidl::android::hardware::tv::mediaquality::ISoundProfileChangedListener>
+            aidlListener;
+    mediaquality->getSoundProfileListener(&aidlListener);
+}
+
 TEST_P(MediaQualityAidl, TestSetPictureProfileAdjustmentListener) {
     std::shared_ptr<PictureProfileAdjustmentListener> listener =
             ndk::SharedRefBase::make<PictureProfileAdjustmentListener>(

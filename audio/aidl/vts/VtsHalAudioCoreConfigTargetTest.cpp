@@ -341,7 +341,7 @@ class AudioCoreConfig : public testing::TestWithParam<std::string> {
         auto values = criterionV2.values;
         auto valueIt = find_if(values.begin(), values.end(),
                                [&](const auto& typedValue) { return typedValue == value; });
-        EXPECT_NE(valueIt, values.end());
+        EXPECT_NE(valueIt, values.end()) << "Not found: \"" << value << "\"";
     }
 
     /**

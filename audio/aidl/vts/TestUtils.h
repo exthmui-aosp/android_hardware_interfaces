@@ -124,3 +124,30 @@ inline ::testing::AssertionResult assertResultOrUnknownTransaction(
     EXPECT_PRED_FORMAT2(                                                                           \
             ::android::hardware::audio::common::testing::detail::assertResultOrUnknownTransaction, \
             expected, ret)
+
+namespace android::hardware::audio::common::testing::detail {
+
+template <typename>
+struct mf_traits {};
+template <class T, class U>
+struct mf_traits<U T::*> {
+    using member_type = U;
+};
+
+}  // namespace android::hardware::audio::common::testing::detail
+
+namespace aidl::android::media::audio::common {
+
+template <typename P>
+std::enable_if_t<std::is_function_v<typename ::android::hardware::audio::common::testing::detail::
+                                            mf_traits<decltype(&P::toString)>::member_type>,
+                 std::ostream&>
+operator<<(std::ostream& os, const P& p) {
+    return os << p.toString();
+}
+template <typename E>
+std::enable_if_t<std::is_enum_v<E>, std::ostream&> operator<<(std::ostream& os, const E& e) {
+    return os << toString(e);
+}
+
+}  // namespace aidl::android::media::audio::common

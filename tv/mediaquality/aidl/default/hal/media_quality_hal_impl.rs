@@ -62,15 +62,15 @@ impl MediaQualityService {
     pub fn new() -> Self {
         Self {
             callback: Arc::new(Mutex::new(None)),
-            ambient_backlight_supported: Arc::new(Mutex::new(false)),
-            ambient_backlight_enabled: Arc::new(Mutex::new(true)),
+            ambient_backlight_supported: Arc::new(Mutex::new(true)),
+            ambient_backlight_enabled: Arc::new(Mutex::new(false)),
             ambient_backlight_detector_settings:
                     Arc::new(Mutex::new(AmbientBacklightSettings::default())),
-            auto_pq_supported: Arc::new(Mutex::new(false)),
+            auto_pq_supported: Arc::new(Mutex::new(true)),
             auto_pq_enabled: Arc::new(Mutex::new(false)),
-            auto_sr_supported: Arc::new(Mutex::new(false)),
+            auto_sr_supported: Arc::new(Mutex::new(true)),
             auto_sr_enabled: Arc::new(Mutex::new(false)),
-            auto_aq_supported: Arc::new(Mutex::new(false)),
+            auto_aq_supported: Arc::new(Mutex::new(true)),
             auto_aq_enabled: Arc::new(Mutex::new(false)),
             picture_profile_adjustment_listener: Arc::new(Mutex::new(None)),
             sound_profile_adjustment_listener: Arc::new(Mutex::new(None)),
@@ -236,7 +236,7 @@ impl IMediaQuality for MediaQualityService {
     fn getPictureProfileListener(&self) -> binder::Result<binder::Strong<dyn IPictureProfileChangedListener>> {
         println!("getPictureProfileListener");
         let listener = self.picture_profile_changed_listener.lock().unwrap();
-        listener.clone().ok_or(binder::StatusCode::UNKNOWN_ERROR.into())
+        Ok(listener.clone().expect("NONE"))
     }
 
     fn setPictureProfileAdjustmentListener(
