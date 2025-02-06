@@ -80,6 +80,17 @@ void aidlToProto(const aidl_vehicle::VehiclePropConfig& in, proto::VehiclePropCo
             }
         }
         protoACfg->set_support_variable_update_rate(areaConfig.supportVariableUpdateRate);
+        if (areaConfig.hasSupportedValueInfo.has_value()) {
+            // Creates the has_supported_value_info field.
+            proto::HasSupportedValueInfo* hasSupportedValueInfoProto =
+                    protoACfg->mutable_has_supported_value_info();
+            hasSupportedValueInfoProto->set_has_min_supported_value(
+                    areaConfig.hasSupportedValueInfo->hasMinSupportedValue);
+            hasSupportedValueInfoProto->set_has_max_supported_value(
+                    areaConfig.hasSupportedValueInfo->hasMaxSupportedValue);
+            hasSupportedValueInfoProto->set_has_supported_values_list(
+                    areaConfig.hasSupportedValueInfo->hasSupportedValuesList);
+        }
     }
 }
 
@@ -96,19 +107,29 @@ void protoToAidl(const proto::VehiclePropConfig& in, aidl_vehicle::VehiclePropCo
     auto cast_to_acfg = [](const proto::VehicleAreaConfig& protoAcfg) {
         auto vehicleAreaConfig = aidl_vehicle::VehicleAreaConfig{
                 .areaId = protoAcfg.area_id(),
-                .access = static_cast<aidl_vehicle::VehiclePropertyAccess>(protoAcfg.access()),
                 .minInt32Value = protoAcfg.min_int32_value(),
                 .maxInt32Value = protoAcfg.max_int32_value(),
                 .minInt64Value = protoAcfg.min_int64_value(),
                 .maxInt64Value = protoAcfg.max_int64_value(),
                 .minFloatValue = protoAcfg.min_float_value(),
                 .maxFloatValue = protoAcfg.max_float_value(),
+                .access = static_cast<aidl_vehicle::VehiclePropertyAccess>(protoAcfg.access()),
                 .supportVariableUpdateRate = protoAcfg.support_variable_update_rate(),
         };
         if (protoAcfg.supported_enum_values().size() != 0) {
             vehicleAreaConfig.supportedEnumValues = std::vector<int64_t>();
             COPY_PROTOBUF_VEC_TO_VHAL_TYPE(protoAcfg, supported_enum_values, (&vehicleAreaConfig),
                                            supportedEnumValues.value());
+        }
+        if (protoAcfg.has_has_supported_value_info()) {
+            aidl_vehicle::HasSupportedValueInfo hasSupportedValueInfo = {};
+            hasSupportedValueInfo.hasMinSupportedValue =
+                    protoAcfg.has_supported_value_info().has_min_supported_value();
+            hasSupportedValueInfo.hasMaxSupportedValue =
+                    protoAcfg.has_supported_value_info().has_max_supported_value();
+            hasSupportedValueInfo.hasSupportedValuesList =
+                    protoAcfg.has_supported_value_info().has_supported_values_list();
+            vehicleAreaConfig.hasSupportedValueInfo = hasSupportedValueInfo;
         }
 
         return vehicleAreaConfig;
