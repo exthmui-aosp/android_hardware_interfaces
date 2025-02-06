@@ -36,6 +36,7 @@ cc_test {
     srcs: [
         "VtsHalGraphicsComposer3_TargetTest.cpp",
         "VtsHalGraphicsComposer3_ReadbackTest.cpp",
+        "VtsHalGraphicsComposer3_ConnectedDisplays.cpp",
     ],
     shared_libs: [
         "libEGL",
