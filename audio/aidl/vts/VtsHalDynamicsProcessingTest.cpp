@@ -788,9 +788,10 @@ class DynamicsProcessingLimiterConfigDataTest
     void SetUp() override {
         SetUpDynamicsProcessingEffect();
         SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
-        ASSERT_NO_FATAL_FAILURE(generateSineWave(1000 /*Input Frequency*/, mInput, 1.0,
-                                                 kSamplingFrequency, mChannelLayout));
+        ASSERT_NO_FATAL_FAILURE(
+                generateSineWave(kInputFrequency, mInput, 1.0, kSamplingFrequency, mChannelLayout));
         mInputDb = calculateDb(mInput);
+        ASSERT_NEAR(mInputDb, kSineFullScaleDb, kToleranceDb);
     }
 
     void TearDown() override { TearDownDynamicsProcessingEffect(); }
@@ -823,6 +824,9 @@ class DynamicsProcessingLimiterConfigDataTest
     static constexpr float kDefaultRatio = 4;
     static constexpr float kDefaultThreshold = -10;
     static constexpr float kDefaultPostGain = 0;
+    static constexpr float kInputFrequency = 1000;
+    // Full scale sine wave with 1000 Hz frequency is -3 dB
+    static constexpr float kSineFullScaleDb = -3;
     std::vector<DynamicsProcessing::LimiterConfig> mLimiterConfigList;
     std::vector<float> mInput;
     float mInputDb;
@@ -887,9 +891,13 @@ TEST_P(DynamicsProcessingLimiterConfigDataTest, IncreasingPostGain) {
     std::vector<float> output(mInput.size());
     for (float postGainDb : postGainDbValues) {
         cleanUpLimiterConfig();
+        ASSERT_NO_FATAL_FAILURE(generateSineWave(kInputFrequency, mInput, dBToAmplitude(postGainDb),
+                                                 kSamplingFrequency, mChannelLayout));
+        mInputDb = calculateDb(mInput);
+        EXPECT_NEAR(mInputDb, kSineFullScaleDb - postGainDb, kToleranceDb);
         for (int i = 0; i < mChannelCount; i++) {
             fillLimiterConfig(mLimiterConfigList, i, true, kDefaultLinkerGroup, kDefaultAttackTime,
-                              kDefaultReleaseTime, kDefaultRatio, -1, postGainDb);
+                              kDefaultReleaseTime, 1, kDefaultThreshold, postGainDb);
         }
         ASSERT_NO_FATAL_FAILURE(setLimiterParamsAndProcess(mInput, output));
         if (!isAllParamsValid()) {
@@ -1255,6 +1263,7 @@ class DynamicsProcessingMbcBandConfigDataTest
         ASSERT_NO_FATAL_FAILURE(generateSineWave(mTestFrequencies, mInput, 1.0, kSamplingFrequency,
                                                  mChannelLayout));
         mInputDb = calculateDb(mInput);
+        ASSERT_NEAR(mInputDb, kFullScaleDb, kToleranceDb);
     }
 
     void TearDown() override { TearDownDynamicsProcessingEffect(); }
@@ -1267,12 +1276,7 @@ class DynamicsProcessingMbcBandConfigDataTest
         addEngineConfig(mEngineConfigPreset);
         addMbcChannelConfig(mChannelConfig);
         addMbcBandConfigs(mCfgs);
-
-        if (isAllParamsValid()) {
-            ASSERT_NO_FATAL_FAILURE(SetAndGetDynamicsProcessingParameters());
-            ASSERT_NO_FATAL_FAILURE(
-                    processAndWriteToOutput(mInput, output, mEffect, &mOpenEffectReturn));
-        }
+        ASSERT_NO_FATAL_FAILURE(setParamsAndProcess(mInput, output));
     }
 
     void fillMbcBandConfig(std::vector<DynamicsProcessing::MbcBandConfig>& cfgs, int channelIndex,
@@ -1387,9 +1391,9 @@ TEST_P(DynamicsProcessingMbcBandConfigDataTest, IncreasingPostGain) {
     std::vector<float> postGainDbValues = {-55, -30, 0, 30, 55};
     std::vector<float> output(mInput.size());
     for (float postGainDb : postGainDbValues) {
-        float amplitude = 1.0 / (pow(10, postGainDb / 20));
-        ASSERT_NO_FATAL_FAILURE(generateSineWave(mTestFrequencies, mInput, amplitude,
-                                                 kSamplingFrequency, mChannelLayout));
+        ASSERT_NO_FATAL_FAILURE(generateSineWave(mTestFrequencies, mInput,
+                                                 dBToAmplitude(postGainDb), kSamplingFrequency,
+                                                 mChannelLayout));
         mInputDb = calculateDb(mInput);
         EXPECT_NEAR(mInputDb, kFullScaleDb - postGainDb, kToleranceDb);
         cleanUpMbcConfig();

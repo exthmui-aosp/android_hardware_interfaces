@@ -283,6 +283,15 @@ size_t StreamRemoteSubmix::getStreamPipeSizeInFrames() {
         }
         return ::android::OK;
     }
+    // get and hold the sink because 'MonoPipeReader' does not hold a strong pointer to it.
+    sp<MonoPipe> sink = mCurrentRoute->getSink();
+    if (sink == nullptr) {
+        if (++mReadErrorCount < kMaxErrorLogs) {
+            LOG(ERROR) << __func__
+                       << ": the sink has been released! (not all errors will be logged)";
+        }
+        return ::android::OK;
+    }
     mReadErrorCount = 0;
 
     LOG(VERBOSE) << __func__ << ": " << mDeviceAddress.toString() << ", " << frameCount
