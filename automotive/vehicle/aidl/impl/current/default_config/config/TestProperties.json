@@ -117,7 +117,12 @@
                         "hasMinSupportedValue": true,
                         "hasMaxSupportedValue": true,
                         "hasSupportedValuesList": true
-                    }
+                    },
+                    "supportedValues": [
+                        1,
+                        2,
+                        3
+                    ]
                 },
                 {
                     "defaultValue": {

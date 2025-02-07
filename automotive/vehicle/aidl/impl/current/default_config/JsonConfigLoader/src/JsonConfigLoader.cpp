@@ -602,6 +602,13 @@ void JsonConfigParser::parseAreas(const Json::Value& parentJsonNode, const std::
             areaConfig.supportedEnumValues = std::move(supportedEnumValues);
         }
 
+        std::vector<float> supportedValues;
+        tryParseJsonArrayToVariable(jsonAreaConfig, "supportedValues", /*optional=*/true,
+                                    &supportedValues, errors);
+        if (!supportedValues.empty()) {
+            config->supportedValuesForAreaId[areaId] = std::move(supportedValues);
+        }
+
         if (jsonAreaConfig.isMember("hasSupportedValueInfo")) {
             HasSupportedValueInfo hasSupportedValueInfo = HasSupportedValueInfo{};
             const Json::Value& jsonHasSupportedValueInfo = jsonAreaConfig["hasSupportedValueInfo"];

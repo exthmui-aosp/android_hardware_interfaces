@@ -1600,21 +1600,30 @@
                     "supportedEnumValues": [
                         "Constants::LIGHT_STATE_OFF",
                         "Constants::LIGHT_STATE_ON"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "Constants::SEAT_1_RIGHT",
                     "supportedEnumValues": [
                         "Constants::LIGHT_STATE_OFF",
                         "Constants::LIGHT_STATE_ON"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "Constants::SEAT_2_LEFT_2_RIGHT_2_CENTER",
                     "supportedEnumValues": [
                         "Constants::LIGHT_STATE_OFF",
                         "Constants::LIGHT_STATE_ON"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -1632,7 +1641,10 @@
                         "Constants::LIGHT_SWITCH_OFF",
                         "Constants::LIGHT_SWITCH_ON",
                         "Constants::LIGHT_SWITCH_AUTO"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "Constants::SEAT_1_RIGHT",
@@ -1640,7 +1652,10 @@
                         "Constants::LIGHT_SWITCH_OFF",
                         "Constants::LIGHT_SWITCH_ON",
                         "Constants::LIGHT_SWITCH_AUTO"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "Constants::SEAT_2_LEFT_2_RIGHT_2_CENTER",
@@ -1648,7 +1663,10 @@
                         "Constants::LIGHT_SWITCH_OFF",
                         "Constants::LIGHT_SWITCH_ON",
                         "Constants::LIGHT_SWITCH_AUTO"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -1948,7 +1966,10 @@
                         "VehicleAirbagLocation::LEFT_SIDE",
                         "VehicleAirbagLocation::RIGHT_SIDE",
                         "VehicleAirbagLocation::CURTAIN"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "Constants::SEAT_1_RIGHT",
@@ -1958,21 +1979,30 @@
                         "VehicleAirbagLocation::LEFT_SIDE",
                         "VehicleAirbagLocation::RIGHT_SIDE",
                         "VehicleAirbagLocation::CURTAIN"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "Constants::SEAT_2_LEFT",
                     "supportedEnumValues": [
                         "VehicleAirbagLocation::FRONT",
                         "VehicleAirbagLocation::CURTAIN"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "Constants::SEAT_2_RIGHT",
                     "supportedEnumValues": [
                         "VehicleAirbagLocation::FRONT",
                         "VehicleAirbagLocation::CURTAIN"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -2186,6 +2216,21 @@
                 60,
                 80,
                 100
+            ],
+            "areas": [
+                {
+                    "areaId": 0,
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    },
+                    "supportedValues": [
+                        20,
+                        40,
+                        60,
+                        80,
+                        100
+                    ]
+                }
             ]
         },
         {
@@ -2557,7 +2602,10 @@
                         "Constants::EV_STOPPING_MODE_CREEP",
                         "Constants::EV_STOPPING_MODE_ROLL",
                         "Constants::EV_STOPPING_MODE_HOLD"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -3253,8 +3301,42 @@
                     "maxFloatValue": 32.5,
                     "hasSupportedValueInfo": {
                         "hasMinSupportedValue": true,
-                        "hasMaxSupportedValue": true
-                    }
+                        "hasMaxSupportedValue": true,
+                        "hasSupportedValuesList": true
+                    },
+                    "supportedValues": [
+                        17.5,
+                        18,
+                        18.5,
+                        19,
+                        19.5,
+                        20,
+                        20.5,
+                        21,
+                        21.5,
+                        22,
+                        22.5,
+                        23,
+                        23.5,
+                        24,
+                        24.5,
+                        25,
+                        25.5,
+                        26,
+                        26.5,
+                        27,
+                        27.5,
+                        28,
+                        28.5,
+                        29,
+                        29.5,
+                        30,
+                        30.5,
+                        31,
+                        31.5,
+                        32,
+                        32.5
+                    ]
                 },
                 {
                     "areaId": "Constants::SEAT_1_RIGHT",
@@ -3262,8 +3344,42 @@
                     "maxFloatValue": 32.5,
                     "hasSupportedValueInfo": {
                         "hasMinSupportedValue": true,
-                        "hasMaxSupportedValue": true
-                    }
+                        "hasMaxSupportedValue": true,
+                        "hasSupportedValuesList": true
+                    },
+                    "supportedValues": [
+                        17.5,
+                        18,
+                        18.5,
+                        19,
+                        19.5,
+                        20,
+                        20.5,
+                        21,
+                        21.5,
+                        22,
+                        22.5,
+                        23,
+                        23.5,
+                        24,
+                        24.5,
+                        25,
+                        25.5,
+                        26,
+                        26.5,
+                        27,
+                        27.5,
+                        28,
+                        28.5,
+                        29,
+                        29.5,
+                        30,
+                        30.5,
+                        31,
+                        31.5,
+                        32,
+                        32.5
+                    ]
                 },
                 {
                     "areaId": "Constants::SEAT_2_LEFT",
@@ -3271,8 +3387,42 @@
                     "maxFloatValue": 32.5,
                     "hasSupportedValueInfo": {
                         "hasMinSupportedValue": true,
-                        "hasMaxSupportedValue": true
-                    }
+                        "hasMaxSupportedValue": true,
+                        "hasSupportedValuesList": true
+                    },
+                    "supportedValues": [
+                        17.5,
+                        18,
+                        18.5,
+                        19,
+                        19.5,
+                        20,
+                        20.5,
+                        21,
+                        21.5,
+                        22,
+                        22.5,
+                        23,
+                        23.5,
+                        24,
+                        24.5,
+                        25,
+                        25.5,
+                        26,
+                        26.5,
+                        27,
+                        27.5,
+                        28,
+                        28.5,
+                        29,
+                        29.5,
+                        30,
+                        30.5,
+                        31,
+                        31.5,
+                        32,
+                        32.5
+                    ]
                 },
                 {
                     "areaId": "Constants::SEAT_2_RIGHT",
@@ -3280,8 +3430,42 @@
                     "maxFloatValue": 32.5,
                     "hasSupportedValueInfo": {
                         "hasMinSupportedValue": true,
-                        "hasMaxSupportedValue": true
-                    }
+                        "hasMaxSupportedValue": true,
+                        "hasSupportedValuesList": true
+                    },
+                    "supportedValues": [
+                        17.5,
+                        18,
+                        18.5,
+                        19,
+                        19.5,
+                        20,
+                        20.5,
+                        21,
+                        21.5,
+                        22,
+                        22.5,
+                        23,
+                        23.5,
+                        24,
+                        24.5,
+                        25,
+                        25.5,
+                        26,
+                        26.5,
+                        27,
+                        27.5,
+                        28,
+                        28.5,
+                        29,
+                        29.5,
+                        30,
+                        30.5,
+                        31,
+                        31.5,
+                        32,
+                        32.5
+                    ]
                 },
                 {
                     "areaId": "Constants::SEAT_2_CENTER",
@@ -3289,8 +3473,42 @@
                     "maxFloatValue": 32.5,
                     "hasSupportedValueInfo": {
                         "hasMinSupportedValue": true,
-                        "hasMaxSupportedValue": true
-                    }
+                        "hasMaxSupportedValue": true,
+                        "hasSupportedValuesList": true
+                    },
+                    "supportedValues": [
+                        17.5,
+                        18,
+                        18.5,
+                        19,
+                        19.5,
+                        20,
+                        20.5,
+                        21,
+                        21.5,
+                        22,
+                        22.5,
+                        23,
+                        23.5,
+                        24,
+                        24.5,
+                        25,
+                        25.5,
+                        26,
+                        26.5,
+                        27,
+                        27.5,
+                        28,
+                        28.5,
+                        29,
+                        29.5,
+                        30,
+                        30.5,
+                        31,
+                        31.5,
+                        32,
+                        32.5
+                    ]
                 }
             ],
             "comment":
@@ -3450,7 +3668,10 @@
                         "ImpactSensorLocation::REAR_LEFT_DOOR_SIDE",
                         "ImpactSensorLocation::REAR_RIGHT_DOOR_SIDE",
                         "ImpactSensorLocation::REAR"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -3971,14 +4192,20 @@
                         "WindshieldWipersState::OFF",
                         "WindshieldWipersState::ON",
                         "WindshieldWipersState::SERVICE"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "VehicleAreaWindow::REAR_WINDSHIELD",
                     "supportedEnumValues": [
                         "WindshieldWipersState::OFF",
                         "WindshieldWipersState::ON"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -4007,7 +4234,10 @@
                         "WindshieldWipersSwitch::CONTINUOUS_LEVEL_5",
                         "WindshieldWipersSwitch::AUTO",
                         "WindshieldWipersSwitch::SERVICE"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "VehicleAreaWindow::REAR_WINDSHIELD",
@@ -4019,7 +4249,10 @@
                         "WindshieldWipersSwitch::CONTINUOUS_LEVEL_2",
                         "WindshieldWipersSwitch::AUTO",
                         "WindshieldWipersSwitch::SERVICE"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -4363,7 +4596,10 @@
                     "supportedEnumValues": [
                         "Constants::LIGHT_STATE_OFF",
                         "Constants::LIGHT_STATE_ON"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -4454,7 +4690,10 @@
                         "Constants::LIGHT_SWITCH_OFF",
                         "Constants::LIGHT_SWITCH_ON",
                         "Constants::LIGHT_SWITCH_AUTO"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5356,7 +5595,10 @@
                         "EmergencyLaneKeepAssistState::ACTIVATED_STEER_LEFT",
                         "EmergencyLaneKeepAssistState::ACTIVATED_STEER_RIGHT",
                         "EmergencyLaneKeepAssistState::USER_OVERRIDE"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5386,7 +5628,10 @@
                         "CruiseControlType::STANDARD",
                         "CruiseControlType::ADAPTIVE",
                         "CruiseControlType::PREDICTIVE"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5410,7 +5655,10 @@
                         "CruiseControlState::USER_OVERRIDE",
                         "CruiseControlState::SUSPENDED",
                         "CruiseControlState::FORCED_DEACTIVATION_WARNING"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5426,7 +5674,10 @@
                         "CruiseControlCommand::DECREASE_TARGET_SPEED",
                         "CruiseControlCommand::INCREASE_TARGET_TIME_GAP",
                         "CruiseControlCommand::DECREASE_TARGET_TIME_GAP"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5508,7 +5759,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "HandsOnDetectionDriverState::HANDS_ON",
                         "HandsOnDetectionDriverState::HANDS_OFF"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5526,7 +5780,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "HandsOnDetectionWarning::NO_WARNING",
                         "HandsOnDetectionWarning::WARNING"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5559,7 +5816,10 @@
                         "DriverDrowsinessAttentionState::KSS_RATING_7_SLEEPY_NO_EFFORT",
                         "DriverDrowsinessAttentionState::KSS_RATING_8_SLEEPY_SOME_EFFORT",
                         "DriverDrowsinessAttentionState::KSS_RATING_9_VERY_SLEEPY"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5585,7 +5845,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "DriverDrowsinessAttentionWarning::NO_WARNING",
                         "DriverDrowsinessAttentionWarning::WARNING"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5611,7 +5874,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "DriverDistractionState::NOT_DISTRACTED",
                         "DriverDistractionState::DISTRACTED"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5637,7 +5903,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "DriverDistractionWarning::NO_WARNING",
                         "DriverDistractionWarning::WARNING"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5813,7 +6082,10 @@
                         "AutomaticEmergencyBrakingState::ENABLED",
                         "AutomaticEmergencyBrakingState::ACTIVATED",
                         "AutomaticEmergencyBrakingState::USER_OVERRIDE"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5843,7 +6115,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "ForwardCollisionWarningState::NO_WARNING",
                         "ForwardCollisionWarningState::WARNING"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5873,7 +6148,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "BlindSpotWarningState::NO_WARNING",
                         "BlindSpotWarningState::WARNING"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 },
                 {
                     "areaId": "VehicleAreaMirror::DRIVER_RIGHT",
@@ -5885,7 +6163,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "BlindSpotWarningState::NO_WARNING",
                         "BlindSpotWarningState::WARNING"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5915,7 +6196,10 @@
                         "LaneDepartureWarningState::NO_WARNING",
                         "LaneDepartureWarningState::WARNING_LEFT",
                         "LaneDepartureWarningState::WARNING_RIGHT"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5946,7 +6230,10 @@
                         "LaneKeepAssistState::ACTIVATED_STEER_LEFT",
                         "LaneKeepAssistState::ACTIVATED_STEER_RIGHT",
                         "LaneKeepAssistState::USER_OVERRIDE"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -5981,7 +6268,10 @@
                         "LaneCenteringAssistState::ACTIVATED",
                         "LaneCenteringAssistState::USER_OVERRIDE",
                         "LaneCenteringAssistState::FORCED_DEACTIVATION_WARNING"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -6010,7 +6300,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "LowSpeedCollisionWarningState::NO_WARNING",
                         "LowSpeedCollisionWarningState::WARNING"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -6039,7 +6332,10 @@
                         "ErrorState::NOT_AVAILABLE_DISABLED",
                         "ElectronicStabilityControlState::ENABLED",
                         "ElectronicStabilityControlState::ACTIVATED"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -6073,7 +6369,10 @@
                         "CrossTrafficMonitoringWarningState::WARNING_REAR_LEFT",
                         "CrossTrafficMonitoringWarningState::WARNING_REAR_RIGHT",
                         "CrossTrafficMonitoringWarningState::WARNING_REAR_BOTH"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
@@ -6103,7 +6402,10 @@
                         "LowSpeedAutomaticEmergencyBrakingState::ENABLED",
                         "LowSpeedAutomaticEmergencyBrakingState::ACTIVATED",
                         "LowSpeedAutomaticEmergencyBrakingState::USER_OVERRIDE"
-                    ]
+                    ],
+                    "hasSupportedValueInfo": {
+                        "hasSupportedValuesList": true
+                    }
                 }
             ]
         },
