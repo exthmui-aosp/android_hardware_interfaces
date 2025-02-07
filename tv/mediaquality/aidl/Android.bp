@@ -10,7 +10,6 @@ package {
 aidl_interface {
     name: "android.hardware.tv.mediaquality",
     vendor_available: true,
-    owner: "haofanw",
     srcs: [
         "android/hardware/tv/mediaquality/*.aidl",
     ],
