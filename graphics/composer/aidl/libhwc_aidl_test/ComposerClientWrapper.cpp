@@ -62,8 +62,9 @@ ScopedAStatus ComposerClientWrapper::createClient() {
     return mComposerClient->registerCallback(mComposerCallback);
 }
 
-bool ComposerClientWrapper::tearDown(ComposerClientWriter* writer) {
-    return verifyComposerCallbackParams() && destroyAllLayers(writer);
+bool ComposerClientWrapper::tearDown(
+        std::unordered_map<int64_t, ComposerClientWriter*> displayWriters) {
+    return verifyComposerCallbackParams() && destroyAllLayers(displayWriters);
 }
 
 std::pair<ScopedAStatus, int32_t> ComposerClientWrapper::getInterfaceVersion() const {
@@ -663,11 +664,15 @@ bool ComposerClientWrapper::getDisplayConfigurationSupported() const {
     return interfaceVersion >= 3;
 }
 
-bool ComposerClientWrapper::destroyAllLayers(ComposerClientWriter* writer) {
+bool ComposerClientWrapper::destroyAllLayers(
+        std::unordered_map<int64_t, ComposerClientWriter*> displayWriters) {
     std::unordered_map<int64_t, DisplayResource> physicalDisplays;
     while (!mDisplayResources.empty()) {
         const auto& it = mDisplayResources.begin();
         const auto& [display, resource] = *it;
+
+        ComposerClientWriter* writer =
+                displayWriters.count(display) > 0 ? displayWriters.at(display) : nullptr;
 
         while (!resource.layers.empty()) {
             auto layer = *resource.layers.begin();
