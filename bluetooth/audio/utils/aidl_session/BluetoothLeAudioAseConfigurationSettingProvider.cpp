@@ -394,7 +394,8 @@ void AudioSetConfigurationProviderJson::populateConfigurationData(
 void AudioSetConfigurationProviderJson::populateAseConfiguration(
     const std::string& name, LeAudioAseConfiguration& ase,
     const le_audio::AudioSetSubConfiguration* flat_subconfig,
-    const le_audio::QosConfiguration* qos_cfg) {
+    const le_audio::QosConfiguration* qos_cfg,
+    ConfigurationFlags& configurationFlags) {
   // Target latency
   switch (qos_cfg->target_latency()) {
     case le_audio::AudioSetConfigurationTargetLatency::
@@ -410,6 +411,7 @@ void AudioSetConfigurationProviderJson::populateAseConfiguration(
     case le_audio::AudioSetConfigurationTargetLatency::
         AudioSetConfigurationTargetLatency_LOW:
       ase.targetLatency = LeAudioAseConfiguration::TargetLatency::LOWER;
+      configurationFlags.bitmask |= ConfigurationFlags::LOW_LATENCY;
       break;
     default:
       ase.targetLatency = LeAudioAseConfiguration::TargetLatency::UNDEFINED;
@@ -507,7 +509,8 @@ AseDirectionConfiguration
 AudioSetConfigurationProviderJson::SetConfigurationFromFlatSubconfig(
     const std::string& name,
     const le_audio::AudioSetSubConfiguration* flat_subconfig,
-    const le_audio::QosConfiguration* qos_cfg, CodecLocation location) {
+    const le_audio::QosConfiguration* qos_cfg, CodecLocation location,
+    ConfigurationFlags& configurationFlags) {
   AseDirectionConfiguration direction_conf;
 
   LeAudioAseConfiguration ase;
@@ -515,7 +518,8 @@ AudioSetConfigurationProviderJson::SetConfigurationFromFlatSubconfig(
   LeAudioDataPathConfiguration path;
 
   // Translate into LeAudioAseConfiguration
-  populateAseConfiguration(name, ase, flat_subconfig, qos_cfg);
+  populateAseConfiguration(name, ase, flat_subconfig, qos_cfg,
+                           configurationFlags);
 
   // Translate into LeAudioAseQosConfiguration
   populateAseQosConfiguration(qos, qos_cfg, ase,
@@ -554,10 +558,10 @@ void AudioSetConfigurationProviderJson::processSubconfig(
     const le_audio::QosConfiguration* qos_cfg,
     std::vector<std::optional<AseDirectionConfiguration>>&
         directionAseConfiguration,
-    CodecLocation location) {
+    CodecLocation location, ConfigurationFlags& configurationFlags) {
   auto ase_cnt = subconfig->ase_cnt();
-  auto config =
-      SetConfigurationFromFlatSubconfig(name, subconfig, qos_cfg, location);
+  auto config = SetConfigurationFromFlatSubconfig(name, subconfig, qos_cfg,
+                                                  location, configurationFlags);
   directionAseConfiguration.push_back(config);
   // Put the same setting again.
   if (ase_cnt == 2) directionAseConfiguration.push_back(config);
@@ -643,10 +647,10 @@ void AudioSetConfigurationProviderJson::PopulateAseConfigurationFromFlat(
     for (auto subconfig : *codec_cfg->subconfigurations()) {
       if (subconfig->direction() == kLeAudioDirectionSink) {
         processSubconfig(flat_cfg->name()->str(), subconfig, qos_sink_cfg,
-                         sinkAseConfiguration, location);
+                         sinkAseConfiguration, location, configurationFlags);
       } else {
         processSubconfig(flat_cfg->name()->str(), subconfig, qos_source_cfg,
-                         sourceAseConfiguration, location);
+                         sourceAseConfiguration, location, configurationFlags);
       }
     }
 
