@@ -34,5 +34,12 @@ aidl_interface {
             enabled: false,
         },
     },
-    frozen: false,
+    frozen: true,
+    versions_with_info: [
+        {
+            version: "1",
+            imports: ["android.hardware.graphics.common-V5"],
+        },
+    ],
+
 }
