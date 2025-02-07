@@ -34,8 +34,8 @@ use diced_open_dice::{
     retry_bcc_main_flow, retry_dice_main_flow, Config, DiceArtifacts, DiceConfigValues, DiceError,
     DiceMode, InputValues, OwnedDiceArtifacts, HASH_SIZE, HIDDEN_SIZE,
 };
+use explicitkeydice::OwnedDiceArtifactsWithExplicitKey;
 use log::error;
-use secretkeeper_client::dice::OwnedDiceArtifactsWithExplicitKey;
 
 /// Sample UDS used to perform the root DICE flow by `make_sample_bcc_and_cdis`.
 const UDS: &[u8; CDI_SIZE] = &[
