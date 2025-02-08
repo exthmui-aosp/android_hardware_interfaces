@@ -220,13 +220,6 @@ TEST_P(RadioModemTest, getDeviceIdentity) {
  * Test IRadioModem.getImei() for the response returned.
  */
 TEST_P(RadioModemTest, getImei) {
-    if (telephony_flags::enforce_telephony_feature_mapping()) {
-        if (!deviceSupportsFeature(FEATURE_TELEPHONY_GSM)) {
-            GTEST_SKIP() << "Skipping getImei "
-                            "due to undefined FEATURE_TELEPHONY_GSM";
-        }
-    }
-
     int32_t aidl_version;
     ndk::ScopedAStatus aidl_status = radio_modem->getInterfaceVersion(&aidl_version);
     ASSERT_OK(aidl_status);

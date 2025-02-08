@@ -60,7 +60,7 @@ class ComposerClientWrapper {
 
     ScopedAStatus createClient();
 
-    bool tearDown(ComposerClientWriter*);
+    bool tearDown(std::unordered_map<int64_t, ComposerClientWriter*> displayWriters);
 
     std::pair<ScopedAStatus, int32_t> getInterfaceVersion() const;
 
@@ -218,7 +218,7 @@ class ComposerClientWrapper {
 
     void removeLayerFromDisplayResources(int64_t display, int64_t layer);
 
-    bool destroyAllLayers(ComposerClientWriter*);
+    bool destroyAllLayers(std::unordered_map<int64_t, ComposerClientWriter*> displayWriters);
 
     bool verifyComposerCallbackParams();
 
@@ -242,7 +242,7 @@ class ComposerClientWrapper {
 
 class DisplayWrapper {
   public:
-    DisplayWrapper(int64_t displayId)
+    explicit DisplayWrapper(int64_t displayId)
         : mDisplayId(displayId), mDisplayWidth(0), mDisplayHeight(0) {}
 
     int64_t getDisplayId() const { return mDisplayId; }
