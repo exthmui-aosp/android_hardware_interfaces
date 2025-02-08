@@ -42,6 +42,7 @@ CHANGE_MODE_CPP_FILE_PATH = GENERATED_LIB + '/cpp/ChangeModeForVehicleProperty.h
 ACCESS_CPP_FILE_PATH = GENERATED_LIB + '/cpp/AccessForVehicleProperty.h'
 CHANGE_MODE_JAVA_FILE_PATH = GENERATED_LIB + '/java/ChangeModeForVehicleProperty.java'
 ACCESS_JAVA_FILE_PATH = GENERATED_LIB + '/java/AccessForVehicleProperty.java'
+ENUM_CPP_FILE_PATH = GENERATED_LIB + '/cpp/EnumForVehicleProperty.h'
 ENUM_JAVA_FILE_PATH = GENERATED_LIB + '/java/EnumForVehicleProperty.java'
 UNITS_JAVA_FILE_PATH = GENERATED_LIB + '/java/UnitsForVehicleProperty.java'
 VERSION_CPP_FILE_PATH = GENERATED_LIB + '/cpp/VersionForVehicleProperty.h'
@@ -84,7 +85,7 @@ ENUM_PROPERTIES_WITHOUT_SUPPORTED_VALUES = [
 ]
 
 LICENSE = """/*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,6 +172,40 @@ std::unordered_map<VehicleProperty, std::unordered_set<std::string>>
 {0}
 }};
 }}  // aidl::android::hardware::automotive::vehicle
+"""
+
+ENUM_CPP_FORMATTER = """#pragma once
+
+#define addSupportedValues(EnumType) \\
+{{ \\
+constexpr auto values = ndk::internal::enum_values<EnumType>; \\
+for (size_t i = 0; i < values.size(); i++) {{ \\
+    supportedValues.insert(static_cast<int64_t>(values[i])); \\
+}} \\
+}}
+
+#include <VehicleHalTypes.h>
+#include <aidl/android/hardware/automotive/vehicle/VehicleProperty.h>
+
+#include <unordered_set>
+
+namespace aidl::android::hardware::automotive::vehicle {{
+std::unordered_set<int64_t> getSupportedEnumValuesForProperty(VehicleProperty propertyId) {{
+    std::unordered_set<int64_t> supportedValues;
+    switch (propertyId) {{
+{0}
+        default:
+            // Do nothing.
+            break;
+    }}
+    return supportedValues;
+}}
+}}  // aidl::android::hardware::automotive::vehicle
+"""
+
+ENUM_CPP_SWITCH_CASE_FORMATTER = """        case {0}:
+{1}
+            break;
 """
 
 CHANGE_MODE_JAVA_FORMATTER = """package android.hardware.automotive.vehicle;
@@ -403,7 +438,16 @@ class FileParser:
             elif field == 'enum_types':
                 if len(config.enum_types) < 1:
                     continue
-                if not cpp:
+                if cpp:
+                    switch_case = ''
+                    for index, enum_type in enumerate(config.enum_types):
+                        if index != 0:
+                            switch_case += '\n'
+                        switch_case += TAB + TAB + TAB + 'addSupportedValues({0})'.format(enum_type)
+                    content += ENUM_CPP_SWITCH_CASE_FORMATTER.format(
+                        'VehicleProperty::' + config.name, switch_case)
+                    continue
+                else:
                     value = "List.of(" + ', '.join([class_name + ".class" for class_name in config.enum_types]) + ")"
             elif field == 'unit_type':
                 if not config.unit_type:
@@ -596,8 +640,10 @@ def main():
     generated_files.append(access_mode)
 
     enum_types = GeneratedFile('enum_types')
+    enum_types.setCppFilePath(os.path.join(android_top, ENUM_CPP_FILE_PATH))
     enum_types.setJavaFilePath(os.path.join(android_top, ENUM_JAVA_FILE_PATH))
     enum_types.setJavaFormatter(ENUM_JAVA_FORMATTER)
+    enum_types.setCppFormatter(ENUM_CPP_FORMATTER)
     generated_files.append(enum_types)
 
     unit_type = GeneratedFile('unit_type')
