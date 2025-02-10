@@ -85,9 +85,6 @@ ScopedAStatus Sensors::initialize(
     ALOGI("Sensors initializing");
     ScopedAStatus result = ScopedAStatus::ok();
 
-    mEventQueue = std::make_unique<AidlMessageQueue<Event, SynchronizedReadWrite>>(
-            in_eventQueueDescriptor, true /* resetPointers */);
-
     // Ensure that all sensors are disabled.
     for (auto sensor : mSensors) {
         sensor.second->activate(false);
@@ -105,6 +102,9 @@ ScopedAStatus Sensors::initialize(
     {
         // Hold the lock to ensure that re-creation of event flag is atomic
         std::lock_guard<std::mutex> lock(mWriteLock);
+
+        mEventQueue = std::make_unique<AidlMessageQueue<Event, SynchronizedReadWrite>>(
+                in_eventQueueDescriptor, true /* resetPointers */);
 
         // Ensure that any existing EventFlag is properly deleted
         deleteEventFlagLocked();
