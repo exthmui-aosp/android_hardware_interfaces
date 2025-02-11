@@ -78,6 +78,15 @@ void RadioNetworkTest::SetUp() {
     ASSERT_NE(nullptr, radio_config.get());
 }
 
+bool RadioNetworkTest::shouldTestCdma() {
+    int32_t aidl_version = 0;
+    ndk::ScopedAStatus aidl_status = radio_network->getInterfaceVersion(&aidl_version);
+    EXPECT_TRUE(aidl_status.isOk());
+    if (aidl_version < 4) return true;  // < RADIO_HAL_VERSION_2_3
+
+    return !telephony_flags::cleanup_cdma();
+}
+
 void RadioNetworkTest::stopNetworkScan() {
     serial = GetRandomSerialNumber();
     radio_network->stopNetworkScan(serial);
@@ -1775,6 +1784,9 @@ TEST_P(RadioNetworkTest, getDataRegistrationState) {
  * Test IRadioNetwork.getAvailableBandModes() for the response returned.
  */
 TEST_P(RadioNetworkTest, getAvailableBandModes) {
+    if (!shouldTestCdma()) {
+        GTEST_SKIP() << "Skipping CDMA testing (deprecated)";
+    }
     if (telephony_flags::enforce_telephony_feature_mapping()) {
         if (!deviceSupportsFeature(FEATURE_TELEPHONY_RADIO_ACCESS)) {
             GTEST_SKIP() << "Skipping getAvailableBandModes "
@@ -2019,6 +2031,9 @@ TEST_P(RadioNetworkTest, getAvailableNetworks) {
  * Test IRadioNetwork.setBandMode() for the response returned.
  */
 TEST_P(RadioNetworkTest, setBandMode) {
+    if (!shouldTestCdma()) {
+        GTEST_SKIP() << "Skipping CDMA testing (deprecated)";
+    }
     if (telephony_flags::enforce_telephony_feature_mapping()) {
         if (!deviceSupportsFeature(FEATURE_TELEPHONY_RADIO_ACCESS)) {
             GTEST_SKIP() << "Skipping setBandMode "
@@ -2043,6 +2058,10 @@ TEST_P(RadioNetworkTest, setBandMode) {
  * Test IRadioNetwork.setLocationUpdates() for the response returned.
  */
 TEST_P(RadioNetworkTest, setLocationUpdates) {
+    // While setLocationUpdates is not CDMA-related, it's guarded by the same release flag.
+    if (!shouldTestCdma()) {
+        GTEST_SKIP() << "Skipping testing of deprecated setLocationUpdates method";
+    }
     if (telephony_flags::enforce_telephony_feature_mapping()) {
         if (!deviceSupportsFeature(FEATURE_TELEPHONY_RADIO_ACCESS)) {
             GTEST_SKIP() << "Skipping setLocationUpdates "
