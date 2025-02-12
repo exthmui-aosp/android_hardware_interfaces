@@ -405,7 +405,7 @@ TEST(NonParameterizedTests, unlockedBootloaderStatesImpliesNonNormalRkpVmDiceCha
  * is non-normal.
  */
 TEST(NonParameterizedTests, unlockedBootloaderStatesImpliesNonNormalKeyMintInAVmDiceChain) {
-    if (::android::base::GetBoolProperty("trusty.security_vm.keymint.enabled", false)) {
+    if (!::android::base::GetBoolProperty("trusty.security_vm.keymint.enabled", false)) {
         GTEST_SKIP() << "The KeyMint (" << DEFAULT_INSTANCE_NAME
                      << ") instance is not inside a VM.";
     }
