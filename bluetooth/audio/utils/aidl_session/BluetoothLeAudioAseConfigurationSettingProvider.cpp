@@ -65,7 +65,8 @@ std::map<std::string,
                     ConfigurationFlags>>
     configurations_;
 
-std::vector<LeAudioAseConfigurationSetting> ase_configuration_settings_;
+std::vector<std::pair<std::string, LeAudioAseConfigurationSetting>>
+    ase_configuration_settings_;
 
 constexpr uint8_t kIsoDataPathHci = 0x00;
 constexpr uint8_t kIsoDataPathPlatformDefault = 0x01;
@@ -273,7 +274,7 @@ static const std::vector<
 
 /* Implementation */
 
-std::vector<LeAudioAseConfigurationSetting>
+std::vector<std::pair<std::string, LeAudioAseConfigurationSetting>>
 AudioSetConfigurationProviderJson::GetLeAudioAseConfigurationSettings() {
   AudioSetConfigurationProviderJson::LoadAudioSetConfigurationProviderJson();
   return ase_configuration_settings_;
@@ -392,7 +393,7 @@ void AudioSetConfigurationProviderJson::populateConfigurationData(
 }
 
 void AudioSetConfigurationProviderJson::populateAseConfiguration(
-    const std::string& name, LeAudioAseConfiguration& ase,
+    LeAudioAseConfiguration& ase,
     const le_audio::AudioSetSubConfiguration* flat_subconfig,
     const le_audio::QosConfiguration* qos_cfg,
     ConfigurationFlags& configurationFlags) {
@@ -431,12 +432,6 @@ void AudioSetConfigurationProviderJson::populateAseConfiguration(
   }
   // Codec configuration data
   populateConfigurationData(ase, flat_subconfig->codec_configuration());
-  // Populate the config name for easier debug
-  auto meta = std::vector<std::optional<MetadataLtv>>();
-  MetadataLtv::VendorSpecific cfg_name;
-  cfg_name.opaqueValue = std::vector<uint8_t>(name.begin(), name.end());
-  meta.push_back(cfg_name);
-  ase.metadata = meta;
 }
 
 void AudioSetConfigurationProviderJson::populateAseQosConfiguration(
@@ -507,7 +502,6 @@ void AudioSetConfigurationProviderJson::populateAseQosConfiguration(
 // Parse into AseDirectionConfiguration
 AseDirectionConfiguration
 AudioSetConfigurationProviderJson::SetConfigurationFromFlatSubconfig(
-    const std::string& name,
     const le_audio::AudioSetSubConfiguration* flat_subconfig,
     const le_audio::QosConfiguration* qos_cfg, CodecLocation location,
     ConfigurationFlags& configurationFlags) {
@@ -518,8 +512,7 @@ AudioSetConfigurationProviderJson::SetConfigurationFromFlatSubconfig(
   LeAudioDataPathConfiguration path;
 
   // Translate into LeAudioAseConfiguration
-  populateAseConfiguration(name, ase, flat_subconfig, qos_cfg,
-                           configurationFlags);
+  populateAseConfiguration(ase, flat_subconfig, qos_cfg, configurationFlags);
 
   // Translate into LeAudioAseQosConfiguration
   populateAseQosConfiguration(qos, qos_cfg, ase,
@@ -553,15 +546,14 @@ AudioSetConfigurationProviderJson::SetConfigurationFromFlatSubconfig(
 // Parse into AseDirectionConfiguration and the ConfigurationFlags
 // and put them in the given list.
 void AudioSetConfigurationProviderJson::processSubconfig(
-    const std::string& name,
     const le_audio::AudioSetSubConfiguration* subconfig,
     const le_audio::QosConfiguration* qos_cfg,
     std::vector<std::optional<AseDirectionConfiguration>>&
         directionAseConfiguration,
     CodecLocation location, ConfigurationFlags& configurationFlags) {
   auto ase_cnt = subconfig->ase_cnt();
-  auto config = SetConfigurationFromFlatSubconfig(name, subconfig, qos_cfg,
-                                                  location, configurationFlags);
+  auto config = SetConfigurationFromFlatSubconfig(subconfig, qos_cfg, location,
+                                                  configurationFlags);
   directionAseConfiguration.push_back(config);
   // Put the same setting again.
   if (ase_cnt == 2) directionAseConfiguration.push_back(config);
@@ -646,11 +638,11 @@ void AudioSetConfigurationProviderJson::PopulateAseConfigurationFromFlat(
     /* Load subconfigurations */
     for (auto subconfig : *codec_cfg->subconfigurations()) {
       if (subconfig->direction() == kLeAudioDirectionSink) {
-        processSubconfig(flat_cfg->name()->str(), subconfig, qos_sink_cfg,
-                         sinkAseConfiguration, location, configurationFlags);
+        processSubconfig(subconfig, qos_sink_cfg, sinkAseConfiguration,
+                         location, configurationFlags);
       } else {
-        processSubconfig(flat_cfg->name()->str(), subconfig, qos_source_cfg,
-                         sourceAseConfiguration, location, configurationFlags);
+        processSubconfig(subconfig, qos_source_cfg, sourceAseConfiguration,
+                         location, configurationFlags);
       }
     }
 
@@ -860,7 +852,7 @@ bool AudioSetConfigurationProviderJson::LoadScenariosFromFiles(
       setting.flags = flags;
       // Add to list of setting
       LOG(DEBUG) << "Pushing configuration to list: " << config_name;
-      ase_configuration_settings_.push_back(setting);
+      ase_configuration_settings_.push_back({config_name, setting});
     }
   }
 

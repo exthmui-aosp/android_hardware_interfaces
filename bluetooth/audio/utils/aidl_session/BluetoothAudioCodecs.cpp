@@ -452,7 +452,7 @@ std::vector<CodecInfo> BluetoothAudioCodecs::GetHfpOffloadCodecInfo() {
   return kDefaultOffloadHfpCodecInfo;
 }
 
-std::vector<LeAudioAseConfigurationSetting>
+std::vector<std::pair<std::string, LeAudioAseConfigurationSetting>>
 BluetoothAudioCodecs::GetLeAudioAseConfigurationSettings() {
   return AudioSetConfigurationProviderJson::
       GetLeAudioAseConfigurationSettings();
