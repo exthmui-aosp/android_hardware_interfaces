@@ -1215,6 +1215,7 @@ std::vector<PropertyConfigTestParam> getPropertyConfigTestParams() {
 }
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(VtsHalAutomotiveVehicleTargetTest);
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(VtsHalAutomotivePropertyConfigTest);
 
 INSTANTIATE_TEST_SUITE_P(PerInstance, VtsHalAutomotiveVehicleTargetTest,
                          testing::ValuesIn(getDescriptors()),
