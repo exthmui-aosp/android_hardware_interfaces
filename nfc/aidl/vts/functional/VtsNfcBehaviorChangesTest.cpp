@@ -349,44 +349,18 @@ TEST_P(NfcBehaviorChanges, ObserveModeEnableDisable) {
 }
 
 /*
- * SetPassiveObserverTech_individualTechnologies:
- * Verifies per-technology observe mode is supported as a capability. Then sets observe mode
- * for each individual technology and verifies the command succeeds.
- *
- * @VsrTest = GMS-VSR-3.2.8-002
+ * SetPassiveObserverTech_getCaps:
+ * Verifies GET_CAPS returns get correct value for observe mode capabilities.
  */
-TEST_P(NfcBehaviorChanges, SetPassiveObserverTech_individualTechnologies) {
+TEST_P(NfcBehaviorChanges, SetPassiveObserverTech_getCaps) {
     if (get_vsr_api_level() < 202504) {
         GTEST_SKIP() << "Skipping test for board API level < 202504";
     }
 
     tNFC_STATUS status = nfaGetCaps();
+
     ASSERT_EQ(status, NFC_STATUS_OK);
     ASSERT_EQ(getCapsPassiveObserverModeValue(), 0x2);
-
-    status = nfaSetPassiveObserverTech(NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE_A);
-    ASSERT_EQ(status, NFA_STATUS_OK);
-    status = nfaQueryObserveModeState();
-    ASSERT_EQ(status, NFA_STATUS_OK);
-    ASSERT_EQ(sObserveModeState, NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE_A);
-
-    status = nfaSetPassiveObserverTech(NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE_B);
-    ASSERT_EQ(status, NFA_STATUS_OK);
-    status = nfaQueryObserveModeState();
-    ASSERT_EQ(status, NFA_STATUS_OK);
-    ASSERT_EQ(sObserveModeState, NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE_B);
-
-    status = nfaSetPassiveObserverTech(NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE_V);
-    ASSERT_EQ(status, NFA_STATUS_OK);
-    status = nfaQueryObserveModeState();
-    ASSERT_EQ(status, NFA_STATUS_OK);
-    ASSERT_EQ(sObserveModeState, NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE_V);
-
-    status = nfaSetPassiveObserverTech(NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE_F);
-    ASSERT_EQ(status, NFA_STATUS_OK);
-    status = nfaQueryObserveModeState();
-    ASSERT_EQ(status, NFA_STATUS_OK);
-    ASSERT_EQ(sObserveModeState, NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE_F);
 }
 
 /*

@@ -6156,7 +6156,7 @@ enum VehicleProperty {
             + 0x00400000, // VehiclePropertyGroup:SYSTEM,VehicleArea:GLOBAL,VehiclePropertyType:INT32
 
     /**
-     * Indicates the maximum current draw threshold for charging set by the user
+     * The vehicle's selected alternating current (AC) EV charging draw limit in Amperes.
      *
      * configArray[0] is used to specify the max current draw allowed by the vehicle in Amperes at
      * boot time.
