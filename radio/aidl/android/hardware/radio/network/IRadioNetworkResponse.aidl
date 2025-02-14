@@ -39,7 +39,7 @@ import android.hardware.radio.network.UsageSetting;
 oneway interface IRadioNetworkResponse {
     /**
      * Acknowledge the receipt of radio request sent to the vendor. This must be sent only for
-     * radio request which take long time to respond. For more details, refer
+     * radio requests which take a long time to respond. For more details, refer
      * https://source.android.com/devices/tech/connect/ril.html
      *
      * @param serial Serial no. of the request whose acknowledgement is sent.

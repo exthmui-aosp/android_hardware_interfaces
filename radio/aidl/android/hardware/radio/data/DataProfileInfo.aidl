@@ -40,7 +40,7 @@ parcelable DataProfileInfo {
     const int TYPE_3GPP2 = 2;
 
     /**
-     * Innfrastructure type unknown. This is only for initializing.
+     * Infrastructure type unknown. This is only for initializing.
      */
     const int INFRASTRUCTURE_UNKNOWN = 0;
 

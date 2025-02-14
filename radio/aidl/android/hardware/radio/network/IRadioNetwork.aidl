@@ -495,7 +495,7 @@ oneway interface IRadioNetwork {
      * Requests that network personalization be deactivated
      *
      * @param serial Serial number of request.
-     * @param netPin Network depersonlization code
+     * @param netPin Network depersonalization code
      *
      * Response function is IRadioNetworkResponse.supplyNetworkDepersonalizationResponse()
      *
