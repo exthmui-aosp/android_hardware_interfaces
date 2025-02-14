@@ -21,6 +21,8 @@ import android.hardware.gnss.GnssSignalType;
 /**
  * Contains parameters to provide additional information dependent on the GNSS constellation.
  *
+ * If svid is -1, the AuxiliaryInformation is not available.
+ *
  * @hide
  */
 @VintfStability
@@ -49,6 +51,8 @@ parcelable AuxiliaryInformation {
      * - QZSS:    183-206
      * - Galileo: 1-36
      * - Beidou:  1-63
+     *
+     * If it is -1, the AuxiliaryInformation is not available.
      */
     int svid;
 

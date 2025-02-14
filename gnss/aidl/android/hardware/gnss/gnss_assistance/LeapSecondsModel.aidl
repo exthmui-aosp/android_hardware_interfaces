@@ -20,11 +20,16 @@ package android.hardware.gnss.gnss_assistance;
  * Contains the leap seconds set of parameters needed for GNSS time.
  * This is defined in RINEX 3.05 "LEAP SECONDS" in table A2.
  *
+ * If leapSeconds is -1, the LeapSecondsModel is not available.
+ *
  * @hide
  */
 @VintfStability
 parcelable LeapSecondsModel {
-    /** Time difference due to leap seconds before the event in seconds. */
+    /**
+     * Time difference due to leap seconds before the event in seconds.
+     * If it is -1, the LeapSecondsModel is not available.
+     */
     int leapSeconds;
 
     /** Time difference due to leap seconds after the event in seconds. */
