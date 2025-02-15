@@ -191,6 +191,94 @@ void protoToAidl(const proto::SubscribeOptions& in, aidl_vehicle::SubscribeOptio
     out->enableVariableUpdateRate = in.enable_variable_update_rate();
 }
 
+void aidlToProto(const PropIdAreaId& in, proto::PropIdAreaId* out) {
+    out->set_prop_id(in.propId);
+    out->set_area_id(in.areaId);
+}
+
+void protoToAidl(const proto::PropIdAreaId& in, PropIdAreaId* out) {
+    out->propId = in.prop_id();
+    out->areaId = in.area_id();
+}
+
+void aidlToProto(const aidl_vehicle::RawPropValues& in, proto::RawPropValues* out) {
+    out->set_string_value(in.stringValue);
+    out->set_byte_values(in.byteValues.data(), in.byteValues.size());
+    for (auto& int32Value : in.int32Values) {
+        out->add_int32_values(int32Value);
+    }
+    for (auto& int64Value : in.int64Values) {
+        out->add_int64_values(int64Value);
+    }
+    for (auto& floatValue : in.floatValues) {
+        out->add_float_values(floatValue);
+    }
+}
+
+void protoToAidl(const proto::RawPropValues& in, aidl_vehicle::RawPropValues* out) {
+    COPY_PROTOBUF_VEC_TO_VHAL_TYPE(in, int32_values, out, int32Values);
+    COPY_PROTOBUF_VEC_TO_VHAL_TYPE(in, int64_values, out, int64Values);
+    COPY_PROTOBUF_VEC_TO_VHAL_TYPE(in, float_values, out, floatValues);
+    out->stringValue = in.string_value();
+    for (const char& byte : in.byte_values()) {
+        out->byteValues.push_back(byte);
+    }
+}
+
+void aidlToProto(const aidl_vehicle::MinMaxSupportedValueResult& in,
+                 proto::MinMaxSupportedValueResult* out) {
+    out->set_status(static_cast<proto::StatusCode>(in.status));
+    if (in.minSupportedValue.has_value()) {
+        aidlToProto(in.minSupportedValue.value(), out->mutable_min_supported_value());
+    }
+    if (in.maxSupportedValue.has_value()) {
+        aidlToProto(in.maxSupportedValue.value(), out->mutable_max_supported_value());
+    }
+}
+
+void protoToAidl(const proto::MinMaxSupportedValueResult& in,
+                 aidl_vehicle::MinMaxSupportedValueResult* out) {
+    out->status = static_cast<aidl_vehicle::StatusCode>(in.status());
+    if (in.has_min_supported_value()) {
+        aidl_vehicle::RawPropValues minSupportedValue = {};
+        protoToAidl(in.min_supported_value(), &minSupportedValue);
+        out->minSupportedValue = minSupportedValue;
+    }
+    if (in.has_max_supported_value()) {
+        aidl_vehicle::RawPropValues maxSupportedValue = {};
+        protoToAidl(in.max_supported_value(), &maxSupportedValue);
+        out->maxSupportedValue = maxSupportedValue;
+    }
+}
+
+void aidlToProto(const aidl_vehicle::SupportedValuesListResult& in,
+                 proto::SupportedValuesListResult* out) {
+    out->set_status(static_cast<proto::StatusCode>(in.status));
+    if (!in.supportedValuesList.has_value()) {
+        return;
+    }
+    for (const auto& protoSupportedValue : in.supportedValuesList.value()) {
+        if (protoSupportedValue.has_value()) {
+            aidlToProto(protoSupportedValue.value(), out->add_supported_values_list());
+        }
+    }
+}
+
+void protoToAidl(const proto::SupportedValuesListResult& in,
+                 aidl_vehicle::SupportedValuesListResult* out) {
+    out->status = static_cast<aidl_vehicle::StatusCode>(in.status());
+    if (out->status != aidl_vehicle::StatusCode::OK) {
+        return;
+    }
+    std::vector<std::optional<aidl_vehicle::RawPropValues>> aidlSupportedValuesList;
+    for (const auto& protoRawPropValues : in.supported_values_list()) {
+        aidl_vehicle::RawPropValues aidlRawPropValues = {};
+        protoToAidl(protoRawPropValues, &aidlRawPropValues);
+        aidlSupportedValuesList.push_back(std::move(aidlRawPropValues));
+    }
+    out->supportedValuesList = std::move(aidlSupportedValuesList);
+}
+
 #undef COPY_PROTOBUF_VEC_TO_VHAL_TYPE
 #undef CAST_COPY_PROTOBUF_VEC_TO_VHAL_TYPE
 
