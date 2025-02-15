@@ -58,7 +58,7 @@ parcelable KeepaliveRequest {
     int maxKeepaliveIntervalMillis;
     /**
      * Context ID, returned in setupDataCallResponse that uniquely identifies the data call to which
-     * this keepalive must applied.
+     * this keepalive must be applied.
      */
     int cid;
 }

@@ -20,6 +20,8 @@ package android.hardware.gnss.gnss_assistance;
  * Contains parameters to convert from current GNSS time to UTC time.
  * This is defined in RINEX 3.05 "TIME SYSTEM CORR" in table A5.
  *
+ * If weekNumber is -1, the UtcModel is not available.
+ *
  * @hide
  */
 @VintfStability
@@ -33,6 +35,6 @@ parcelable UtcModel {
     /** Reference GNSS time of week in seconds. */
     int timeOfWeek;
 
-    /** Reference GNSS week number. */
+    /** Reference GNSS week number. If it is -1, the UTC model is not available. */
     int weekNumber;
 }

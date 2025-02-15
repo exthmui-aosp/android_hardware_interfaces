@@ -96,6 +96,10 @@ static constexpr char ANNOTATION_REQUIRE_SUPPORTED_VALUES[] = "require_supported
 static constexpr char ANNOTATION_SUPPORTED_VALUES_IN_CONFIG[] = "legacy_supported_values_in_config";
 static constexpr char ANNOTATIONS_DATA_ENUM[] = "data_enum";
 
+inline VehiclePropertyType getPropertyType(int32_t propId) {
+    return static_cast<VehiclePropertyType>(propId & toInt(VehiclePropertyType::MASK));
+}
+
 struct ServiceDescriptor {
     std::string name;
     bool isAidlService;
@@ -181,10 +185,12 @@ class VtsHalAutomotiveTest : public testing::Test {
     void testGetMinMaxSupportedValueForPropIdAreaId(int32_t propId,
                                                     const IHalAreaConfig& areaConfig,
                                                     bool minMaxValueRequired);
+    void testGetSupportedValuesListsForPropIdAreaId(int32_t propId,
+                                                    const IHalAreaConfig& areaConfig,
+                                                    bool supportedValuesRequired);
 
     static bool isBooleanGlobalProp(int32_t property) {
-        return (property & toInt(VehiclePropertyType::MASK)) ==
-                       toInt(VehiclePropertyType::BOOLEAN) &&
+        return getPropertyType(property) == VehiclePropertyType::BOOLEAN &&
                (property & toInt(VehicleArea::MASK)) == toInt(VehicleArea::GLOBAL);
     }
 
@@ -810,39 +816,36 @@ TEST_P(VtsHalAutomotiveVehicleTargetTest, testGetValuesTimestampAIDL) {
     }
 }
 
-void verifyRawPropValues(const RawPropValues& rawPropValues, int32_t propertyType) {
+void verifyRawPropValues(const RawPropValues& rawPropValues, VehiclePropertyType propertyType) {
     switch (propertyType) {
-        case toInt(VehiclePropertyType::INT32):
+        case VehiclePropertyType::INT32:
             ASSERT_THAT(rawPropValues.int32Values, ::testing::SizeIs(1))
                     << "int32Values field must contain exactly one element for INT32 type";
             break;
-        case toInt(VehiclePropertyType::FLOAT):
+        case VehiclePropertyType::FLOAT:
             ASSERT_THAT(rawPropValues.floatValues, ::testing::SizeIs(1))
                     << "floatValues field must contain exactly one element for FLOAT type";
             break;
-        case toInt(VehiclePropertyType::INT64):
+        case VehiclePropertyType::INT64:
             ASSERT_THAT(rawPropValues.int64Values, ::testing::SizeIs(1))
                     << "int64Values field must contain exactly one element for INT64 type";
             break;
         default:
-            // This must not happen since we already checked this condition in
-            // verifyPropertyConfigMinMaxValue
-            FAIL() << "minSupportedValue or maxSupportedValue must only be specified for "
-                      "INT32, INT64 or FLOAT type property";
+            // We do not check for other types.
             break;
     }
 }
 
 void VtsHalAutomotiveTest::testGetMinMaxSupportedValueForPropIdAreaId(
         int32_t propId, const IHalAreaConfig& areaConfig, bool minMaxValueRequired) {
-    int areaId = areaConfig.getAreaId();
-    int propertyType = propId & toInt(VehiclePropertyType::MASK);
+    int32_t areaId = areaConfig.getAreaId();
+    VehiclePropertyType propertyType = getPropertyType(propId);
     std::optional<HasSupportedValueInfo> maybeHasSupportedValueInfo =
             areaConfig.getHasSupportedValueInfo();
     if (!maybeHasSupportedValueInfo.has_value()) {
         return;
     }
-    if (!maybeHasSupportedValueInfo->hasMaxSupportedValue &&
+    if (!maybeHasSupportedValueInfo->hasMinSupportedValue &&
         !maybeHasSupportedValueInfo->hasMaxSupportedValue) {
         return;
     }
@@ -859,8 +862,7 @@ void VtsHalAutomotiveTest::testGetMinMaxSupportedValueForPropIdAreaId(
     const MinMaxSupportedValueResult& individualResult = (*result)[0];
     if (minMaxValueRequired) {
         ASSERT_EQ(individualResult.status, StatusCode::OK)
-                << "getMinMaxSupportedValue must return okay status if min/max value is required "
-                   "for";
+                << "getMinMaxSupportedValue must return okay status if min/max value is required";
     }
     if (individualResult.status != StatusCode::OK) {
         return;
@@ -895,19 +897,19 @@ void VtsHalAutomotiveTest::testGetMinMaxSupportedValueForPropIdAreaId(
         int64_t minInt64Value;
         int64_t maxInt64Value;
         switch (propertyType) {
-            case toInt(VehiclePropertyType::INT32):
+            case VehiclePropertyType::INT32:
                 minInt32Value = (individualResult.minSupportedValue)->int32Values[0];
                 maxInt32Value = (individualResult.maxSupportedValue)->int32Values[0];
                 ASSERT_LE(minInt32Value, maxInt32Value)
                         << "minSupportedValue must be less or equal to maxSupportedValue";
                 break;
-            case toInt(VehiclePropertyType::FLOAT):
+            case VehiclePropertyType::FLOAT:
                 minFloatValue = (individualResult.minSupportedValue)->floatValues[0];
                 maxFloatValue = (individualResult.maxSupportedValue)->floatValues[0];
                 ASSERT_LE(minFloatValue, maxFloatValue)
                         << "minSupportedValue must be less or equal to maxSupportedValue";
                 break;
-            case toInt(VehiclePropertyType::INT64):
+            case VehiclePropertyType::INT64:
                 minInt64Value = (individualResult.minSupportedValue)->int64Values[0];
                 maxInt64Value = (individualResult.maxSupportedValue)->int64Values[0];
                 ASSERT_LE(minInt64Value, maxInt64Value)
@@ -923,12 +925,12 @@ void VtsHalAutomotiveTest::testGetMinMaxSupportedValueForPropIdAreaId(
     }
 }
 
-// Test the getMinMaxSupportedValues API. We use this one test case to cover all properties that
+// Test the getMinMaxSupportedValue API. We use this one test case to cover all properties that
 // may support this API.
 TEST_P(VtsHalAutomotiveVehicleTargetTest, testGetMinMaxSupportedValue) {
     if (!mVhalClient->isAidlVhal() || mVhalClient->getRemoteInterfaceVersion() < 4) {
-        GTEST_SKIP() << "Skip checking testGetMinMaxSupportedValues the behavior is not supported "
-                        "for current VHAL version";
+        GTEST_SKIP() << "Skip checking getMinMaxSupportedValue because the behavior is not "
+                        "supported for current VHAL version";
     }
 
     auto configsResult = mVhalClient->getAllPropConfigs();
@@ -956,12 +958,93 @@ TEST_P(VtsHalAutomotiveVehicleTargetTest, testGetMinMaxSupportedValue) {
     }
 }
 
-void verifyPropertyConfigMinMaxValue(const IHalPropConfig* config, int32_t propertyType) {
+void VtsHalAutomotiveTest::testGetSupportedValuesListsForPropIdAreaId(
+        int32_t propId, const IHalAreaConfig& areaConfig, bool supportedValuesRequired) {
+    int32_t areaId = areaConfig.getAreaId();
+    VehiclePropertyType propertyType = getPropertyType(propId);
+    std::optional<HasSupportedValueInfo> maybeHasSupportedValueInfo =
+            areaConfig.getHasSupportedValueInfo();
+    if (!maybeHasSupportedValueInfo.has_value()) {
+        return;
+    }
+    if (!maybeHasSupportedValueInfo->hasSupportedValuesList) {
+        return;
+    }
+    VhalClientResult<std::vector<SupportedValuesListResult>> result =
+            mVhalClient->getSupportedValuesLists({PropIdAreaId{
+                    .propId = propId,
+                    .areaId = areaId,
+            }});
+    ASSERT_RESULT_OK(result)
+            << "getSupportedValuesLists must return okay result if hasSupportedValuesList is true";
+    ASSERT_THAT(*result, ::testing::SizeIs(1))
+            << "getSupportedValuesLists result list size must be 1 for 1 request";
+    const SupportedValuesListResult& individualResult = (*result)[0];
+    if (supportedValuesRequired) {
+        ASSERT_EQ(individualResult.status, StatusCode::OK)
+                << "getSupportedValuesLists must return okay status if supported values are "
+                   "required";
+    }
+    if (individualResult.status != StatusCode::OK) {
+        return;
+    }
+    ASSERT_TRUE(individualResult.supportedValuesList.has_value())
+            << "supportedValuesList field must not be null if hasSupportedValuesList is true";
+    const std::vector<std::optional<RawPropValues>>& supportedValuesList =
+            individualResult.supportedValuesList.value();
+    if (supportedValuesRequired) {
+        ASSERT_THAT(supportedValuesList, ::testing::Not(::testing::IsEmpty()))
+                << "supportedValuesList must not be empty if supported values are required";
+    }
+    for (const std::optional<RawPropValues>& supportedValue : supportedValuesList) {
+        ASSERT_TRUE(supportedValue.has_value())
+                << "Each item in supportedValuesList must not be null";
+        ASSERT_NO_FATAL_FAILURE(verifyRawPropValues(*supportedValue, propertyType))
+                << "one of supported value is not a valid RawPropValues for "
+                << "the property type, value: " << supportedValue->toString();
+    }
+}
+
+// Test the getSupportedValues API. We use this one test case to cover all properties that
+// may support this API.
+TEST_P(VtsHalAutomotiveVehicleTargetTest, testGetSupportedValuesLists) {
+    if (!mVhalClient->isAidlVhal() || mVhalClient->getRemoteInterfaceVersion() < 4) {
+        GTEST_SKIP() << "Skip checking getSupportedValuesLists because the behavior is not "
+                        "supported for current VHAL version";
+    }
+
+    auto configsResult = mVhalClient->getAllPropConfigs();
+    ASSERT_TRUE(configsResult.ok())
+            << "Failed to get all property configs, error: " << configsResult.error().message();
+
+    for (const auto& cfgPtr : configsResult.value()) {
+        int32_t propId = cfgPtr->getPropId();
+        bool supportedValuesRequired = false;
+        std::unordered_set<std::string> annotations;
+        auto it = AnnotationsForVehicleProperty.find(static_cast<VehicleProperty>(propId));
+        if (it != AnnotationsForVehicleProperty.end()) {
+            annotations = it->second;
+        }
+        if (annotations.find(ANNOTATION_REQUIRE_SUPPORTED_VALUES) != annotations.end()) {
+            supportedValuesRequired = true;
+        }
+        const std::vector<std::unique_ptr<IHalAreaConfig>>& areaConfigs = cfgPtr->getAreaConfigs();
+        for (const auto& areaCfgPtr : areaConfigs) {
+            EXPECT_NO_FATAL_FAILURE(testGetSupportedValuesListsForPropIdAreaId(
+                    propId, *areaCfgPtr, supportedValuesRequired))
+                    << "test getSupportedValues failed for property: " << propIdToString(propId)
+                    << ", areaId: " << areaCfgPtr->getAreaId();
+        }
+    }
+}
+
+void verifyPropertyConfigMinMaxValue(const IHalPropConfig* config,
+                                     VehiclePropertyType propertyType) {
     for (const auto& areaConfig : config->getAreaConfigs()) {
         std::optional<HasSupportedValueInfo> maybeHasSupportedValueInfo =
                 areaConfig->getHasSupportedValueInfo();
         if (areaConfig->getMinInt32Value() != 0 || areaConfig->getMaxInt32Value() != 0) {
-            EXPECT_EQ(propertyType, toInt(VehiclePropertyType::INT32))
+            EXPECT_EQ(propertyType, VehiclePropertyType::INT32)
                     << "minInt32Value and maxInt32Value must not be specified for INT32 type "
                        "property";
             EXPECT_THAT(areaConfig->getMinInt32Value(),
@@ -977,7 +1060,7 @@ void verifyPropertyConfigMinMaxValue(const IHalPropConfig* config, int32_t prope
             }
         }
         if (areaConfig->getMinFloatValue() != 0 || areaConfig->getMaxFloatValue() != 0) {
-            EXPECT_EQ(propertyType, toInt(VehiclePropertyType::FLOAT))
+            EXPECT_EQ(propertyType, VehiclePropertyType::FLOAT)
                     << "minFloatValue and maxFloatValue must not be specified for FLOAT type "
                        "property";
             EXPECT_THAT(areaConfig->getMinFloatValue(),
@@ -993,7 +1076,7 @@ void verifyPropertyConfigMinMaxValue(const IHalPropConfig* config, int32_t prope
             }
         }
         if (areaConfig->getMinInt64Value() != 0 || areaConfig->getMaxInt64Value() != 0) {
-            EXPECT_EQ(propertyType, toInt(VehiclePropertyType::INT64))
+            EXPECT_EQ(propertyType, VehiclePropertyType::INT64)
                     << "minInt64Value and maxInt64Value must not be specified for INT64 type "
                        "property";
             EXPECT_THAT(areaConfig->getMinInt64Value(),
@@ -1011,9 +1094,9 @@ void verifyPropertyConfigMinMaxValue(const IHalPropConfig* config, int32_t prope
         if (maybeHasSupportedValueInfo.has_value() &&
             (maybeHasSupportedValueInfo->hasMinSupportedValue ||
              maybeHasSupportedValueInfo->hasMaxSupportedValue)) {
-            EXPECT_THAT(propertyType, ::testing::AnyOf(toInt(VehiclePropertyType::INT32),
-                                                       toInt(VehiclePropertyType::INT64),
-                                                       toInt(VehiclePropertyType::FLOAT)))
+            EXPECT_THAT(propertyType,
+                        ::testing::AnyOf(VehiclePropertyType::INT32, VehiclePropertyType::INT64,
+                                         VehiclePropertyType::FLOAT))
                     << "HasSupportedValueInfo.hasMinSupportedValue and "
                        "HasSupportedValueInfo.hasMaxSupportedValue is only allowed to be set to "
                        "true "
@@ -1022,26 +1105,30 @@ void verifyPropertyConfigMinMaxValue(const IHalPropConfig* config, int32_t prope
     }
 }
 
-void verifyPropertyConfigRequireMinMaxValue(const IHalPropConfig* config, int propertyType) {
+void verifyPropertyConfigRequireMinMaxValue(const IHalPropConfig* config,
+                                            VehiclePropertyType propertyType) {
     for (const auto& areaConfig : config->getAreaConfigs()) {
         switch (propertyType) {
-            case toInt(VehiclePropertyType::INT32):
+            case VehiclePropertyType::INT32:
                 EXPECT_FALSE(areaConfig->getMinInt32Value() == 0 &&
                              areaConfig->getMaxInt32Value() == 0)
                         << "minInt32Value and maxInt32Value must not both be 0 because "
                            "min and max value is required for this property";
                 break;
-            case toInt(VehiclePropertyType::FLOAT):
+            case VehiclePropertyType::FLOAT:
                 EXPECT_FALSE(areaConfig->getMinFloatValue() == 0 &&
                              areaConfig->getMaxFloatValue() == 0)
                         << "minFloatValue and maxFloatValue must not both be 0 because "
                            "min and max value is required for this property";
                 break;
-            case toInt(VehiclePropertyType::INT64):
+            case VehiclePropertyType::INT64:
                 EXPECT_FALSE(areaConfig->getMinInt64Value() == 0 &&
                              areaConfig->getMaxInt64Value() == 0)
                         << "minInt64Value and maxInt64Value must not both be 0 because "
                            "min and max value is required for this property";
+                break;
+            default:
+                // Do nothing.
                 break;
         }
 
@@ -1171,7 +1258,7 @@ TEST_P(VtsHalAutomotivePropertyConfigTest, verifyPropertyConfig) {
         annotations = it->second;
     }
 
-    int propertyType = expectedPropId & toInt(VehiclePropertyType::MASK);
+    VehiclePropertyType propertyType = getPropertyType(expectedPropId);
     verifyPropertyConfigMinMaxValue(config.get(), propertyType);
     if (annotations.find(ANNOTATION_REQUIRE_MIN_MAX_VALUE) != annotations.end()) {
         verifyPropertyConfigRequireMinMaxValue(config.get(), propertyType);
