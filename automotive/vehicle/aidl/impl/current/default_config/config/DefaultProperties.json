@@ -162,11 +162,6 @@
         },
         {
             "property": "VehicleProperty::SEAT_MEMORY_SELECT",
-            "defaultValue": {
-                "int32Values": [
-                    1
-                ]
-            },
             "areas": [
                 {
                     "areaId": "Constants::SEAT_1_LEFT",
@@ -192,11 +187,6 @@
         },
         {
             "property": "VehicleProperty::SEAT_MEMORY_SET",
-            "defaultValue": {
-                "int32Values": [
-                    1
-                ]
-            },
             "areas": [
                 {
                     "areaId": "Constants::SEAT_1_LEFT",
@@ -5234,19 +5224,7 @@
             ]
         },
         {
-            "property": "VehicleProperty::CAMERA_SERVICE_CURRENT_STATE",
-            "defaultValue": {
-                "int32Values": [
-                    "CameraServiceState::UNAVAILABLE",
-                    "CameraServiceState::UNAVAILABLE",
-                    "CameraServiceState::UNAVAILABLE",
-                    "CameraServiceState::UNAVAILABLE",
-                    "CameraServiceState::UNAVAILABLE",
-                    "CameraServiceState::UNAVAILABLE",
-                    "CameraServiceState::UNAVAILABLE",
-                    "CameraServiceState::UNAVAILABLE"
-                ]
-            }
+            "property": "VehicleProperty::CAMERA_SERVICE_CURRENT_STATE"
         }
     ]
 }
