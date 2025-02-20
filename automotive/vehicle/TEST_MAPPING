@@ -52,6 +52,9 @@
     },
     {
       "name": "VehicleHalProtoMessageConverterTest"
+    },
+    {
+      "name": "CtsCarTestCases"
     }
   ],
   "postsubmit": [
