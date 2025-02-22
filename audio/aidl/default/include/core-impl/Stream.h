@@ -146,8 +146,8 @@ class StreamContext {
     // locking because it only cleans MQ pointers which were also set on the Binder thread.
     void reset();
     // 'advanceFrameCount' and 'getFrameCount' are only called on the worker thread.
-    long advanceFrameCount(size_t increase) { return mFrameCount += increase; }
-    long getFrameCount() const { return mFrameCount; }
+    int64_t advanceFrameCount(size_t increase) { return mFrameCount += increase; }
+    int64_t getFrameCount() const { return mFrameCount; }
 
   private:
     // Fields are non const to allow move assignment.
@@ -165,7 +165,7 @@ class StreamContext {
     std::shared_ptr<IStreamOutEventCallback> mOutEventCallback;  // Only used by output streams
     std::weak_ptr<sounddose::StreamDataProcessorInterface> mStreamDataProcessor;
     DebugParameters mDebugParameters;
-    long mFrameCount = 0;
+    int64_t mFrameCount = 0;
 };
 
 // This interface provides operations of the stream which are executed on the worker thread.
