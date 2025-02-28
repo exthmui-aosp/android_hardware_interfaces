@@ -102,7 +102,7 @@ enum {
   kBlockLength16
 };
 
-enum { kSubbands8 = kSubbands.first, kSubbands4 };
+enum { kSubbands4 = kSubbands.first, kSubbands8 };
 
 enum {
   kAllocationMethodSnr = kAllocationMethod.first,
