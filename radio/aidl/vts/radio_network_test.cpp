@@ -1020,6 +1020,9 @@ TEST_P(RadioNetworkTest, startNetworkScan) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
 
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error, {RadioError::SIM_ABSENT}));
@@ -1072,6 +1075,9 @@ TEST_P(RadioNetworkTest, startNetworkScan_InvalidArgument) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan_InvalidArgument, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
 
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
@@ -1138,6 +1144,9 @@ TEST_P(RadioNetworkTest, startNetworkScan_InvalidInterval1) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan_InvalidInterval1, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
                                      {RadioError::SIM_ABSENT, RadioError::INVALID_ARGUMENTS}));
@@ -1172,6 +1181,9 @@ TEST_P(RadioNetworkTest, startNetworkScan_InvalidInterval2) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan_InvalidInterval2, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
                                      {RadioError::SIM_ABSENT, RadioError::INVALID_ARGUMENTS}));
@@ -1206,6 +1218,9 @@ TEST_P(RadioNetworkTest, startNetworkScan_InvalidMaxSearchTime1) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan_InvalidMaxSearchTime1, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
                                      {RadioError::SIM_ABSENT, RadioError::INVALID_ARGUMENTS}));
@@ -1240,6 +1255,9 @@ TEST_P(RadioNetworkTest, startNetworkScan_InvalidMaxSearchTime2) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan_InvalidMaxSearchTime2, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
                                      {RadioError::SIM_ABSENT, RadioError::INVALID_ARGUMENTS}));
@@ -1274,6 +1292,9 @@ TEST_P(RadioNetworkTest, startNetworkScan_InvalidPeriodicity1) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan_InvalidPeriodicity1, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
                                      {RadioError::SIM_ABSENT, RadioError::INVALID_ARGUMENTS}));
@@ -1308,6 +1329,9 @@ TEST_P(RadioNetworkTest, startNetworkScan_InvalidPeriodicity2) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan_InvalidPeriodicity2, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
                                      {RadioError::SIM_ABSENT, RadioError::INVALID_ARGUMENTS}));
@@ -1342,6 +1366,9 @@ TEST_P(RadioNetworkTest, startNetworkScan_GoodRequest1) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan_GoodRequest1, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
                                      {RadioError::NONE, RadioError::SIM_ABSENT}));
@@ -1382,6 +1409,9 @@ TEST_P(RadioNetworkTest, startNetworkScan_GoodRequest2) {
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
     ALOGI("startNetworkScan_GoodRequest2, rspInfo.error = %s\n",
           toString(radioRsp_network->rspInfo.error).c_str());
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping startNetworkScan because it's not supported";
+    }
     if (cardStatus.cardState == CardStatus::STATE_ABSENT) {
         ASSERT_TRUE(CheckAnyOfErrors(radioRsp_network->rspInfo.error,
                                      {RadioError::NONE, RadioError::SIM_ABSENT}));
@@ -1418,7 +1448,8 @@ TEST_P(RadioNetworkTest, setNetworkSelectionModeManual) {
             radioRsp_network->rspInfo.error,
             {RadioError::NONE, RadioError::RADIO_NOT_AVAILABLE, RadioError::INVALID_ARGUMENTS,
              RadioError::INVALID_STATE, RadioError::NO_MEMORY, RadioError::INTERNAL_ERR,
-             RadioError::SYSTEM_ERR, RadioError::CANCELLED, RadioError::MODEM_ERR}));
+             RadioError::SYSTEM_ERR, RadioError::CANCELLED, RadioError::MODEM_ERR,
+             RadioError::REQUEST_NOT_SUPPORTED}));
 }
 
 /*
@@ -1435,6 +1466,9 @@ TEST_P(RadioNetworkTest, getBarringInfo) {
     EXPECT_EQ(std::cv_status::no_timeout, wait());
     EXPECT_EQ(RadioResponseType::SOLICITED, radioRsp_network->rspInfo.type);
     EXPECT_EQ(serial, radioRsp_network->rspInfo.serial);
+    if (radioRsp_network->rspInfo.error == RadioError::REQUEST_NOT_SUPPORTED) {
+        GTEST_SKIP() << "Skipping getBarringInfo because it's not supported";
+    }
     ASSERT_TRUE(radioRsp_network->barringInfoList.size() > 0);
 
     std::set<int> reportedServices;
