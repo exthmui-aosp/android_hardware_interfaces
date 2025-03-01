@@ -48,6 +48,9 @@
       "name": "GRPCVehicleHardwareUnitTest"
     },
     {
+      "name": "GRPCVehicleProxyServerUnitTest"
+    },
+    {
       "name": "CarServiceHalUnitTest"
     },
     {
