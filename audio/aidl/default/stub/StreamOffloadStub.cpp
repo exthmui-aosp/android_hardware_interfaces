@@ -81,11 +81,13 @@ DspSimulatorLogic::Status DspSimulatorLogic::cycle() {
 }
 
 DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
-    : DriverStubImpl(context),
+    : DriverStubImpl(context, 0 /*asyncSleepTimeUs*/),
       mState{context.getFormat().encoding, context.getSampleRate(),
              250 /*earlyNotifyMs*/ * context.getSampleRate() / MILLIS_PER_SECOND,
              static_cast<int64_t>(context.getBufferSizeInFrames()) / 2},
-      mDspWorker(mState) {}
+      mDspWorker(mState) {
+    LOG_IF(FATAL, !mIsAsynchronous) << "The steam must be used in asynchronous mode";
+}
 
 ::android::status_t DriverOffloadStubImpl::init(DriverCallbackInterface* callback) {
     RETURN_STATUS_IF_ERROR(DriverStubImpl::init(callback));
@@ -99,10 +101,7 @@ DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
 }
 
 ::android::status_t DriverOffloadStubImpl::drain(StreamDescriptor::DrainMode drainMode) {
-    // Does not call into the DriverStubImpl::drain.
-    if (!mIsInitialized) {
-        LOG(FATAL) << __func__ << ": must not happen for an uninitialized driver";
-    }
+    RETURN_STATUS_IF_ERROR(DriverStubImpl::drain(drainMode));
     std::lock_guard l(mState.lock);
     if (!mState.clipFramesLeft.empty()) {
         // Cut playback of the current clip.
@@ -132,23 +131,27 @@ DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
     return ::android::OK;
 }
 
+::android::status_t DriverOffloadStubImpl::start() {
+    RETURN_STATUS_IF_ERROR(DriverStubImpl::start());
+    RETURN_STATUS_IF_ERROR(startWorkerIfNeeded());
+    bool hasClips;  // Can be start after paused draining.
+    {
+        std::lock_guard l(mState.lock);
+        hasClips = !mState.clipFramesLeft.empty();
+        LOG(DEBUG) << __func__
+                   << ": clipFramesLeft: " << ::android::internal::ToString(mState.clipFramesLeft);
+    }
+    if (hasClips) {
+        mDspWorker.resume();
+    }
+    return ::android::OK;
+}
+
 ::android::status_t DriverOffloadStubImpl::transfer(void* buffer, size_t frameCount,
-                                                    size_t* actualFrameCount,
-                                                    int32_t* /*latencyMs*/) {
-    // Does not call into the DriverStubImpl::transfer.
-    if (!mIsInitialized) {
-        LOG(FATAL) << __func__ << ": must not happen for an uninitialized driver";
-    }
-    if (mIsStandby) {
-        LOG(FATAL) << __func__ << ": must not happen while in standby";
-    }
-    if (!mDspWorkerStarted) {
-        // This is an "audio service thread," must have elevated priority.
-        if (!mDspWorker.start("dsp_sim", ANDROID_PRIORITY_URGENT_AUDIO)) {
-            return ::android::NO_INIT;
-        }
-        mDspWorkerStarted = true;
-    }
+                                                    size_t* actualFrameCount, int32_t* latencyMs) {
+    RETURN_STATUS_IF_ERROR(
+            DriverStubImpl::transfer(buffer, frameCount, actualFrameCount, latencyMs));
+    RETURN_STATUS_IF_ERROR(startWorkerIfNeeded());
     // Scan the buffer for clip headers.
     *actualFrameCount = frameCount;
     while (buffer != nullptr && frameCount > 0) {
@@ -189,6 +192,18 @@ DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
 void DriverOffloadStubImpl::shutdown() {
     LOG(DEBUG) << __func__ << ": stopping the DSP simulator worker";
     mDspWorker.stop();
+    DriverStubImpl::shutdown();
+}
+
+::android::status_t DriverOffloadStubImpl::startWorkerIfNeeded() {
+    if (!mDspWorkerStarted) {
+        // This is an "audio service thread," must have elevated priority.
+        if (!mDspWorker.start("dsp_sim", ANDROID_PRIORITY_URGENT_AUDIO)) {
+            return ::android::NO_INIT;
+        }
+        mDspWorkerStarted = true;
+    }
+    return ::android::OK;
 }
 
 // static
