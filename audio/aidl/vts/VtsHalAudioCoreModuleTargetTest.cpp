@@ -5012,7 +5012,7 @@ static const NamedCommandSequence kPauseOutSyncSeq =
         std::make_tuple(std::string("Pause"), kAidlVersion1, 0, StreamTypeFilter::SYNC,
                         makePauseCommands(false, true), false /*validatePositionIncrease*/);
 static const NamedCommandSequence kPauseOutAsyncSeq =
-        std::make_tuple(std::string("Pause"), kAidlVersion1, kStreamTransientStateTransitionDelayMs,
+        std::make_tuple(std::string("Pause"), kAidlVersion3, kStreamTransientStateTransitionDelayMs,
                         StreamTypeFilter::ASYNC, makePauseCommands(false, false),
                         false /*validatePositionIncrease*/);
 
@@ -5117,9 +5117,8 @@ INSTANTIATE_TEST_SUITE_P(
                                          kDrainOutSyncSeq, kDrainOutAsyncSeq,
                                          kDrainEarlyOutAsyncSeq, kDrainPauseOutSyncSeq,
                                          kDrainPauseOutAsyncSeq, kDrainEarlyPauseOutAsyncSeq,
-                                         kStandbyOutSyncSeq, kStandbyOutAsyncSeq,
-                                         kPauseOutSyncSeq,  // kPauseOutAsyncSeq,
-                                         kFlushOutSyncSeq, kFlushOutAsyncSeq,
+                                         kStandbyOutSyncSeq, kStandbyOutAsyncSeq, kPauseOutSyncSeq,
+                                         kPauseOutAsyncSeq, kFlushOutSyncSeq, kFlushOutAsyncSeq,
                                          kDrainPauseFlushOutSyncSeq, kDrainPauseFlushOutAsyncSeq),
                          testing::Values(false, true)),
         GetStreamIoTestName);
