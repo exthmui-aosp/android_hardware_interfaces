@@ -559,9 +559,13 @@ TEST_P(WifiStaIfaceAidlTest, TwtSessionUpdate) {
     twtRequest.minWakeIntervalUs = 10000;
     twtRequest.maxWakeIntervalUs = 100000;
 
+    auto status = wifi_sta_iface_->twtSessionUpdate(1, 10, twtRequest);
+    if (checkStatusCode(&status, WifiStatusCode::ERROR_NOT_SUPPORTED)) {
+        GTEST_SKIP() << "TwtSessionUpdate is not supported";
+    }
     // Expecting a IWifiStaIfaceEventCallback.onTwtFailure() with INVALID_PARAMS
     // as the error code.
-    EXPECT_TRUE(wifi_sta_iface_->twtSessionUpdate(1, 10, twtRequest).isOk());
+    EXPECT_TRUE(status.isOk());
 }
 
 /**
@@ -575,9 +579,13 @@ TEST_P(WifiStaIfaceAidlTest, TwtSessionSuspend) {
         GTEST_SKIP() << "TWT is not supported";
     }
 
+    auto status = wifi_sta_iface_->twtSessionSuspend(1, 10);
+    if (checkStatusCode(&status, WifiStatusCode::ERROR_NOT_SUPPORTED)) {
+        GTEST_SKIP() << "TwtSessionSuspend is not supported";
+    }
     // Expecting a IWifiStaIfaceEventCallback.onTwtFailure() with INVALID_PARAMS
     // as the error code.
-    EXPECT_TRUE(wifi_sta_iface_->twtSessionSuspend(1, 10).isOk());
+    EXPECT_TRUE(status.isOk());
 }
 
 /**
@@ -591,9 +599,13 @@ TEST_P(WifiStaIfaceAidlTest, TwtSessionResume) {
         GTEST_SKIP() << "TWT is not supported";
     }
 
+    auto status = wifi_sta_iface_->twtSessionResume(1, 10);
+    if (checkStatusCode(&status, WifiStatusCode::ERROR_NOT_SUPPORTED)) {
+        GTEST_SKIP() << "TwtSessionResume is not supported";
+    }
     // Expecting a IWifiStaIfaceEventCallback.onTwtFailure() with INVALID_PARAMS
     // as the error code.
-    EXPECT_TRUE(wifi_sta_iface_->twtSessionResume(1, 10).isOk());
+    EXPECT_TRUE(status.isOk());
 }
 
 /*
