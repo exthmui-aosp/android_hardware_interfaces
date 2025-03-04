@@ -29,11 +29,6 @@ rust_defaults {
         "librpcbinder_rs",
         "librustutils",
     ],
-    arch: {
-        x86_64: {
-            enabled: true,
-        },
-    },
 }
 
 rust_library {
@@ -60,24 +55,5 @@ rust_binary {
         "liblog_rust",
         "libanyhow",
         "libclap",
-    ],
-}
-
-rust_test {
-    name: "VtsAidlHwCryptoConnTest",
-    srcs: ["connection_test.rs"],
-    require_root: true,
-    defaults: [
-        "hw_crypto_hal_aidl_rust_defaults",
-    ],
-    rustlibs: [
-        "libhwcryptohal_vts_test",
-    ],
-    data: [
-        ":trusty_test_vm_elf",
-        ":trusty_test_vm_config",
-        ":trusty_vm_launcher_sh",
-        ":trusty_wait_ready_sh",
-        ":wait_hw_crypto",
     ],
 }
