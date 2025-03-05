@@ -95,6 +95,8 @@ class LoudnessEnhancerEffectHelper : public EffectHelper {
         EXPECT_STATUS(expected, mEffect->setParameter(param)) << param.toString();
     }
 
+    void reset() { EXPECT_STATUS(EX_NONE, mEffect->command(CommandId::RESET)); }
+
     void validateParameters(int gain) {
         // get parameter
         LoudnessEnhancer::Id leId;
@@ -218,6 +220,8 @@ class LoudnessEnhancerDataTest : public ::testing::TestWithParam<LoudnessEnhance
         binder_exception_t expected;
         expected = isGainValid(kZeroGain);
         ASSERT_EQ(expected, EX_NONE);
+        // reset state to prevent prior signal history from affecting trial run.
+        ASSERT_NO_FATAL_FAILURE(reset());
         setParameters(kZeroGain, expected);
         ASSERT_NO_FATAL_FAILURE(processAndWriteToOutput());
         baseOutput = mOutputBuffer;
@@ -229,6 +233,8 @@ class LoudnessEnhancerDataTest : public ::testing::TestWithParam<LoudnessEnhance
             if (expected != EX_NONE) {
                 GTEST_SKIP() << "Gains not supported.";
             }
+            // reset state to prevent prior signal history from affecting trial run.
+            ASSERT_NO_FATAL_FAILURE(reset());
             setParameters(gain, expected);
             ASSERT_NO_FATAL_FAILURE(processAndWriteToOutput());
 
