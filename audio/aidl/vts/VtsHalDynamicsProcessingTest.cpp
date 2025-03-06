@@ -39,6 +39,8 @@ using aidl::android::hardware::audio::effect::IFactory;
 using aidl::android::hardware::audio::effect::Parameter;
 using android::hardware::audio::common::testing::detail::TestExecutionTracer;
 
+constexpr int32_t kMinDataTestHalVersion = 3;
+
 /**
  * Here we focus on specific parameter checking, general IEffect interfaces testing performed in
  * VtsAudioEffectTargetTest.
@@ -138,6 +140,8 @@ class DynamicsProcessingTestHelper : public EffectHelper {
     void addMbcBandConfigs(const std::vector<DynamicsProcessing::MbcBandConfig>& cfgs);
     void addLimiterConfig(const std::vector<DynamicsProcessing::LimiterConfig>& cfg);
     void addInputGain(const std::vector<DynamicsProcessing::InputGain>& inputGain);
+
+    void checkHalVersion();
 
     static constexpr float kPreferredProcessingDurationMs = 10.0f;
     static constexpr int kBandCount = 5;
@@ -546,6 +550,13 @@ void DynamicsProcessingTestHelper::addInputGain(
     DynamicsProcessing dp;
     dp.set<DynamicsProcessing::inputGain>(inputGains);
     mTags.push_back({DynamicsProcessing::inputGain, dp});
+}
+
+void DynamicsProcessingTestHelper::checkHalVersion() {
+    if (int32_t version;
+        mEffect->getInterfaceVersion(&version).isOk() && version < kMinDataTestHalVersion) {
+        GTEST_SKIP() << "Skipping the data test for version: " << version << "\n";
+    }
 }
 
 void fillLimiterConfig(std::vector<DynamicsProcessing::LimiterConfig>& limiterConfigList,
@@ -1538,6 +1549,51 @@ TEST_P(DynamicsProcessingMbcBandConfigDataTest, IncreasingPostGain) {
         float outputDb = calculateDb(output, kStartIndex);
         EXPECT_NEAR(outputDb, mInputDb + postGainDb, kToleranceDb)
                 << "PostGain: " << postGainDb << ", OutputDb: " << outputDb;
+    }
+}
+
+TEST_P(DynamicsProcessingMbcBandConfigDataTest, IncreasingPreGain) {
+    /*
+    Depending on the pregain values, samples undergo either compression or expansion process.
+    At -6 dB input,
+    - Expansion is expected at -60 dB,
+    - Compression at 10, 34 and 60 dB
+    - No compression or expansion at -34, -10, -1 dB.
+     */
+    std::vector<float> preGainDbValues = {-60, -34, -10, -1, 10, 34, 60};
+    std::vector<float> output(mInput.size());
+    float thresholdDb = -7;
+    float noiseGateDb = -40;
+    std::vector<float> ratioValues = {1, 1.5, 2, 2.5, 3};
+    for (float ratio : ratioValues) {
+        for (float preGainDb : preGainDbValues) {
+            float expectedOutputDb;
+            float inputWithPreGain = mInputDb + preGainDb;
+            if (inputWithPreGain > thresholdDb) {
+                SCOPED_TRACE("Compressor ratio: " + std::to_string(ratio));
+                expectedOutputDb =
+                        (inputWithPreGain - thresholdDb) / ratio + thresholdDb - preGainDb;
+            } else if (inputWithPreGain < noiseGateDb) {
+                SCOPED_TRACE("Expander ratio: " + std::to_string(ratio));
+                expectedOutputDb =
+                        (inputWithPreGain - noiseGateDb) * ratio + noiseGateDb - preGainDb;
+            } else {
+                expectedOutputDb = mInputDb;
+            }
+            cleanUpMbcConfig();
+            for (int i = 0; i < mChannelCount; i++) {
+                fillMbcBandConfig(mCfgs, i, thresholdDb, ratio /*compressor ratio*/, noiseGateDb,
+                                  ratio /*expander ratio*/, 0 /*band index*/,
+                                  2000 /*cutoffFrequency*/, preGainDb, kDefaultPostGainDb);
+            }
+            EXPECT_NO_FATAL_FAILURE(setMbcParamsAndProcess(output));
+            if (!isAllParamsValid()) {
+                continue;
+            }
+            float outputDb = calculateDb(output, kStartIndex);
+            EXPECT_NEAR(outputDb, expectedOutputDb, kToleranceDb)
+                    << "PreGain: " << preGainDb << ", OutputDb: " << outputDb;
+        }
     }
 }
 
