@@ -522,7 +522,8 @@ class AudioCoreConfig : public testing::TestWithParam<std::string> {
         std::unordered_set<std::string> configurationNames;
         for (const AudioHalCapConfiguration& configuration : domain.configurations) {
             EXPECT_TRUE(configurationNames.insert(configuration.name).second);
-            ValidateAudioHalConfigurationRule(configuration.rule, criteria);
+            ASSERT_NO_FATAL_FAILURE(
+                    ValidateAudioHalConfigurationRule(configuration.rule, criteria));
         }
         auto domainParameters = domain.configurations[0].parameterSettings;
         for (const auto& settingParameter : domainParameters) {
@@ -597,7 +598,8 @@ class AudioCoreConfig : public testing::TestWithParam<std::string> {
             }
             EXPECT_NO_FATAL_FAILURE(ValidateAudioHalCapCriterion(criterion.value()));
         }
-        ValidateAudioHalCapDomains(capCfg.domains.value(), capCfg.criteriaV2.value());
+        ASSERT_NO_FATAL_FAILURE(
+                ValidateAudioHalCapDomains(capCfg.domains.value(), capCfg.criteriaV2.value()));
     }
 
     /**
