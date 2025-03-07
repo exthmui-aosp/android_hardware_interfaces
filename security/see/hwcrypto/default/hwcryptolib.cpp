@@ -271,7 +271,9 @@ class OpaqueKeyNdk : public ndk_hwcrypto::BnOpaqueKey {
     ndk::ScopedAStatus setProtectionId(
             const ndk_hwcrypto::types::ProtectionId /*protectionId*/,
             const ::std::vector<ndk_hwcrypto::types::OperationType>& /*allowedOperations*/) {
-        return ndk::ScopedAStatus::ok();
+        return ndk::ScopedAStatus::fromServiceSpecificErrorWithMessage(
+                ndk_hwcrypto::types::HalErrorCode::UNAUTHORIZED,
+                "android is not authorized to call setProtectionId");
     }
 };
 
@@ -308,24 +310,26 @@ std::shared_ptr<HwCryptoKey> HwCryptoKey::Create(const char* tipcDev) {
 ndk::ScopedAStatus HwCryptoKey::deriveCurrentDicePolicyBoundKey(
         const ndk_hwcrypto::IHwCryptoKey::DiceBoundDerivationKey& /*derivationKey*/,
         ndk_hwcrypto::IHwCryptoKey::DiceCurrentBoundKeyResult* /*aidl_return*/) {
-    // return mHwCryptoServer->deriveCurrentDicePolicyBoundKey(derivationKey, aidl_return);
-    return ndk::ScopedAStatus::ok();
+    return ndk::ScopedAStatus::fromServiceSpecificErrorWithMessage(
+            ndk_hwcrypto::types::HalErrorCode::UNAUTHORIZED,
+            "android is not authorized to call deriveCurrentDicePolicyBoundKey");
 }
 
 ndk::ScopedAStatus HwCryptoKey::deriveDicePolicyBoundKey(
         const ndk_hwcrypto::IHwCryptoKey::DiceBoundDerivationKey& /*derivationKey*/,
         const ::std::vector<uint8_t>& /*dicePolicyForKeyVersion*/,
         ndk_hwcrypto::IHwCryptoKey::DiceBoundKeyResult* /*aidl_return*/) {
-    // return mHwCryptoServer->deriveDicePolicyBoundKey(derivationKey, dicePolicyForKeyVersion,
-    // aidl_return);
-    return ndk::ScopedAStatus::ok();
+    return ndk::ScopedAStatus::fromServiceSpecificErrorWithMessage(
+            ndk_hwcrypto::types::HalErrorCode::UNAUTHORIZED,
+            "android is not authorized to call deriveDicePolicyBoundKey");
 }
 
 ndk::ScopedAStatus HwCryptoKey::deriveKey(
         const ndk_hwcrypto::IHwCryptoKey::DerivedKeyParameters& /*parameters*/,
         ndk_hwcrypto::IHwCryptoKey::DerivedKey* /*aidl_return*/) {
-    // return mHwCryptoServer->deriveKey(parameters, aidl_return);
-    return ndk::ScopedAStatus::ok();
+    return ndk::ScopedAStatus::fromServiceSpecificErrorWithMessage(
+            ndk_hwcrypto::types::HalErrorCode::UNAUTHORIZED,
+            "android is not authorized to call deriveKey");
 }
 
 ndk::ScopedAStatus HwCryptoKey::getHwCryptoOperations(
