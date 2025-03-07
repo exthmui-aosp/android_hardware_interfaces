@@ -161,6 +161,7 @@ class Module : public BnModule {
     // Multimap because both ports and configs can be used by multiple patches.
     using Patches = std::multimap<int32_t, int32_t>;
 
+    static const std::string kClipTransitionSupportName;
     const Type mType;
     std::unique_ptr<Configuration> mConfig;
     ModuleDebug mDebug;

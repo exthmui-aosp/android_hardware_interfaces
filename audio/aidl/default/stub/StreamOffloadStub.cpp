@@ -42,14 +42,13 @@ DspSimulatorLogic::Status DspSimulatorLogic::cycle() {
     const int64_t clipFramesPlayed =
             (::android::uptimeNanos() - timeBeginNs) * mSharedState.sampleRate / NANOS_PER_SECOND;
     const int64_t bufferFramesConsumed = clipFramesPlayed / 2;  // assume 1:2 compression ratio
-    int64_t bufferFramesLeft = 0;
+    int64_t bufferFramesLeft = 0, bufferNotifyFrames = DspSimulatorState::kSkipBufferNotifyFrames;
     {
         std::lock_guard l(mSharedState.lock);
         mSharedState.bufferFramesLeft =
                 mSharedState.bufferFramesLeft > bufferFramesConsumed
                         ? mSharedState.bufferFramesLeft - bufferFramesConsumed
                         : 0;
-        bufferFramesLeft = mSharedState.bufferFramesLeft;
         int64_t framesPlayed = clipFramesPlayed;
         while (framesPlayed > 0 && !mSharedState.clipFramesLeft.empty()) {
             LOG(VERBOSE) << __func__ << ": clips: "
@@ -65,10 +64,21 @@ DspSimulatorLogic::Status DspSimulatorLogic::cycle() {
                 clipNotifies.emplace_back(0 /*clipFramesLeft*/, hasNextClip);
                 framesPlayed -= mSharedState.clipFramesLeft[0];
                 mSharedState.clipFramesLeft.erase(mSharedState.clipFramesLeft.begin());
+                if (!hasNextClip) {
+                    // Since it's a simulation, the buffer consumption rate it not real,
+                    // thus 'bufferFramesLeft' might still have something, need to erase it.
+                    mSharedState.bufferFramesLeft = 0;
+                }
             }
         }
+        bufferFramesLeft = mSharedState.bufferFramesLeft;
+        bufferNotifyFrames = mSharedState.bufferNotifyFrames;
+        if (bufferFramesLeft <= bufferNotifyFrames) {
+            // Suppress further notifications.
+            mSharedState.bufferNotifyFrames = DspSimulatorState::kSkipBufferNotifyFrames;
+        }
     }
-    if (bufferFramesLeft <= mSharedState.bufferNotifyFrames) {
+    if (bufferFramesLeft <= bufferNotifyFrames) {
         LOG(DEBUG) << __func__ << ": sending onBufferStateChange: " << bufferFramesLeft;
         mSharedState.callback->onBufferStateChange(bufferFramesLeft);
     }
@@ -82,9 +92,9 @@ DspSimulatorLogic::Status DspSimulatorLogic::cycle() {
 
 DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
     : DriverStubImpl(context, 0 /*asyncSleepTimeUs*/),
+      mBufferNotifyFrames(static_cast<int64_t>(context.getBufferSizeInFrames()) / 2),
       mState{context.getFormat().encoding, context.getSampleRate(),
-             250 /*earlyNotifyMs*/ * context.getSampleRate() / MILLIS_PER_SECOND,
-             static_cast<int64_t>(context.getBufferSizeInFrames()) / 2},
+             250 /*earlyNotifyMs*/ * context.getSampleRate() / MILLIS_PER_SECOND},
       mDspWorker(mState) {
     LOG_IF(FATAL, !mIsAsynchronous) << "The steam must be used in asynchronous mode";
 }
@@ -111,6 +121,7 @@ DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
             mState.clipFramesLeft.resize(1);
         }
     }
+    mState.bufferNotifyFrames = DspSimulatorState::kSkipBufferNotifyFrames;
     return ::android::OK;
 }
 
@@ -121,6 +132,7 @@ DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
         std::lock_guard l(mState.lock);
         mState.clipFramesLeft.clear();
         mState.bufferFramesLeft = 0;
+        mState.bufferNotifyFrames = DspSimulatorState::kSkipBufferNotifyFrames;
     }
     return ::android::OK;
 }
@@ -128,6 +140,10 @@ DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
 ::android::status_t DriverOffloadStubImpl::pause() {
     RETURN_STATUS_IF_ERROR(DriverStubImpl::pause());
     mDspWorker.pause();
+    {
+        std::lock_guard l(mState.lock);
+        mState.bufferNotifyFrames = DspSimulatorState::kSkipBufferNotifyFrames;
+    }
     return ::android::OK;
 }
 
@@ -140,6 +156,7 @@ DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
         hasClips = !mState.clipFramesLeft.empty();
         LOG(DEBUG) << __func__
                    << ": clipFramesLeft: " << ::android::internal::ToString(mState.clipFramesLeft);
+        mState.bufferNotifyFrames = DspSimulatorState::kSkipBufferNotifyFrames;
     }
     if (hasClips) {
         mDspWorker.resume();
@@ -184,6 +201,7 @@ DriverOffloadStubImpl::DriverOffloadStubImpl(const StreamContext& context)
     {
         std::lock_guard l(mState.lock);
         mState.bufferFramesLeft = *actualFrameCount;
+        mState.bufferNotifyFrames = mBufferNotifyFrames;
     }
     mDspWorker.resume();
     return ::android::OK;

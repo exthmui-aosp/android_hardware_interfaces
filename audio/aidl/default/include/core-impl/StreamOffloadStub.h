@@ -26,14 +26,16 @@
 namespace aidl::android::hardware::audio::core {
 
 struct DspSimulatorState {
+    static constexpr int64_t kSkipBufferNotifyFrames = -1;
+
     const std::string formatEncoding;
     const int sampleRate;
     const int64_t earlyNotifyFrames;
-    const int64_t bufferNotifyFrames;
     DriverCallbackInterface* callback = nullptr;  // set before starting DSP worker
     std::mutex lock;
     std::vector<int64_t> clipFramesLeft GUARDED_BY(lock);
-    int64_t bufferFramesLeft GUARDED_BY(lock);
+    int64_t bufferFramesLeft GUARDED_BY(lock) = 0;
+    int64_t bufferNotifyFrames GUARDED_BY(lock) = kSkipBufferNotifyFrames;
 };
 
 class DspSimulatorLogic : public ::android::hardware::audio::common::StreamLogic {
@@ -68,6 +70,7 @@ class DriverOffloadStubImpl : public DriverStubImpl {
   private:
     ::android::status_t startWorkerIfNeeded();
 
+    const int64_t mBufferNotifyFrames;
     DspSimulatorState mState;
     DspSimulatorWorker mDspWorker;
     bool mDspWorkerStarted = false;
