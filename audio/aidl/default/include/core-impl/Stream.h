@@ -307,6 +307,7 @@ class StreamInWorkerLogic : public StreamWorkerCommonLogic {
 
   private:
     bool read(size_t clientSize, StreamDescriptor::Reply* reply);
+    bool readMmap(StreamDescriptor::Reply* reply);
 };
 using StreamInWorker = StreamWorkerImpl<StreamInWorkerLogic>;
 
@@ -325,6 +326,7 @@ class StreamOutWorkerLogic : public StreamWorkerCommonLogic {
 
   private:
     bool write(size_t clientSize, StreamDescriptor::Reply* reply);
+    bool writeMmap(StreamDescriptor::Reply* reply);
 
     std::shared_ptr<IStreamOutEventCallback> mEventCallback;
 
