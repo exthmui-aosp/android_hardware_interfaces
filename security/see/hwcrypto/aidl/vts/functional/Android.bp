@@ -65,3 +65,19 @@ rust_test {
         "vts",
     ],
 }
+
+rust_test {
+    name: "VtsAidlHwCryptoOperationsTests",
+    srcs: ["hwcrypto_operations_tests.rs"],
+    require_root: true,
+    defaults: [
+        "hw_crypto_hal_aidl_rust_defaults",
+    ],
+    rustlibs: [
+        "libhwcryptohal_vts_test",
+    ],
+    test_suites: [
+        "general-tests",
+        "vts",
+    ],
+}
