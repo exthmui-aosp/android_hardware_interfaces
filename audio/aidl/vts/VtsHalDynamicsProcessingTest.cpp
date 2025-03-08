@@ -596,10 +596,10 @@ DynamicsProcessing::MbcBandConfig createMbcBandConfig(int channel, int band, flo
 }
 
 DynamicsProcessing::EqBandConfig creatEqBandConfig(int channel, int band, float cutOffFreqHz,
-                                                   float gainDb) {
+                                                   float gainDb, bool enable) {
     return DynamicsProcessing::EqBandConfig{.channel = channel,
                                             .band = band,
-                                            .enable = true,
+                                            .enable = enable,
                                             .cutoffFrequencyHz = cutOffFreqHz,
                                             .gainDb = gainDb};
 }
@@ -1092,7 +1092,8 @@ void fillEqBandConfig(std::vector<DynamicsProcessing::EqBandConfig>& cfgs,
     int bandCount = cutOffFreqs.size();
     for (int i = 0; i < bandCount; i++) {
         cfgs.push_back(creatEqBandConfig(std::get<EQ_BAND_CHANNEL>(params), cutOffFreqs[i].first,
-                                         cutOffFreqs[i].second, std::get<EQ_BAND_GAIN>(params)));
+                                         cutOffFreqs[i].second, std::get<EQ_BAND_GAIN>(params),
+                                         true));
     }
 }
 
@@ -1240,15 +1241,16 @@ class DynamicsProcessingEqBandConfigDataTest
     }
 
     void fillEqBandConfig(std::vector<DynamicsProcessing::EqBandConfig>& cfgs, int channelIndex,
-                          int bandIndex, int cutOffFreqHz, float gainDb) {
+                          int bandIndex, int cutOffFreqHz, float gainDb, bool enable) {
         cfgs.push_back(creatEqBandConfig(channelIndex, bandIndex, static_cast<float>(cutOffFreqHz),
-                                         gainDb));
+                                         gainDb, enable));
     }
 
-    void validateOutput(const std::vector<float>& output, float gainDb, size_t bandIndex) {
+    void validateOutput(const std::vector<float>& output, float gainDb, size_t bandIndex,
+                        bool enable) {
         std::vector<float> outputMag(mBinOffsets.size());
         EXPECT_NO_FATAL_FAILURE(getMagnitudeValue(output, outputMag));
-        if (gainDb == 0) {
+        if (gainDb == 0 || !enable) {
             EXPECT_NO_FATAL_FAILURE(checkInputAndOutputEquality(outputMag));
         } else if (gainDb > 0) {
             // For positive gain, current band's magnitude is greater than the other band's
@@ -1260,19 +1262,19 @@ class DynamicsProcessingEqBandConfigDataTest
         }
     }
 
-    void analyseMultiBandOutput(float gainDb, bool isPreEq) {
+    void analyseMultiBandOutput(float gainDb, bool isPreEq, bool enable = true) {
         std::vector<float> output(mInput.size());
         roundToFreqCenteredToFftBin(mMultitoneTestFrequencies, mBinOffsets, kBinWidth);
         // Set Equalizer values for two bands
         for (size_t i = 0; i < kCutoffFreqHz.size(); i++) {
             for (int channelIndex = 0; channelIndex < mChannelCount; channelIndex++) {
-                fillEqBandConfig(mCfgs, channelIndex, i, kCutoffFreqHz[i], gainDb);
-                fillEqBandConfig(mCfgs, channelIndex, i ^ 1, kCutoffFreqHz[i ^ 1], 0);
+                fillEqBandConfig(mCfgs, channelIndex, i, kCutoffFreqHz[i], gainDb, enable);
+                fillEqBandConfig(mCfgs, channelIndex, i ^ 1, kCutoffFreqHz[i ^ 1], 0, enable);
             }
             ASSERT_NO_FATAL_FAILURE(setEqParamAndProcess(output, isPreEq));
 
             if (isAllParamsValid()) {
-                ASSERT_NO_FATAL_FAILURE(validateOutput(output, gainDb, i));
+                ASSERT_NO_FATAL_FAILURE(validateOutput(output, gainDb, i, enable));
             }
             cleanUpEqConfig();
         }
@@ -1306,6 +1308,16 @@ TEST_P(DynamicsProcessingEqBandConfigDataTest, IncreasingPostEqGain) {
         cleanUpEqConfig();
         ASSERT_NO_FATAL_FAILURE(analyseMultiBandOutput(gainDb, false /*post-equalizer*/));
     }
+}
+
+TEST_P(DynamicsProcessingEqBandConfigDataTest, PreEqEnableDisable) {
+    ASSERT_NO_FATAL_FAILURE(analyseMultiBandOutput(10 /*gain dB*/, true /*pre-equalizer*/,
+                                                   false /*disable equalizer*/));
+}
+
+TEST_P(DynamicsProcessingEqBandConfigDataTest, PostEqEnableDisable) {
+    ASSERT_NO_FATAL_FAILURE(analyseMultiBandOutput(10 /*gain dB*/, false /*post-equalizer*/,
+                                                   false /*disable equalizer*/));
 }
 
 INSTANTIATE_TEST_SUITE_P(DynamicsProcessingTest, DynamicsProcessingEqBandConfigDataTest,
