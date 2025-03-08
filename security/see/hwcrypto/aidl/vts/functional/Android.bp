@@ -30,6 +30,7 @@ rust_defaults {
         "libvsock",
         "librpcbinder_rs",
         "librustutils",
+        "libhwcryptohal_common",
     ],
     arch: {
         arm64: {
@@ -50,8 +51,8 @@ rust_library {
 }
 
 rust_test {
-    name: "VtsAidlHwCryptoConnTest",
-    srcs: ["connection_test.rs"],
+    name: "VtsAidlHwCryptoTests",
+    srcs: ["hwcryptokey_tests.rs"],
     require_root: true,
     defaults: [
         "hw_crypto_hal_aidl_rust_defaults",
