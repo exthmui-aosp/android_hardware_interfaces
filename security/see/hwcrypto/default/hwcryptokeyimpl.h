@@ -46,30 +46,33 @@ class HwCryptoKey : public ndk_hwcrypto::BnHwCryptoKey {
 
     ndk::ScopedAStatus deriveCurrentDicePolicyBoundKey(
             const ndk_hwcrypto::IHwCryptoKey::DiceBoundDerivationKey& derivationKey,
-            ndk_hwcrypto::IHwCryptoKey::DiceCurrentBoundKeyResult* aidl_return);
+            ndk_hwcrypto::IHwCryptoKey::DiceCurrentBoundKeyResult* aidl_return) override;
 
     ndk::ScopedAStatus deriveDicePolicyBoundKey(
             const ndk_hwcrypto::IHwCryptoKey::DiceBoundDerivationKey& derivationKey,
             const ::std::vector<uint8_t>& dicePolicyForKeyVersion,
-            ndk_hwcrypto::IHwCryptoKey::DiceBoundKeyResult* aidl_return);
+            ndk_hwcrypto::IHwCryptoKey::DiceBoundKeyResult* aidl_return) override;
     ndk::ScopedAStatus deriveKey(const ndk_hwcrypto::IHwCryptoKey::DerivedKeyParameters& parameters,
-                                 ndk_hwcrypto::IHwCryptoKey::DerivedKey* aidl_return);
+                                 ndk_hwcrypto::IHwCryptoKey::DerivedKey* aidl_return) override;
 
     ndk::ScopedAStatus getHwCryptoOperations(
-            std::shared_ptr<ndk_hwcrypto::IHwCryptoOperations>* aidl_return);
+            std::shared_ptr<ndk_hwcrypto::IHwCryptoOperations>* aidl_return) override;
 
-    ndk::ScopedAStatus importClearKey(const ndk_hwcrypto::types::ExplicitKeyMaterial& keyMaterial,
-                                      const ndk_hwcrypto::KeyPolicy& newKeyPolicy,
-                                      std::shared_ptr<ndk_hwcrypto::IOpaqueKey>* aidl_return);
+    ndk::ScopedAStatus importClearKey(
+            const ndk_hwcrypto::types::ExplicitKeyMaterial& keyMaterial,
+            const ndk_hwcrypto::KeyPolicy& newKeyPolicy,
+            std::shared_ptr<ndk_hwcrypto::IOpaqueKey>* aidl_return) override;
 
-    ndk::ScopedAStatus getCurrentDicePolicy(std::vector<uint8_t>* aidl_return);
+    ndk::ScopedAStatus getCurrentDicePolicy(std::vector<uint8_t>* aidl_return) override;
 
-    ndk::ScopedAStatus keyTokenImport(const ndk_hwcrypto::types::OpaqueKeyToken& requestedKey,
-                                      const ::std::vector<uint8_t>& sealingDicePolicy,
-                                      std::shared_ptr<ndk_hwcrypto::IOpaqueKey>* aidl_return);
+    ndk::ScopedAStatus keyTokenImport(
+            const ndk_hwcrypto::types::OpaqueKeyToken& requestedKey,
+            const ::std::vector<uint8_t>& sealingDicePolicy,
+            std::shared_ptr<ndk_hwcrypto::IOpaqueKey>* aidl_return) override;
 
-    ndk::ScopedAStatus getKeyslotData(ndk_hwcrypto::IHwCryptoKey::KeySlot slotId,
-                                      std::shared_ptr<ndk_hwcrypto::IOpaqueKey>* aidl_return);
+    ndk::ScopedAStatus getKeyslotData(
+            ndk_hwcrypto::IHwCryptoKey::KeySlot slotId,
+            std::shared_ptr<ndk_hwcrypto::IOpaqueKey>* aidl_return) override;
 };
 
 template <typename LHP, typename RHP>
@@ -79,9 +82,10 @@ LHP convertKeyPolicy(const RHP& policyToConvert) {
     policy.keyLifetime = static_cast<decltype(policy.keyLifetime)>(policyToConvert.keyLifetime);
     policy.keyType = static_cast<decltype(policy.keyType)>(policyToConvert.keyType);
     policy.keyManagementKey = policyToConvert.keyManagementKey;
+    policy.keyPermissions.reserve(policyToConvert.keyPermissions.size());
     for (auto permission : policyToConvert.keyPermissions) {
         policy.keyPermissions.push_back(
-                std::move(reinterpret_cast<decltype(policy.keyPermissions[0])>(permission)));
+                std::move(static_cast<decltype(policy.keyPermissions)::value_type>(permission)));
     }
     return policy;
 }

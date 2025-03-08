@@ -1555,6 +1555,7 @@ ndk::ScopedAStatus Module::generateHwAvSyncId(int32_t* _aidl_return) {
 
 const std::string Module::VendorDebug::kForceTransientBurstName = "aosp.forceTransientBurst";
 const std::string Module::VendorDebug::kForceSynchronousDrainName = "aosp.forceSynchronousDrain";
+const std::string Module::kClipTransitionSupportName = "aosp.clipTransitionSupport";
 
 ndk::ScopedAStatus Module::getVendorParameters(const std::vector<std::string>& in_ids,
                                                std::vector<VendorParameter>* _aidl_return) {
@@ -1569,6 +1570,10 @@ ndk::ScopedAStatus Module::getVendorParameters(const std::vector<std::string>& i
             VendorParameter forceSynchronousDrain{.id = id};
             forceSynchronousDrain.ext.setParcelable(Boolean{mVendorDebug.forceSynchronousDrain});
             _aidl_return->push_back(std::move(forceSynchronousDrain));
+        } else if (id == kClipTransitionSupportName) {
+            VendorParameter clipTransitionSupport{.id = id};
+            clipTransitionSupport.ext.setParcelable(Boolean{true});
+            _aidl_return->push_back(std::move(clipTransitionSupport));
         } else {
             allParametersKnown = false;
             LOG(VERBOSE) << __func__ << ": " << mType << ": unrecognized parameter \"" << id << "\"";
