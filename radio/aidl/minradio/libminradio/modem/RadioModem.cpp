@@ -188,8 +188,7 @@ ScopedAStatus RadioModem::setResponseFunctions(
     LOG_CALL_NOSERIAL << response << ' ' << indication;
     CHECK(response);
     CHECK(indication);
-    respond = mResponseTracker =
-            ndk::SharedRefBase::make<RadioModemResponseTracker>(ref<aidl::IRadioModem>(), response);
+    respond = response;
     indicate = indication;
 
     indicate()->rilConnected(RadioIndicationType::UNSOLICITED);
