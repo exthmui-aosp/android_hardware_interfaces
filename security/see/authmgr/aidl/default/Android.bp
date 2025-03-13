@@ -14,7 +14,7 @@
 // limitations under the License.
 
 vintf_fragment {
-    name: "android.hardware.security.see.storage-service.trusty.xml",
-    src: "android.hardware.security.see.storage-service.trusty.xml",
+    name: "android.hardware.security.see.authmgr.xml",
+    src: "android.hardware.security.see.authmgr.xml",
     vendor: true,
 }
