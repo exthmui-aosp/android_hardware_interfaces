@@ -13,9 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-prebuilt_etc {
+vintf_fragment {
     name: "android.hardware.security.see.storage-service.trusty.xml",
-    sub_dir: "vintf",
-    vendor: true,
     src: "android.hardware.security.see.storage-service.trusty.xml",
+    vendor: true,
 }
