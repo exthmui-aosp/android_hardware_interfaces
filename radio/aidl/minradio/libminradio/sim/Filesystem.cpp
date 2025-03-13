@@ -47,11 +47,13 @@ Filesystem::Filesystem() {
 void Filesystem::write(const Path& path, FileView contents) {
     std::unique_lock lck(mFilesGuard);
     mFiles[path].assign(contents.begin(), contents.end());  // C++23: assign_range
+    mUpdates.insert(path.fileId);
 }
 
 void Filesystem::write(const Path& path, std::string_view contents) {
     std::unique_lock lck(mFilesGuard);
     mFiles[path].assign(contents.begin(), contents.end());  // C++23: assign_range
+    mUpdates.insert(path.fileId);
 }
 
 void Filesystem::write(const Path& path, std::vector<uint8_t>&& contents) {
@@ -82,6 +84,13 @@ std::optional<Filesystem::Path> Filesystem::find(uint16_t fileId) {
         if (path.fileId == fileId) return path;
     }
     return std::nullopt;
+}
+
+std::set<int32_t> Filesystem::fetchAndClearUpdates() {
+    std::unique_lock lck(mFilesGuard);
+    std::set<int32_t> result;
+    std::swap(result, mUpdates);
+    return result;
 }
 
 std::string Filesystem::Path::toString() const {

@@ -19,6 +19,7 @@
 #include <android-base/thread_annotations.h>
 
 #include <map>
+#include <set>
 #include <span>
 
 namespace android::hardware::radio::minimal::sim {
@@ -38,6 +39,7 @@ class Filesystem {
   private:
     mutable std::mutex mFilesGuard;
     std::map<Path, std::vector<uint8_t>> mFiles GUARDED_BY(mFilesGuard);
+    std::set<int32_t> mUpdates GUARDED_BY(mFilesGuard);
 
     DISALLOW_COPY_AND_ASSIGN(Filesystem);
 
@@ -53,6 +55,8 @@ class Filesystem {
     std::optional<std::string> readBch(const Path& path) const;
 
     std::optional<Path> find(uint16_t fileId);
+
+    std::set<int32_t> fetchAndClearUpdates();
 };
 
 namespace paths {
