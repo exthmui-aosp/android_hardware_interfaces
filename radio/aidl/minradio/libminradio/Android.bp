@@ -68,7 +68,6 @@ cc_library {
         "config/RadioConfig.cpp",
         "data/RadioData.cpp",
         "modem/RadioModem.cpp",
-        "modem/RadioModemResponseTracker.cpp",
         "network/RadioNetwork.cpp",
         "network/RadioNetworkResponseTracker.cpp",
         "network/structs.cpp",

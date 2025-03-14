@@ -17,7 +17,6 @@
 
 #include <libminradio/GuaranteedCallback.h>
 #include <libminradio/RadioSlotBase.h>
-#include <libminradio/modem/RadioModemResponseTracker.h>
 
 #include <aidl/android/hardware/radio/modem/BnRadioModem.h>
 
@@ -67,7 +66,6 @@ class RadioModem : public RadioSlotBase,
             respond;
 
   private:
-    std::shared_ptr<RadioModemResponseTracker> mResponseTracker;
     int32_t mRatBitmap;
 
     std::string getModemUuid() const;
