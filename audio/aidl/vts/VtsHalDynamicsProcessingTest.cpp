@@ -127,6 +127,7 @@ class DynamicsProcessingTestHelper : public EffectHelper {
     void checkInputAndOutputEquality(const std::vector<float>& outputMag);
 
     void setUpDataTest(const std::vector<int>& testFrequencies, float fullScaleSineDb);
+    void tearDownDataTest();
 
     void createChannelConfig();
 
@@ -140,8 +141,6 @@ class DynamicsProcessingTestHelper : public EffectHelper {
     void addMbcBandConfigs(const std::vector<DynamicsProcessing::MbcBandConfig>& cfgs);
     void addLimiterConfig(const std::vector<DynamicsProcessing::LimiterConfig>& cfg);
     void addInputGain(const std::vector<DynamicsProcessing::InputGain>& inputGain);
-
-    void checkHalVersion();
 
     static constexpr float kPreferredProcessingDurationMs = 10.0f;
     static constexpr int kBandCount = 5;
@@ -465,11 +464,17 @@ void DynamicsProcessingTestHelper::setUpDataTest(const std::vector<int>& testFre
                                                  float fullScaleSineDb) {
     ASSERT_NO_FATAL_FAILURE(SetUpDynamicsProcessingEffect());
     SKIP_TEST_IF_DATA_UNSUPPORTED(mDescriptor.common.flags);
+    SKIP_TEST_IF_VERSION_UNSUPPORTED(mEffect, kMinDataTestHalVersion);
+
     mInput.resize(kFrameCount * mChannelCount);
     ASSERT_NO_FATAL_FAILURE(
             generateSineWave(testFrequencies, mInput, 1.0, kSamplingFrequency, mChannelLayout));
     mInputDb = calculateDb(mInput);
     ASSERT_NEAR(mInputDb, fullScaleSineDb, kToleranceDb);
+}
+
+void DynamicsProcessingTestHelper::tearDownDataTest() {
+    ASSERT_NO_FATAL_FAILURE(TearDownDynamicsProcessingEffect());
 }
 
 void DynamicsProcessingTestHelper::createChannelConfig() {
@@ -551,13 +556,6 @@ void DynamicsProcessingTestHelper::addInputGain(
     DynamicsProcessing dp;
     dp.set<DynamicsProcessing::inputGain>(inputGains);
     mTags.push_back({DynamicsProcessing::inputGain, dp});
-}
-
-void DynamicsProcessingTestHelper::checkHalVersion() {
-    if (int32_t version;
-        mEffect->getInterfaceVersion(&version).isOk() && version < kMinDataTestHalVersion) {
-        GTEST_SKIP() << "Skipping the data test for version: " << version << "\n";
-    }
 }
 
 void fillLimiterConfig(std::vector<DynamicsProcessing::LimiterConfig>& limiterConfigList,
@@ -729,7 +727,7 @@ class DynamicsProcessingInputGainDataTest
         ASSERT_NO_FATAL_FAILURE(setUpDataTest({kInputFrequency}, kSineFullScaleDb));
     }
 
-    void TearDown() override { TearDownDynamicsProcessingEffect(); }
+    void TearDown() override { ASSERT_NO_FATAL_FAILURE(tearDownDataTest()); }
 
     void cleanUpInputGainConfig() {
         CleanUp();
@@ -857,7 +855,7 @@ class DynamicsProcessingLimiterConfigDataTest
         ASSERT_NO_FATAL_FAILURE(setUpDataTest({kInputFrequency}, kSineFullScaleDb));
     }
 
-    void TearDown() override { TearDownDynamicsProcessingEffect(); }
+    void TearDown() override { ASSERT_NO_FATAL_FAILURE(tearDownDataTest()); }
 
     void computeThreshold(float ratio, float outputDb, float& threshold) {
         EXPECT_NE(ratio, 0);
@@ -1233,6 +1231,8 @@ TEST_P(DynamicsProcessingTestEqBandConfig, SetAndGetPreEqBandConfig) {
 }
 
 TEST_P(DynamicsProcessingTestEqBandConfig, SetAndGetPostEqBandConfig) {
+    SKIP_TEST_IF_VERSION_UNSUPPORTED(mEffect, kMinDataTestHalVersion);
+
     mEngineConfigPreset.postEqStage.bandCount = mCfgs.size();
     addEngineConfig(mEngineConfigPreset);
     std::vector<DynamicsProcessing::ChannelConfig> cfgs(mChannelCount);
@@ -1330,7 +1330,7 @@ class DynamicsProcessingEqBandConfigDataTest
                 setUpDataTest(mMultitoneTestFrequencies, kSineMultitoneFullScaleDb));
     }
 
-    void TearDown() override { TearDownDynamicsProcessingEffect(); }
+    void TearDown() override { ASSERT_NO_FATAL_FAILURE(tearDownDataTest()); }
 
     void addEqParam(bool isPreEq) {
         createChannelConfig();
@@ -1558,7 +1558,7 @@ class DynamicsProcessingMbcBandConfigDataTest
                 setUpDataTest(mMultitoneTestFrequencies, kSineMultitoneFullScaleDb));
     }
 
-    void TearDown() override { TearDownDynamicsProcessingEffect(); }
+    void TearDown() override { ASSERT_NO_FATAL_FAILURE(tearDownDataTest()); }
 
     void setMbcParamsAndProcess(std::vector<float>& output) {
         createChannelConfig();
