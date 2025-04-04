@@ -76,6 +76,7 @@ ScopedAStatus RadioNetwork::getCdmaRoamingPreference(int32_t serial) {
 
 ScopedAStatus RadioNetwork::getCellInfoList(int32_t serial) {
     LOG_CALL;
+    RESPOND_ERROR_IF_NOT_CONNECTED(getCellInfoListResponse, {});
     respond()->getCellInfoListResponse(noError(serial), getCellInfoListBase());
     return ok();
 }
@@ -216,7 +217,11 @@ ScopedAStatus RadioNetwork::setResponseFunctions(
             ref<aidl::IRadioNetwork>(), response);
     respond = mResponseTracker.get();
     indicate = indication;
+    setResponseFunctionsBase();
+    return ok();
+}
 
+void RadioNetwork::onUpdatedResponseFunctions() {
     indicate()->cellInfoList(RadioIndicationType::UNSOLICITED, getCellInfoListBase());
     auto signalStrengthResponse = mResponseTracker()->getSignalStrength();
     if (signalStrengthResponse.expectOk()) {
@@ -238,8 +243,6 @@ ScopedAStatus RadioNetwork::setResponseFunctions(
             }
         }).detach();
     }
-
-    return ok();
 }
 
 ScopedAStatus RadioNetwork::setSignalStrengthReportingCriteria(
